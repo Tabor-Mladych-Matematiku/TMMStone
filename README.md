@@ -7,6 +7,7 @@ Link to skeleton: https://gitlab.com/ncgd008-2024-25/gamejam-skeleton
 > For skeleton copy all files apart `.git` dirrectory into this repository
 
 Link to `.gitignore`: https://gitlab.com/ncgd008-2024-25/gamejam-skeleton/-/blob/master/.gitignore?ref_type=heads
+
 Link to `.gitattributes`: https://gitlab.com/ncgd008-2024-25/gamejam-skeleton/-/blob/master/.gitattributes?ref_type=heads
 
 
