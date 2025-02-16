@@ -37,7 +37,7 @@ namespace CardGame
         Sprite face;
         Sprite cardBack;
         bool hidden;
-        private Vector3 standardScale;
+        public Vector3 standardScale;
         readonly static Dictionary<string,string> expansionMapping = new () {//Maps JSON name to folder name
             {"Základ", "V2"},
             {"PTMM","GULAG" }
@@ -81,10 +81,16 @@ namespace CardGame
         }
         private void OnMouseUp()
         {
-            if (GameManager.Instance.cursor == this)
+            if (GameManager.Instance.cursor == this && cardType==CardType.Minion)
             {
-                transform.localPosition = new Vector3(0, 0, -1);
-                GameManager.Instance.cursor = null;
+                if(GameManager.Instance.highlightedSlot == null) { //No target
+                    transform.localPosition = new Vector3(0, 0, -1);
+                    GameManager.Instance.cursor = null;
+                }
+                else
+                {
+                    GameManager.Instance.OnUIPlayMinion(this);
+                }
             }
         }
         public void OnMouseDown()

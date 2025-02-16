@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.UI;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CardGame
 {
@@ -190,6 +192,7 @@ namespace CardGame
         public CardSlot[] EffSlotsOpp;
         public CardSlot[] HandSlotsOwn;
         public CardSlot[] HandSlotsOpp;
+        private Dictionary<bool, CardSlot[]> HandSlots;
         public CardSlot Field;
         public CardSlot DeckSlot;
         public CardSlot OppDeckSlot;
@@ -232,6 +235,25 @@ namespace CardGame
 
         public NetworkVariable<bool> ServerOnTurn = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         internal Card cursor;
+        internal Transform highlightedSlot;
+        internal int HighlightedSlotIndex
+        {
+            get
+            {
+                int slot = -1;
+                if (highlightedSlot == null) return slot;
+                for (int i = 0; i < minionSlotsOwn.Length; i++)
+                {
+                    if (minionSlotsOwn[i].pos == highlightedSlot) { slot = i; break; }
+                }
+                if(slot!=-1)return slot;
+                for (int i = 0; i < minionSlotsOwn.Length; i++)
+                {
+                    if (minionSlotsOpp[i].pos == highlightedSlot) { slot = maxMinionSlots+i; break; }
+                }
+                return slot;
+            }
+        }
 
         public bool OnTurn
         {
@@ -249,14 +271,17 @@ namespace CardGame
         private void Awake()
         {
             Instance = this;
+            HandSlots = new()
+            {
+                {true,HandSlotsOwn },
+                {false,HandSlotsOpp }
+            };
         }
         private void Update()
         {
             if (cursor != null) {
-                Transform canvas = Camera.main.transform.GetChild(0);
-                Vector2 offset = canvas.GetComponent<CanvasScaler>().referenceResolution / 2;//Stabilicious.
-                Debug.Log(Input.mousePosition);
-                cursor.transform.position = (Input.mousePosition* canvas.lossyScale.x)-new Vector3(offset.x,offset.y,-3);
+                Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                cursor.transform.position = new(mousepos.x,mousepos.y,-1);
             }
         }
 
@@ -344,13 +369,12 @@ namespace CardGame
             {
                 card = Oppdeck.PopFirst();
             }
-            if (card == null)//Proly create a fake fatigue card that gets played on discard essentially and deals damage.
+            if (card == null)
             {
                 Fatigue(who);
             }
             else
             {
-                card.gameObject.SetActive(true);
                 AddCardToHand(who, card);
             }
 
@@ -364,22 +388,24 @@ namespace CardGame
                     Discard(c, who);
                     break;
                 }
-                if (who && !HandSlotsOwn[i].occupied)
+                if (!HandSlots[who][i].occupied)
                 {
-                    HandSlotsOwn[i].occupied = true;
-                    c.transform.parent = HandSlotsOwn[i].pos;
-                    c.transform.localPosition = new Vector3(0, 0, -1);
                     c.Hidden = false;
+                    HandSlots[who][i].occupied = true;
+                    c.transform.parent = HandSlots[who][i].pos;
+                    c.transform.localPosition = new Vector3(0, 0, -1);
+                    c.standardScale = c.transform.localScale;
                     break;
-                }
+                }/*
                 else if (!who && !HandSlotsOpp[i].occupied)
                 {
                     c.Hidden = true;
                     HandSlotsOpp[i].occupied = true;
                     c.transform.parent = HandSlotsOpp[i].pos;
                     c.transform.localPosition = new Vector3(0, 0, 0);
+                    c.standardScale = c.transform.localScale;
                     break;
-                }
+                }*/
 
             }
         }
@@ -462,12 +488,44 @@ namespace CardGame
             }
 
         }
-        void OnUITakeAction(PlayerAction action)
+        public void OnUIPlayMinion(Card c)
+        {
+            int cardIndex = -1;
+            for (int i = 0; i < HandSlotsOwn.Length; i++)
+            {
+                if(c== HandSlotsOwn[i].pos.GetComponentInChildren<Card>())
+                {
+                    cardIndex= i;
+                }
+            }
+            if (cardIndex < 0) return;
+
+            
+
+            PlayerAction action = PlayerAction.PlayCardAction(cardIndex,HighlightedSlotIndex);
+            OnUITakeAction(action);
+        }
+        public void OnUIAttackMinion()
+        {
+            throw new NotImplementedException();
+            int cardIndex;
+            int slot;
+            PlayerAction action = PlayerAction.AttackAction(cardIndex,slot);
+            OnUITakeAction(action);
+        }
+        public void OnUICastSpell()
+        {
+            throw new NotImplementedException();
+            int cardIndex;
+            int target;
+            PlayerAction action = PlayerAction.PlayCardAction(cardIndex, target);
+            OnUITakeAction(action);
+        }
+        public void OnUITakeAction(PlayerAction action)
         {
             if (!ValidateAction(action)) return;
             TakeAction(true, action);//Play it out
             TakeActionServerRpc(action, new());//Send to opponent
-
         }
         public bool IsCardPlayable(Card card)
         {
@@ -488,7 +546,10 @@ namespace CardGame
         /// <param name="action"></param>
         void TakeAction(bool who, PlayerAction action)
         {
+            if (who)
+            {
 
+            }
         }
         [ServerRpc(RequireOwnership = false)]
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)

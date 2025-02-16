@@ -1,3 +1,4 @@
+using CardGame;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,10 +13,15 @@ public class MinionScript : MonoBehaviour {
     }
     private void OnMouseOver()
     {
-        image.color = highlightc;
+        Card holding = GameManager.Instance.cursor;
+        if (holding!=null && holding.cardType==Card.CardType.Minion && transform.childCount == 0) { 
+            image.color = highlightc;
+            GameManager.Instance.highlightedSlot = transform;
+        }
     }
     private void OnMouseExit()
     {
         image.color = new(0,0,0,0);
+        GameManager.Instance.highlightedSlot = null;
     }
 }
