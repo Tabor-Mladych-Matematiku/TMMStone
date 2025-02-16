@@ -50,53 +50,75 @@ namespace CardGame
             public void Add(Card c)
             {
                 deck.Add(c);
+                c.transform.parent = cardSlot.pos;
                 CardCounter.text = deck.Count.ToString();
-                cardSlot.pos.gameObject.GetComponent<SpriteRenderer>().enabled = true;
             }
             public Card PopFirst()
             {
-                if (deck.Count == 0)return null;
+                if (deck.Count == 0) return null;
                 Card c = deck.First();
                 deck.RemoveAt(0);
+                c.transform.parent = null;
                 CardCounter.text = deck.Count.ToString();
-                if (deck.Count == 0)cardSlot.pos.gameObject.GetComponent<SpriteRenderer>().enabled = false;
                 return c;
             }
 
-            public int IndexOf(Card item)=>deck.IndexOf(item);
+            public int IndexOf(Card item) => deck.IndexOf(item);
 
+            /// <summary>
+            /// Inserts and adds the card as child
+            /// </summary>
+            /// <param name="index"></param>
+            /// <param name="item"></param>
             public void Insert(int index, Card item)
             {
                 deck.Insert(index, item);
+                item.transform.parent = cardSlot.pos;
                 CardCounter.text = deck.Count.ToString();
-                cardSlot.pos.gameObject.GetComponent<SpriteRenderer>().enabled = true;
             }
-
+            /// <summary>
+            /// Destroys the card from existence
+            /// </summary>
+            /// <param name="index"></param>
             public void RemoveAt(int index)
             {
                 deck.RemoveAt(index);
+                Destroy(deck.ElementAt(index).gameObject);
                 CardCounter.text = deck.Count.ToString();
-                if (deck.Count == 0)
-                {
-                    cardSlot.pos.gameObject.GetComponent<SpriteRenderer>().enabled = false;
-                }
             }
+            /// <summary>
+            /// Destroys all cards in deck
+            /// </summary>
             public void Clear()
             {
+                foreach (var item in deck)
+                {
+                    Destroy(item.gameObject);
+                }
                 deck.Clear();
                 CardCounter.text = deck.Count.ToString();
             }
 
-            public bool Contains(Card item)=>deck.Contains(item);
+            public bool Contains(Card item) => deck.Contains(item);
 
             public void CopyTo(Card[] array, int arrayIndex)
             {
                 throw new NotImplementedException();
             }
-
+            /// <summary>
+            /// Removes Card from deck. Does not destroy Card but purges its parent
+            /// </summary>
+            /// <param name="item"></param>
+            /// <returns></returns>
             public bool Remove(Card item)
             {
-                throw new NotImplementedException();
+                if (deck.Remove(item))
+                {
+                    item.transform.parent = null;
+                    CardCounter.text = deck.Count.ToString();
+                    return true;
+                }
+                return false;
             }
 
             public IEnumerator<Card> GetEnumerator()
@@ -113,6 +135,36 @@ namespace CardGame
         {
             public int count;
         }
+        public struct PlayerAction
+        {
+            public enum ActionType
+            {
+                Play
+            }
+            public Card card { get; private set; }
+            public ActionType actionType { get; private set; }
+            public int Slot { get; private set; }//Used for targetting various things
+            public static PlayerAction PlayMinion(Card card,int slot)
+            {
+                if(card.cardType == Card.CardType.Minion || slot>maxMinionSlots)
+                {
+                    return new()
+                    {
+                        card = card,
+                        actionType = ActionType.Play,
+                        Slot = slot
+                    };
+                }
+                else throw new InvalidActionException("Invalid Action!");
+            }
+            public class InvalidActionException : Exception
+            {
+                public InvalidActionException(string message):base(message){}
+                public InvalidActionException() { }
+            }
+        }
+
+        public static GameManager Instance { get; private set; }
         Deck deck;
         Deck Oppdeck;
         Grave grave = new();
@@ -137,6 +189,7 @@ namespace CardGame
         public Dictionary<int, CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
+        private const int maxMinionSlots = 7;
 
         int health;
         int opphealth;
@@ -172,10 +225,15 @@ namespace CardGame
                 if (IsServer) return ServerOnTurn.Value;
                 return !ServerOnTurn.Value;
             }
-            set {
+            set
+            {
                 if (IsServer) ServerOnTurn.Value = value;
                 else ServerOnTurn.Value = !value;
             }
+        }
+        private void Awake()
+        {
+            Instance = this;
         }
 
         public override void OnNetworkSpawn()
@@ -183,50 +241,25 @@ namespace CardGame
             if (IsServer)
             {
                 if (UnityEngine.Random.Range(0, 2) == 0) ServerOnTurn.Value = false;
-                Debug.Log("Server is: " + OnTurn);
+                Debug.Log("Host starts?: " + OnTurn);
             }
-            EndTurnBtn.onClick.AddListener (()=>ToggleTurnServerRpc(new ServerRpcParams()));
-            ServerOnTurn.OnValueChanged += (bool prev, bool n)=> {
+            EndTurnBtn.onClick.AddListener(() => ToggleTurnServerRpc(new ServerRpcParams()));
+            ServerOnTurn.OnValueChanged += (bool prev, bool n) =>
+            {
                 if (prev == n) return;//Should not happen but to make sure.
                 EndTurn();
-                if (!OnTurn)
-                {
-                    EndTurnBtn.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Opponents Turn";
-                    EndTurnBtn.interactable = false;
-                } 
-                else
-                {
-                    EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "End Turn";
-                    EndTurnBtn.interactable = true;
-                }
-                
                 StartTurn();
-                
+
             };
-            deck = new() { CardCounter = OwnCardCounter.GetComponent<TextMeshProUGUI>(),cardSlot = DeckSlot };
-            Oppdeck = new() { CardCounter = OppCardCounter.GetComponent<TextMeshProUGUI>(),cardSlot = OppDeckSlot };
+            deck = new() { CardCounter = OwnCardCounter.GetComponent<TextMeshProUGUI>(), cardSlot = DeckSlot };
+            Oppdeck = new() { CardCounter = OppCardCounter.GetComponent<TextMeshProUGUI>(), cardSlot = OppDeckSlot };
             //Load cards
             LoadCardDatabase();
             //Load decks
-            var OwnDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);
-            foreach (long item in OwnDeckList)
-            {
-                var c = Instantiate(CardPrefab);
-                c.SetActive(false);
-                Card Cardscript = c.GetComponent<Card>();
-                Cardscript.initialize(CardDatabase[(int)item]);
-                deck.Add(Cardscript);
-            }
-            object OppDeckdecodedJSON = MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);
-            var OppDeckList = (List<object>)OppDeckdecodedJSON;
-            foreach (long item in OppDeckList)
-            {
-                var c = Instantiate(CardPrefab);
-                c.SetActive(false);
-                Card Cardscript = c.GetComponent<Card>();
-                Cardscript.initialize(CardDatabase[(int)item]);
-                Oppdeck.Add(Cardscript);
-            }
+            var OwnDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO import from json in PlayerData
+            LoadDeck(deck, OwnDeckList);
+            var OppDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO get from Lobby
+            LoadDeck(Oppdeck, OppDeckList);
             //StartGame stuff
             Health = MaxHealth;
             OppHealth = OppMaxHealth;
@@ -236,16 +269,6 @@ namespace CardGame
 
             //
             //Cointoss anim
-            if (!OnTurn)
-            {
-                EndTurnBtn.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Opponents Turn";
-                EndTurnBtn.interactable = false;
-            }
-            else
-            {
-                EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "End Turn";
-                EndTurnBtn.interactable = true;
-            }
             for (int i = 0; i < 3; i++)
                 DrawCard(OnTurn);
             for (int i = 0; i < 4; i++)
@@ -253,14 +276,35 @@ namespace CardGame
             //Mulligan
             StartTurn();
         }
+        private void LoadDeck(Deck d, List<object> DecodedDeckList)
+        {
+            foreach (long item in DecodedDeckList)
+            {
+                var c = Instantiate(CardPrefab);
+                Card Cardscript = c.GetComponent<Card>();
+                Cardscript.initialize(CardDatabase[(int)item]);
+                Cardscript.Hidden = true;
+                d.Add(Cardscript);
+                c.transform.localPosition = new Vector3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1), -1);
+            }
+        }
         public void StartTurn()
         {
+            if (!OnTurn)
+            {
+                EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "Opponents Turn";
+                EndTurnBtn.interactable = false;
+            }
+            else
+            {
+                EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "End Turn";
+                EndTurnBtn.interactable = true;
+            }
             TurnCount++;
             DrawCard(OnTurn);
             if (OnTurn)
             {
                 //Enable actions etc.
-                //Enable End Turn
             }
         }
         public void DrawCard(bool who)//We are true opp is false.
@@ -299,13 +343,16 @@ namespace CardGame
                 if (who && !HandSlotsOwn[i].occupied)
                 {
                     HandSlotsOwn[i].occupied = true;
+                    c.transform.parent = HandSlotsOwn[i].pos;
                     c.transform.position = HandSlotsOwn[i].Position;
+                    c.Hidden = false;
                     break;
                 }
                 else if (!who && !HandSlotsOpp[i].occupied)
                 {
                     c.Hidden = true;
                     HandSlotsOpp[i].occupied = true;
+                    c.transform.parent = HandSlotsOpp[i].pos;
                     c.transform.position = HandSlotsOpp[i].Position;
                     break;
                 }
@@ -315,7 +362,7 @@ namespace CardGame
         public void Discard(Card c, bool who)
         {
             c.OnDiscard();
-            AddToGrave(c,who);
+            AddToGrave(c, who);
         }
         public void Fatigue(bool who)
         {
@@ -381,24 +428,76 @@ namespace CardGame
             {
                 c.transform.position = GraveSlot.Position;
                 grave.count++;
-                c.transform.position -= new Vector3(0,0, ((float)grave.count)/100);
+                c.transform.position -= new Vector3(0, 0, ((float)grave.count) / 100);
             }
-            else {
+            else
+            {
                 c.transform.position = OppGraveSlot.Position;
                 Oppgrave.count++;
                 c.transform.position -= new Vector3(0, 0, ((float)Oppgrave.count) / 100);
             }
 
         }
-        [ServerRpc(RequireOwnership =false)]
+        void OnUITakeAction(PlayerAction action)
+        {
+            if (!ValidateAction(action)) return;
+            TakeAction(true,action);//Play it out
+            TakeActionServerRpc(new(),action);//Send to opponent
+
+        }
+        bool ValidateAction(PlayerAction action)
+        {
+            //Do we have enough mana
+            //Is the slot free
+            //etc.
+            return true;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="who"> True means us. False means opponent</param>
+        /// <param name="action"></param>
+        void TakeAction(bool who,PlayerAction action)
+        {
+
+        }
+        [ServerRpc(RequireOwnership = false)]
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
         {
             //Debug.Log("SenderID: " + Srpcparams.Receive.SenderClientId);
-            if (ServerOnTurn.Value && Srpcparams.Receive.SenderClientId==0)
+            if (ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 0)
             {
                 ServerOnTurn.Value = false;
             }
-            else if(!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
+            else if (!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
+        }
+        [ClientRpc(RequireOwnership = false)]
+        private void TakeActionClientRpc(ClientRpcParams crp, PlayerAction action)//This runs only on opponent.
+        {
+            //DebugInfo
+            string message = "Action Recieved on: ";
+            if (IsHost) message += "Host";
+            else message += "Client";
+            message += " with ID: " + crp.Send.TargetClientIds[0];
+            Debug.Log(message);
+
+
+            //TODO simulate opponents action.
+            TakeAction(false,action);
+
+        }
+        [ServerRpc(RequireOwnership = false)]
+        private void TakeActionServerRpc(ServerRpcParams srp, PlayerAction action)
+        {
+            TakeActionClientRpc(new()
+            {
+                Send = new()
+                {
+                    TargetClientIds = new List<ulong> { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+                }
+            },
+            action
+            );
         }
     }
 }

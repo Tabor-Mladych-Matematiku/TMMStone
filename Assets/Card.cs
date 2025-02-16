@@ -37,7 +37,7 @@ namespace CardGame
         Sprite face;
         Sprite cardBack;
         bool hidden;
-        readonly Dictionary<string,string> expansionMapping = new () {
+        readonly static Dictionary<string,string> expansionMapping = new () {//Maps JSON name to folder name
             {"Základ", "V2"},
             {"PTMM","GULAG" }
         };
