@@ -37,6 +37,10 @@ namespace CardGame
         Sprite face;
         Sprite cardBack;
         bool hidden;
+        readonly Dictionary<string,string> expansionMapping = new () {
+            {"Základ", "V2"},
+            {"PTMM","GULAG" }
+        };
         public bool Hidden { get => hidden; set {  hidden = value;
                 if (hidden) GetComponent<SpriteRenderer>().sprite = cardBack;
                 else GetComponent<SpriteRenderer>().sprite = face;
@@ -59,23 +63,11 @@ namespace CardGame
                     break;
             }
             string expansion = "Tokeny";
-            if (data.expansion == "Základ") expansion = "V2";
-            if (data.expansion == "PTMM") expansion = "GULAG";
+            if(expansionMapping.ContainsKey(data.expansion))expansion = expansionMapping[data.expansion];
             face = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
             GetComponent<SpriteRenderer>().sprite = face;
             cardBack = Resources.Load<Sprite>("CardData/card-back");
         }
-
-        void Start()
-        {
-            //Load from JSON the data
-        }
-        /*
-        void Update()
-        {
-            //prolly neigh nothing
-        }
-        */
         public void OnDiscard()
         {
 
