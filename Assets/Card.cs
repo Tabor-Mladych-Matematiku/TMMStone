@@ -64,8 +64,11 @@ namespace CardGame
             }
             string expansion = "Tokeny";
             if(expansionMapping.ContainsKey(data.expansion))expansion = expansionMapping[data.expansion];
-            face = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
-            GetComponent<SpriteRenderer>().sprite = face;
+            Sprite sprite = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
+            if (sprite != null) {
+                face = sprite;
+                GetComponent<SpriteRenderer>().sprite = face;
+            }
             cardBack = Resources.Load<Sprite>("CardData/card-back");
         }
         public void OnDiscard()
