@@ -35,17 +35,23 @@ public class TMMStoneLobby : MonoBehaviour
     }
     private float heartbeattimer;
     private float lobbyupdatetimer;
-    //private string PlayerName = "NotImplemented";//We are pulling it from UI
+    private string PlayerName { get => LobbyUI.Instance.PlayerName; }
     private const string KEY_START_GAME = nameof(KEY_START_GAME);
-    private async void Start()
+    private void Start()
     {
+        //Authenticate();
+    }
+    public async void Authenticate()
+    {
+        InitializationOptions opts = new();
+        opts.SetProfile(PlayerName);
         await UnityServices.InitializeAsync();
         AuthenticationService.Instance.SignedIn += () =>
         {
             Debug.Log("Signed in!");
+            ListLobbies();
         };
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
-
     }
     private void Awake()
     {
@@ -201,7 +207,7 @@ public class TMMStoneLobby : MonoBehaviour
         {
             Data = new Dictionary<string, PlayerDataObject>()
                     {
-                        { "PlayerName",new(PlayerDataObject.VisibilityOptions.Member,LobbyUI.Instance.PlayerName) }
+                        { "PlayerName",new(PlayerDataObject.VisibilityOptions.Member,PlayerName) }
                     }
         };
     }
