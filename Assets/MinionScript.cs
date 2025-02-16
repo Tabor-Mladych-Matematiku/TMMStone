@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class MinionScript : MonoBehaviour {
     Image image;
-    Color highlightc = new Color(0, 1, 0, 0.5f);
+    Color highlightc = new(0, 1, 0, 0.3f);
 
     void Start() {
         image = GetComponent<Image>();

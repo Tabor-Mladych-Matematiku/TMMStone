@@ -135,32 +135,45 @@ namespace CardGame
         {
             public int count;
         }
-        public struct PlayerAction
+        public struct PlayerAction : INetworkSerializable
         {
             public enum ActionType
             {
-                Play
+                Play,
+                Attack
             }
-            public Card card { get; private set; }
-            public ActionType actionType { get; private set; }
-            public int Slot { get; private set; }//Used for targetting various things
-            public static PlayerAction PlayMinion(Card card,int slot)
+            private int c;
+            public int Source { readonly get => c; private set => c = value; }
+            private ActionType actionType;
+            public ActionType Actiontype { readonly get => actionType; private set => actionType = value; }
+            private int slot;
+            public int Target { readonly get => slot; private set => slot = value; }//Used for targetting various things
+            public static PlayerAction PlayCardAction(int card, int slot)
             {
-                if(card.cardType == Card.CardType.Minion || slot>maxMinionSlots)
+                return new()
                 {
-                    return new()
-                    {
-                        card = card,
-                        actionType = ActionType.Play,
-                        Slot = slot
-                    };
-                }
-                else throw new InvalidActionException("Invalid Action!");
+                    Source = card,
+                    Actiontype = ActionType.Play,
+                    Target = slot
+                };
+
             }
-            public class InvalidActionException : Exception
+            public static PlayerAction AttackAction(int card, int slot)
             {
-                public InvalidActionException(string message):base(message){}
-                public InvalidActionException() { }
+                return new()
+                {
+                    Source = card,
+                    Actiontype = ActionType.Attack,
+                    Target = slot
+                };
+
+            }
+
+            public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+            {
+                serializer.SerializeValue(ref c);
+                serializer.SerializeValue(ref actionType);
+                serializer.SerializeValue(ref slot);
             }
         }
 
@@ -218,6 +231,8 @@ namespace CardGame
         public int TurnCount = 0;//This is not Round counter - tzn this is double of RoundCount
 
         public NetworkVariable<bool> ServerOnTurn = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        internal Card cursor;
+
         public bool OnTurn
         {
             get
@@ -235,6 +250,15 @@ namespace CardGame
         {
             Instance = this;
         }
+        private void Update()
+        {
+            if (cursor != null) {
+                Transform canvas = Camera.main.transform.GetChild(0);
+                Vector2 offset = canvas.GetComponent<CanvasScaler>().referenceResolution / 2;//Stabilicious.
+                Debug.Log(Input.mousePosition);
+                cursor.transform.position = (Input.mousePosition* canvas.lossyScale.x)-new Vector3(offset.x,offset.y,-3);
+            }
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -247,7 +271,7 @@ namespace CardGame
             ServerOnTurn.OnValueChanged += (bool prev, bool n) =>
             {
                 if (prev == n) return;//Should not happen but to make sure.
-                EndTurn();
+                EndTurnEffects();
                 StartTurn();
 
             };
@@ -344,7 +368,7 @@ namespace CardGame
                 {
                     HandSlotsOwn[i].occupied = true;
                     c.transform.parent = HandSlotsOwn[i].pos;
-                    c.transform.position = HandSlotsOwn[i].Position;
+                    c.transform.localPosition = new Vector3(0, 0, -1);
                     c.Hidden = false;
                     break;
                 }
@@ -353,7 +377,7 @@ namespace CardGame
                     c.Hidden = true;
                     HandSlotsOpp[i].occupied = true;
                     c.transform.parent = HandSlotsOpp[i].pos;
-                    c.transform.position = HandSlotsOpp[i].Position;
+                    c.transform.localPosition = new Vector3(0, 0, 0);
                     break;
                 }
 
@@ -383,7 +407,7 @@ namespace CardGame
             else Oppdeck.Shuffle();
 
         }
-        public void EndTurn()
+        public void EndTurnEffects()
         {
             //Do end turn effects on my cards: (mins,eff,hand). (End of each turn will not be handled. I cannot be bothered)
             //
@@ -441,9 +465,14 @@ namespace CardGame
         void OnUITakeAction(PlayerAction action)
         {
             if (!ValidateAction(action)) return;
-            TakeAction(true,action);//Play it out
-            TakeActionServerRpc(new(),action);//Send to opponent
+            TakeAction(true, action);//Play it out
+            TakeActionServerRpc(action, new());//Send to opponent
 
+        }
+        public bool IsCardPlayable(Card card)
+        {
+            return true;//TODO enough mana to play it. Any eligible targets etc.
+            //Mainly for UI purposes
         }
         bool ValidateAction(PlayerAction action)
         {
@@ -457,7 +486,7 @@ namespace CardGame
         /// </summary>
         /// <param name="who"> True means us. False means opponent</param>
         /// <param name="action"></param>
-        void TakeAction(bool who,PlayerAction action)
+        void TakeAction(bool who, PlayerAction action)
         {
 
         }
@@ -472,7 +501,7 @@ namespace CardGame
             else if (!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
         }
         [ClientRpc(RequireOwnership = false)]
-        private void TakeActionClientRpc(ClientRpcParams crp, PlayerAction action)//This runs only on opponent.
+        private void TakeActionClientRpc(PlayerAction action, ClientRpcParams crp)//This runs only on opponent.
         {
             //DebugInfo
             string message = "Action Recieved on: ";
@@ -483,20 +512,20 @@ namespace CardGame
 
 
             //TODO simulate opponents action.
-            TakeAction(false,action);
+            TakeAction(false, action);
 
         }
         [ServerRpc(RequireOwnership = false)]
-        private void TakeActionServerRpc(ServerRpcParams srp, PlayerAction action)
+        private void TakeActionServerRpc(PlayerAction action, ServerRpcParams srp)
         {
-            TakeActionClientRpc(new()
-            {
-                Send = new()
+            TakeActionClientRpc(action,
+                new()
                 {
-                    TargetClientIds = new List<ulong> { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+                    Send = new()
+                    {
+                        TargetClientIds = new List<ulong> { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+                    }
                 }
-            },
-            action
             );
         }
     }

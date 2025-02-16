@@ -281,7 +281,7 @@ public class TMMStoneLobby : MonoBehaviour
             }
             else
             {
-                Debug.Log("Not Enoug players to start a game");//TODO: report in UI
+                Debug.Log("Not Enough players to start a game");//TODO: report in UI
             }
         }
     }
