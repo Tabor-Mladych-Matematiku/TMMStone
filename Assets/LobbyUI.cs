@@ -15,22 +15,39 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] Transform container;
     [SerializeField] Button refreshButton;
     [SerializeField] TMP_InputField CreateLobbyName;
+    [SerializeField] TMP_InputField PlayerNameField;
+    public string PlayerName
+    {
+        get {
+            string r = PlayerNameField.text.Trim();
+#if UNITY_ANDROID
+        if (r == "") r = "Androidymous";
+#else
+        if (r == "") r = "An only mouse";
+#endif
+            return r;
+        }
+    }
     private void Awake()
     {
         Instance = this;
     }
     void Start()
     {
-        
-        CreateLobbyButton.onClick.AddListener(()=> {
+
+        CreateLobbyButton.onClick.AddListener(() =>
+        {
             string n = CreateLobbyName.text.Trim();
             if (n == "") n = "NoName";
-            TMMStoneLobby.Instance.CreateLobby(PrivacyToggle.isOn,n);
-        
+            TMMStoneLobby.Instance.CreateLobby(PrivacyToggle.isOn, n);
+            JoinedLobbyUI.Instance.Show();
+
         });
-        refreshButton.onClick.AddListener( RefreshButtonClick);
+        refreshButton.onClick.AddListener(RefreshButtonClick);
         TMMStoneLobby.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
     }
+    public void Hide() => gameObject.SetActive(false);
+    public void Show() => gameObject.SetActive(true);
     void RefreshButtonClick()
     {
         TMMStoneLobby.Instance.ListLobbies();
@@ -39,7 +56,6 @@ public class LobbyUI : MonoBehaviour
     {
         UpdateLobbyList(args.lobbyList);
     }
-    // Update is called once per frame
     void UpdateLobbyList(List<Lobby> lobbyList)
     {
         foreach (Transform lobby in container)
@@ -50,7 +66,7 @@ public class LobbyUI : MonoBehaviour
 
         foreach (Lobby lobby in lobbyList)
         {
-            var instance = Instantiate(lobbyListingPrefab,container);
+            var instance = Instantiate(lobbyListingPrefab, container);
             LobbyListingUI ui = instance.GetComponent<LobbyListingUI>();
             Debug.Log(ui.ToString());
             ui.Initialize(lobby);

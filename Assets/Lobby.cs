@@ -11,6 +11,12 @@ public class TMMStoneLobby : MonoBehaviour
 {
     public static TMMStoneLobby Instance { get; private set; }
 
+    public event EventHandler<LobbyUpdateEventArgs> OnLobbyUpdated;
+    public class LobbyUpdateEventArgs
+    {
+        public Lobby lobby;
+    }
+
     public event EventHandler<LobbyEventArgs> OnLobbyListChanged;
     public class LobbyEventArgs : EventArgs
     {
@@ -18,10 +24,18 @@ public class TMMStoneLobby : MonoBehaviour
     }
 
     private Lobby hostLobby;
-    private Lobby joinedLobby;
+    private Lobby jl;
+    private Lobby joinedLobby
+    {
+        get => jl; set
+        {
+            jl = value;
+            OnLobbyUpdated?.Invoke(this, new() { lobby = jl });
+        }
+    }
     private float heartbeattimer;
     private float lobbyupdatetimer;
-    private string PlayerName;
+    //private string PlayerName = "NotImplemented";//We are pulling it from UI
     private const string KEY_START_GAME = nameof(KEY_START_GAME);
     private async void Start()
     {
@@ -56,7 +70,7 @@ public class TMMStoneLobby : MonoBehaviour
     }
     private bool IsPlayerInLobby()
     {
-        if(joinedLobby!=null && joinedLobby.Players != null)
+        if (joinedLobby != null && joinedLobby.Players != null)
         {
             foreach (Player player in joinedLobby.Players)
             {
@@ -72,17 +86,18 @@ public class TMMStoneLobby : MonoBehaviour
             lobbyupdatetimer -= Time.deltaTime;
             if (lobbyupdatetimer < 0f)
             {
-                lobbyupdatetimer = 2f;
+                lobbyupdatetimer = 1.1f;
                 joinedLobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
                 if (!IsPlayerInLobby())
                 {
                     joinedLobby = null;
                 }
-                if (joinedLobby.Data[KEY_START_GAME].Value != "0")
+                else if (joinedLobby.Data[KEY_START_GAME].Value != "0")
                 {
                     if (!IsLobbyHost())
                     {
                         TMMStoneRelay.Instance.JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
+                        LobbyUI.Instance.Hide();
                     }
                     joinedLobby = null;
                 }
@@ -104,7 +119,7 @@ public class TMMStoneLobby : MonoBehaviour
             };
             hostLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, 2, opts);
             joinedLobby = hostLobby;
-            Debug.Log("Lobbying!: " + hostLobby.Name + " Id: " + hostLobby.Id + " Code: " + hostLobby.LobbyCode);
+            Debug.Log("Hosting lobby: " + hostLobby.Name + " Id: " + hostLobby.Id + " Code: " + hostLobby.LobbyCode);
             PrintPlayers(hostLobby);
         }
         catch (LobbyServiceException e)
@@ -125,7 +140,7 @@ public class TMMStoneLobby : MonoBehaviour
             };
 
             QueryResponse query = await Lobbies.Instance.QueryLobbiesAsync(options);
-            OnLobbyListChanged?.Invoke(this,new LobbyEventArgs { lobbyList = query.Results });
+            OnLobbyListChanged?.Invoke(this, new LobbyEventArgs { lobbyList = query.Results });
         }
         catch (LobbyServiceException e)
         {
@@ -141,7 +156,6 @@ public class TMMStoneLobby : MonoBehaviour
                 Player = GetPlayer()
             });
             PrintPlayers(joinedLobby);
-            //TODO: Fire event so we know that we should change UI and stuff
         }
         catch (LobbyServiceException e)
         {
@@ -187,7 +201,7 @@ public class TMMStoneLobby : MonoBehaviour
         {
             Data = new Dictionary<string, PlayerDataObject>()
                     {
-                        { "PlayerName",new(PlayerDataObject.VisibilityOptions.Member,PlayerName) }
+                        { "PlayerName",new(PlayerDataObject.VisibilityOptions.Member,LobbyUI.Instance.PlayerName) }
                     }
         };
     }
@@ -199,21 +213,18 @@ public class TMMStoneLobby : MonoBehaviour
             Debug.Log(player.Id);
         }
     }
-    private async void UpdateLobby()
+    public async void UpdateLobby(UpdateLobbyOptions newopts)
     {
         try
         {
-            hostLobby = await Lobbies.Instance.UpdateLobbyAsync(hostLobby.Id, new()
-            {
-                //To Update Lobby stuff
-            });
+            hostLobby = await Lobbies.Instance.UpdateLobbyAsync(hostLobby.Id, newopts);
         }
         catch (LobbyServiceException e)
         {
             Debug.Log(e);
         }
     }
-    private async void LeaveLobby()
+    public async void LeaveLobby()
     {
         try
         {
@@ -237,27 +248,36 @@ public class TMMStoneLobby : MonoBehaviour
             Debug.Log(e);
         }
     }
-    public bool IsLobbyHost()=> joinedLobby != null && joinedLobby.HostId==AuthenticationService.Instance.PlayerId;
-    
+    public bool IsLobbyHost() => joinedLobby != null && joinedLobby.HostId == AuthenticationService.Instance.PlayerId;
+
     public async void StartGame()
     {
         if (IsLobbyHost())
         {
-            try
-            {
-                string relaycode = await TMMStoneRelay.Instance.CreateRelay();
-                Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new()
+            if (joinedLobby.Players.Count == joinedLobby.MaxPlayers) { 
+                try
                 {
-                    Data = new() {
+                    string relaycode = await TMMStoneRelay.Instance.CreateRelay();
+                    Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new()
+                    {
+                        Data = new() {
                         {KEY_START_GAME,new (DataObject.VisibilityOptions.Member,relaycode) }
                     }
-                });
-                joinedLobby = lobby;
+                    });
+                    joinedLobby = lobby;
+                    LobbyUI.Instance.Hide();
+                    JoinedLobbyUI.Instance.Hide();
+                }
+                catch (LobbyServiceException e)
+                {
+                    Debug.Log(e);
+                }
             }
-            catch(LobbyServiceException e)
+            else
             {
-                Debug.Log(e);
+                Debug.Log("Not Enoug players to start a game");//TODO: report in UI
             }
         }
     }
 }
+

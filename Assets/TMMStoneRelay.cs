@@ -49,9 +49,11 @@ public class TMMStoneRelay : MonoBehaviour
     {
         try
         {
+            Debug.Log("JoiningRelay w: " + code);
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(code);
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new(joinAllocation, "dtls"));
+            NetworkManager.Singleton.StartClient();
         }
         catch (RelayServiceException e) { Debug.Log(e); }
     }

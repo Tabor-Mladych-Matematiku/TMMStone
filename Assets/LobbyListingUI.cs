@@ -15,6 +15,6 @@ public class LobbyListingUI : MonoBehaviour
     {
         playerCount.text = lobby.Players.Count.ToString() + "/" + lobby.MaxPlayers;
         Name.text = lobby.Name;
-        joinButton.onClick.AddListener(() => TMMStoneLobby.Instance.JoinLobby(lobby.Id));
+        joinButton.onClick.AddListener(() => JoinedLobbyUI.Instance.JoinButtonClicked(lobby.Id));
     }
 }
