@@ -73,7 +73,8 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 /Assets/TextMesh Pro/
+#Board:
 /Assets/BaseGraphics/
-/Assets/Generated/
+#Cards:
 /Assets/Resources/CardData/
 
