@@ -390,7 +390,7 @@ namespace CardGame
                 }
                 if (!HandSlots[who][i].occupied)
                 {
-                    c.Hidden = false;
+                    c.Hidden = !who;
                     HandSlots[who][i].occupied = true;
                     c.transform.parent = HandSlots[who][i].pos;
                     c.transform.localPosition = new Vector3(0, 0, -1);

@@ -38,14 +38,19 @@ namespace CardGame
         Sprite cardBack;
         bool hidden;
         public Vector3 standardScale;
-        readonly static Dictionary<string,string> expansionMapping = new () {//Maps JSON name to folder name
+        readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
             {"Základ", "V2"},
             {"PTMM","GULAG" }
         };
-        public bool Hidden { get => hidden; set {  hidden = value;
+        public bool Hidden
+        {
+            get => hidden; set
+            {
+                hidden = value;
                 if (hidden) GetComponent<SpriteRenderer>().sprite = cardBack;
                 else GetComponent<SpriteRenderer>().sprite = face;
-            } }
+            }
+        }
         // Start is called before the first frame update
         private void Start()
         {
@@ -67,9 +72,10 @@ namespace CardGame
                     break;
             }
             string expansion = "Tokeny";
-            if(expansionMapping.ContainsKey(data.expansion))expansion = expansionMapping[data.expansion];
+            if (expansionMapping.ContainsKey(data.expansion)) expansion = expansionMapping[data.expansion];
             Sprite sprite = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
-            if (sprite != null) {
+            if (sprite != null)
+            {
                 face = sprite;
                 GetComponent<SpriteRenderer>().sprite = face;
             }
@@ -81,15 +87,16 @@ namespace CardGame
         }
         private void OnMouseUp()
         {
-            if (GameManager.Instance.cursor == this && cardType==CardType.Minion)
+            if (GameManager.Instance.cursor == this)
             {
-                if(GameManager.Instance.highlightedSlot == null) { //No target
-                    transform.localPosition = new Vector3(0, 0, -1);
-                    GameManager.Instance.cursor = null;
+                if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)
+                {//We have source and target
+                    GameManager.Instance.OnUIPlayMinion(this);
                 }
                 else
-                {
-                    GameManager.Instance.OnUIPlayMinion(this);
+                {//Reset
+                    transform.localPosition = new Vector3(0, 0, -1);
+                    GameManager.Instance.cursor = null;
                 }
             }
         }
@@ -104,7 +111,7 @@ namespace CardGame
         public void OnMouseEnter()
         {
             if (Hidden || GameManager.Instance.cursor != null) return;
-            transform.localScale = standardScale*1.2f;
+            transform.localScale = standardScale * 1.2f;
             Debug.Log("Mice entered");
             //TODO better highlight for reading
         }
