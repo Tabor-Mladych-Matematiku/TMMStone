@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.UI;
-using static System.Collections.Specialized.BitVector32;
+using static CardGame.GameManager;
 
 namespace CardGame
 {
@@ -22,121 +21,14 @@ namespace CardGame
             {
                 n--;
                 int k = UnityEngine.Random.Range(0, n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
+                (list[n], list[k]) = (list[k], list[n]);
             }
         }
-    }
-    [System.Serializable]
-    public class CardSlot
-    {
-        public Transform pos;
-        public bool occupied;
-        public Vector3 Position { get => pos.position; }
+
     }
 
     public class GameManager : NetworkBehaviour
     {
-        public class Deck : IList<Card>
-        {
-            List<Card> deck = new();
-            public TextMeshProUGUI CardCounter;
-            public CardSlot cardSlot;//Its not ideal that we are checking the if we should enable the image in every function but I don't have a better reasonable idea rn.
-            public int Count => deck.Count;
-
-            public bool IsReadOnly => false;
-
-            public Card this[int index] { get => deck[index]; set => deck[index] = value; }
-
-            public void Add(Card c)
-            {
-                deck.Add(c);
-                c.transform.parent = cardSlot.pos;
-                CardCounter.text = deck.Count.ToString();
-            }
-            public Card PopFirst()
-            {
-                if (deck.Count == 0) return null;
-                Card c = deck.First();
-                deck.RemoveAt(0);
-                c.transform.parent = null;
-                CardCounter.text = deck.Count.ToString();
-                return c;
-            }
-
-            public int IndexOf(Card item) => deck.IndexOf(item);
-
-            /// <summary>
-            /// Inserts and adds the card as child
-            /// </summary>
-            /// <param name="index"></param>
-            /// <param name="item"></param>
-            public void Insert(int index, Card item)
-            {
-                deck.Insert(index, item);
-                item.transform.parent = cardSlot.pos;
-                CardCounter.text = deck.Count.ToString();
-            }
-            /// <summary>
-            /// Destroys the card from existence
-            /// </summary>
-            /// <param name="index"></param>
-            public void RemoveAt(int index)
-            {
-                deck.RemoveAt(index);
-                Destroy(deck.ElementAt(index).gameObject);
-                CardCounter.text = deck.Count.ToString();
-            }
-            /// <summary>
-            /// Destroys all cards in deck
-            /// </summary>
-            public void Clear()
-            {
-                foreach (var item in deck)
-                {
-                    Destroy(item.gameObject);
-                }
-                deck.Clear();
-                CardCounter.text = deck.Count.ToString();
-            }
-
-            public bool Contains(Card item) => deck.Contains(item);
-
-            public void CopyTo(Card[] array, int arrayIndex)
-            {
-                throw new NotImplementedException();
-            }
-            /// <summary>
-            /// Removes Card from deck. Does not destroy Card but purges its parent
-            /// </summary>
-            /// <param name="item"></param>
-            /// <returns></returns>
-            public bool Remove(Card item)
-            {
-                if (deck.Remove(item))
-                {
-                    item.transform.parent = null;
-                    CardCounter.text = deck.Count.ToString();
-                    return true;
-                }
-                return false;
-            }
-
-            public IEnumerator<Card> GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-        }
-        public class Grave
-        {
-            public int count;
-        }
         public struct PlayerAction : INetworkSerializable
         {
             public enum ActionType
@@ -144,7 +36,7 @@ namespace CardGame
                 Play,
                 Attack
             }
-            private int c;
+            private int c;//Needed for serialization
             public int Source { readonly get => c; private set => c = value; }
             private ActionType actionType;
             public ActionType Actiontype { readonly get => actionType; private set => actionType = value; }
@@ -178,37 +70,42 @@ namespace CardGame
                 serializer.SerializeValue(ref slot);
             }
         }
-
+        public enum P
+        {
+            P1,
+            P2
+        }
         public static GameManager Instance { get; private set; }
-        Deck deck;
-        Deck Oppdeck;
-        Grave grave = new();
-        Grave Oppgrave = new();
-        public Transform OwnMin;
-        public Transform OppMin;
-        public CardSlot[] minionSlotsOwn;
-        public CardSlot[] minionSlotsOpp;
-        public CardSlot[] EffSlotsOwn;
-        public CardSlot[] EffSlotsOpp;
-        public CardSlot[] HandSlotsOwn;
-        public CardSlot[] HandSlotsOpp;
-        private Dictionary<bool, CardSlot[]> HandSlots;
-        public CardSlot Field;
-        public CardSlot DeckSlot;
-        public CardSlot OppDeckSlot;
-        public CardSlot GraveSlot;
-        public CardSlot OppGraveSlot;
-        public Transform OwnHPLabel;
-        public Transform OppHPLabel;
-        public Transform OwnCardCounter;
-        public Transform OppCardCounter;
+        [SerializeField] Deck OwnDeck;
+        [SerializeField] Deck OppDeck;
+        [SerializeField] Grave OwnGrave;
+        [SerializeField] Grave OppGrave;
+        private Dictionary<P, Deck> decks;
+        public Dictionary<P, Grave> graves;
+        [SerializeField] Transform OwnMin;
+        [SerializeField] Transform OppMin;
+        Dictionary<P, CardSlot[]> minionSlots;
+        [SerializeField] Transform OwnEff;
+        [SerializeField] Transform OppEff;
+        Dictionary<P, CardSlot[]> EffSlots;
+        [SerializeField] Transform OwnHand;
+        [SerializeField] Transform OppHand;
+         Dictionary<P, CardSlot[]> HandSlots;
+        [SerializeField] CardSlot Field;
+        [SerializeField] Transform OwnHPLabel;
+        [SerializeField] Transform OppHPLabel;
+        [SerializeField] Transform OwnCardCounter;
+        [SerializeField] Transform OppCardCounter;
         public Dictionary<int, CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
         private const int maxMinionSlots = 7;
+        private const int maxEffSlots = 6;
+        private const int maxHandSlots = 10;
 
         int health;
         int opphealth;
+        public Dictionary<P, int> Healths;
         public int Health
         {
             get => health; set
@@ -225,11 +122,15 @@ namespace CardGame
                 OppHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = OppHealth.ToString();
             }
         }
-        public int MaxHealth = 30;
-        public int OppMaxHealth = 30;
+        public Dictionary<P, int> MaxHealths = new() {
+            {P.P1,30 },
+            {P.P2,30},
+        };
 
-        public int OwnFatigueVal = 1;
-        public int OppFatigueVal = 1;
+        public Dictionary<P, int> FatigueVals = new() {
+            {P.P1,1 },
+            {P.P2,1},
+        };
 
         public int TurnCount = 0;//This is not Round counter - tzn this is double of RoundCount
 
@@ -242,14 +143,14 @@ namespace CardGame
             {
                 int slot = -1;
                 if (highlightedSlot == null) return slot;
-                for (int i = 0; i < minionSlotsOwn.Length; i++)
+                for (int i = 0; i < maxMinionSlots; i++)
                 {
-                    if (minionSlotsOwn[i].pos == highlightedSlot) { slot = i; break; }
+                    if (minionSlots[P.P1][i].transform == highlightedSlot) { slot = i; break; }
                 }
-                if(slot!=-1)return slot;
-                for (int i = 0; i < minionSlotsOwn.Length; i++)
+                if (slot != -1) return slot;
+                for (int i = 0; i < maxMinionSlots; i++)
                 {
-                    if (minionSlotsOpp[i].pos == highlightedSlot) { slot = maxMinionSlots+i; break; }
+                    if (minionSlots[P.P2][i].transform == highlightedSlot) { slot = maxMinionSlots + i; break; }
                 }
                 return slot;
             }
@@ -259,8 +160,7 @@ namespace CardGame
         {
             get
             {
-                if (IsServer) return ServerOnTurn.Value;
-                return !ServerOnTurn.Value;
+                return IsServer == ServerOnTurn.Value;
             }
             set
             {
@@ -271,17 +171,60 @@ namespace CardGame
         private void Awake()
         {
             Instance = this;
+            Healths = new() {
+                {P.P1,Health },
+                {P.P2,OppHealth}
+            };
+            EffSlots = new()
+            {
+                {P.P1,new CardSlot[maxEffSlots] },
+                {P.P2,new CardSlot[maxEffSlots] }
+            };
+            minionSlots = new()
+            {
+                {P.P1,new CardSlot[maxMinionSlots] },
+                {P.P2,new CardSlot[maxMinionSlots] }
+            };
             HandSlots = new()
             {
-                {true,HandSlotsOwn },
-                {false,HandSlotsOpp }
+                {P.P1,new CardSlot[maxHandSlots] },
+                {P.P2,new CardSlot[maxHandSlots] }
+            };
+        }
+        private void Start()
+        {
+            for(int i = 0; i < maxMinionSlots; i++)
+            {
+                minionSlots[P.P1][i] = OwnMin.GetChild(i).GetComponent<CardSlot>();
+                minionSlots[P.P2][i] = OppMin.GetChild(i).GetComponent<CardSlot>();
+            }
+            for (int i = 0; i < maxEffSlots; i++)
+            {
+                EffSlots[P.P1][i] = OwnEff.GetChild(i).GetComponent<CardSlot>();
+                EffSlots[P.P2][i] = OppEff.GetChild(i).GetComponent<CardSlot>();
+            }
+            for (int i = 0; i < maxHandSlots; i++)
+            {
+                HandSlots[P.P1][i] = OwnHand.GetChild(i).GetComponent<CardSlot>();
+                HandSlots[P.P2][i] = OppHand.GetChild(i).GetComponent<CardSlot>();
+            }
+            decks = new()
+            {
+                {P.P1,OwnDeck },
+                {P.P2,OppDeck}
+            };
+            graves = new()
+            {
+                {P.P1,OwnGrave },
+                {P.P2,OppGrave}
             };
         }
         private void Update()
         {
-            if (cursor != null) {
+            if (cursor != null)
+            {
                 Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                cursor.transform.position = new(mousepos.x,mousepos.y,-1);
+                cursor.transform.position = new(mousepos.x, mousepos.y, -1);
             }
         }
 
@@ -300,18 +243,18 @@ namespace CardGame
                 StartTurn();
 
             };
-            deck = new() { CardCounter = OwnCardCounter.GetComponent<TextMeshProUGUI>(), cardSlot = DeckSlot };
-            Oppdeck = new() { CardCounter = OppCardCounter.GetComponent<TextMeshProUGUI>(), cardSlot = OppDeckSlot };
             //Load cards
             LoadCardDatabase();
             //Load decks
             var OwnDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO import from json in PlayerData
-            LoadDeck(deck, OwnDeckList);
+            LoadDeck(decks[P.P1], OwnDeckList);
             var OppDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO get from Lobby
-            LoadDeck(Oppdeck, OppDeckList);
+            LoadDeck(decks[P.P2], OppDeckList);
             //StartGame stuff
-            Health = MaxHealth;
-            OppHealth = OppMaxHealth;
+            foreach (P p in new P[] { P.P1, P.P2 })
+            {
+                Healths[p] = MaxHealths[p];
+            }
 
             //Animations (Who against who)
 
@@ -319,9 +262,11 @@ namespace CardGame
             //
             //Cointoss anim
             for (int i = 0; i < 3; i++)
-                DrawCard(OnTurn);
+                if (OnTurn) DrawCard(P.P1);
+                else DrawCard(P.P2);
             for (int i = 0; i < 4; i++)
-                DrawCard(!OnTurn);
+                if (!OnTurn) DrawCard(P.P1);
+                else DrawCard(P.P2);
             //Mulligan
             StartTurn();
         }
@@ -331,7 +276,7 @@ namespace CardGame
             {
                 var c = Instantiate(CardPrefab);
                 Card Cardscript = c.GetComponent<Card>();
-                Cardscript.initialize(CardDatabase[(int)item]);
+                Cardscript.Initialize(CardDatabase[(int)item]);
                 Cardscript.Hidden = true;
                 d.Add(Cardscript);
                 c.transform.localPosition = new Vector3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1), -1);
@@ -339,36 +284,32 @@ namespace CardGame
         }
         public void StartTurn()
         {
+            TurnCount++;
             if (!OnTurn)
             {
                 EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "Opponents Turn";
                 EndTurnBtn.interactable = false;
+                DrawCard(P.P2);
             }
             else
             {
                 EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "End Turn";
                 EndTurnBtn.interactable = true;
+                DrawCard(P.P1);
             }
-            TurnCount++;
-            DrawCard(OnTurn);
+
+
             if (OnTurn)
             {
                 //Enable actions etc.
             }
         }
-        public void DrawCard(bool who)//We are true opp is false.
+        public void DrawCard(P who)//We are true opp is false.
         {
 
             //We draw card
-            Card card;
-            if (who)
-            {
-                card = deck.PopFirst();
-            }
-            else
-            {
-                card = Oppdeck.PopFirst();
-            }
+            Card card = decks[who].PopFirst();
+
             if (card == null)
             {
                 Fatigue(who);
@@ -379,7 +320,7 @@ namespace CardGame
             }
 
         }
-        public void AddCardToHand(bool who, Card c)
+        public void AddCardToHand(P who, Card c)
         {
             for (int i = 0; i < 11; i++)
             {
@@ -388,51 +329,27 @@ namespace CardGame
                     Discard(c, who);
                     break;
                 }
-                if (!HandSlots[who][i].occupied)
+                if (!HandSlots[who][i].Occupied)
                 {
-                    c.Hidden = !who;
-                    HandSlots[who][i].occupied = true;
-                    c.transform.parent = HandSlots[who][i].pos;
+                    c.Hidden = who != P.P1;
+                    HandSlots[who][i].PlaceCard(c);
                     c.transform.localPosition = new Vector3(0, 0, -1);
                     c.standardScale = c.transform.localScale;
                     break;
-                }/*
-                else if (!who && !HandSlotsOpp[i].occupied)
-                {
-                    c.Hidden = true;
-                    HandSlotsOpp[i].occupied = true;
-                    c.transform.parent = HandSlotsOpp[i].pos;
-                    c.transform.localPosition = new Vector3(0, 0, 0);
-                    c.standardScale = c.transform.localScale;
-                    break;
-                }*/
-
+                }
             }
         }
-        public void Discard(Card c, bool who)
+        public void Discard(Card c, P who)
         {
             c.OnDiscard();
             AddToGrave(c, who);
         }
-        public void Fatigue(bool who)
+        public void Fatigue(P who)
         {
-            if (who)
-            {
-                Health -= OwnFatigueVal;
-                OwnFatigueVal++;
-            }
-            else
-            {
-                OppHealth -= OppFatigueVal;
-                OppFatigueVal++;
-            }
+            Healths[who] -= FatigueVals[who];
+            FatigueVals[who]++;
         }
-        public void ShuffleDeck(bool who)
-        {
-            if (who) deck.Shuffle();
-            else Oppdeck.Shuffle();
-
-        }
+        public void ShuffleDeck(P who) => decks[who].Shuffle();
         public void EndTurnEffects()
         {
             //Do end turn effects on my cards: (mins,eff,hand). (End of each turn will not be handled. I cannot be bothered)
@@ -472,37 +389,28 @@ namespace CardGame
                 CardDatabase.Add(int.Parse(pair.Key), data);
             }
         }
-        void AddToGrave(Card c, bool who)
+        void AddToGrave(Card c, P who)
         {
-            if (who)
-            {
-                c.transform.position = GraveSlot.Position;
-                grave.count++;
-                c.transform.position -= new Vector3(0, 0, ((float)grave.count) / 100);
-            }
-            else
-            {
-                c.transform.position = OppGraveSlot.Position;
-                Oppgrave.count++;
-                c.transform.position -= new Vector3(0, 0, ((float)Oppgrave.count) / 100);
-            }
+            graves[who].Add(c);
+            c.transform.position -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
+
 
         }
         public void OnUIPlayMinion(Card c)
         {
             int cardIndex = -1;
-            for (int i = 0; i < HandSlotsOwn.Length; i++)
+            for (int i = 0; i < HandSlots[P.P1].Length; i++)
             {
-                if(c== HandSlotsOwn[i].pos.GetComponentInChildren<Card>())
+                if (c == HandSlots[P.P1][i].GetCard())
                 {
-                    cardIndex= i;
+                    cardIndex = i;
                 }
             }
             if (cardIndex < 0) return;
 
-            
 
-            PlayerAction action = PlayerAction.PlayCardAction(cardIndex,HighlightedSlotIndex);
+
+            PlayerAction action = PlayerAction.PlayCardAction(cardIndex, HighlightedSlotIndex);
             OnUITakeAction(action);
         }
         public void OnUIAttackMinion()
@@ -510,7 +418,7 @@ namespace CardGame
             throw new NotImplementedException();
             int cardIndex;
             int slot;
-            PlayerAction action = PlayerAction.AttackAction(cardIndex,slot);
+            PlayerAction action = PlayerAction.AttackAction(cardIndex, slot);
             OnUITakeAction(action);
         }
         public void OnUICastSpell()
@@ -524,7 +432,7 @@ namespace CardGame
         public void OnUITakeAction(PlayerAction action)
         {
             if (!ValidateAction(action)) return;
-            TakeAction(true, action);//Play it out
+            TakeAction(P.P1, action);//Play it out
             TakeActionServerRpc(action, new());//Send to opponent
         }
         public bool IsCardPlayable(Card card)
@@ -544,12 +452,9 @@ namespace CardGame
         /// </summary>
         /// <param name="who"> True means us. False means opponent</param>
         /// <param name="action"></param>
-        void TakeAction(bool who, PlayerAction action)
+        void TakeAction(P who, PlayerAction action)
         {
-            if (who)
-            {
 
-            }
         }
         [ServerRpc(RequireOwnership = false)]
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
@@ -573,7 +478,7 @@ namespace CardGame
 
 
             //TODO simulate opponents action.
-            TakeAction(false, action);
+            TakeAction(P.P2, action);
 
         }
         [ServerRpc(RequireOwnership = false)]

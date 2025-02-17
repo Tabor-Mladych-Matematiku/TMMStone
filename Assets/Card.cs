@@ -56,7 +56,7 @@ namespace CardGame
         {
             standardScale = transform.localScale;
         }
-        public void initialize(CardData data)
+        public void Initialize(CardData data)
         {
             mana = data.cost;
             cardname = data.name;

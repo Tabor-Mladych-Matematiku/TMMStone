@@ -25,7 +25,7 @@ public class TMMStoneLobby : MonoBehaviour
 
     private Lobby hostLobby;
     private Lobby jl;
-    private Lobby joinedLobby
+    private Lobby JoinedLobby
     {
         get => jl; set
         {
@@ -37,10 +37,6 @@ public class TMMStoneLobby : MonoBehaviour
     private float lobbyupdatetimer;
     private string PlayerName { get => LobbyUI.Instance.PlayerName; }
     private const string KEY_START_GAME = nameof(KEY_START_GAME);
-    private void Start()
-    {
-        //Authenticate();
-    }
     public async void Authenticate()
     {
         InitializationOptions opts = new();
@@ -76,9 +72,9 @@ public class TMMStoneLobby : MonoBehaviour
     }
     private bool IsPlayerInLobby()
     {
-        if (joinedLobby != null && joinedLobby.Players != null)
+        if (JoinedLobby != null && JoinedLobby.Players != null)
         {
-            foreach (Player player in joinedLobby.Players)
+            foreach (Player player in JoinedLobby.Players)
             {
                 if (player.Id == AuthenticationService.Instance.PlayerId) return true;
             }
@@ -87,25 +83,25 @@ public class TMMStoneLobby : MonoBehaviour
     }
     private async void UpdateLobbyData()
     {
-        if (joinedLobby != null)
+        if (JoinedLobby != null)
         {
             lobbyupdatetimer -= Time.deltaTime;
             if (lobbyupdatetimer < 0f)
             {
                 lobbyupdatetimer = 1.1f;
-                joinedLobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
+                JoinedLobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
                 if (!IsPlayerInLobby())
                 {
-                    joinedLobby = null;
+                    JoinedLobby = null;
                 }
-                else if (joinedLobby.Data[KEY_START_GAME].Value != "0")
+                else if (JoinedLobby.Data[KEY_START_GAME].Value != "0")
                 {
                     if (!IsLobbyHost())
                     {
-                        TMMStoneRelay.Instance.JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
+                        TMMStoneRelay.Instance.JoinRelay(JoinedLobby.Data[KEY_START_GAME].Value);
                         LobbyUI.Instance.Hide();
                     }
-                    joinedLobby = null;
+                    JoinedLobby = null;
                 }
             }
         }
@@ -124,7 +120,7 @@ public class TMMStoneLobby : MonoBehaviour
                 }
             };
             hostLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, 2, opts);
-            joinedLobby = hostLobby;
+            JoinedLobby = hostLobby;
             Debug.Log("Hosting lobby: " + hostLobby.Name + " Id: " + hostLobby.Id + " Code: " + hostLobby.LobbyCode);
             PrintPlayers(hostLobby);
         }
@@ -157,11 +153,11 @@ public class TMMStoneLobby : MonoBehaviour
     {
         try
         {
-            joinedLobby = await Lobbies.Instance.JoinLobbyByIdAsync(LobbyId, new()
+            JoinedLobby = await Lobbies.Instance.JoinLobbyByIdAsync(LobbyId, new()
             {
                 Player = GetPlayer()
             });
-            PrintPlayers(joinedLobby);
+            PrintPlayers(JoinedLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -172,13 +168,13 @@ public class TMMStoneLobby : MonoBehaviour
     {
         try
         {
-            joinedLobby = await Lobbies.Instance.JoinLobbyByCodeAsync(code
+            JoinedLobby = await Lobbies.Instance.JoinLobbyByCodeAsync(code
                 , new()
                 {
                     Player = GetPlayer()
                 }
                 );
-            PrintPlayers(joinedLobby);
+            PrintPlayers(JoinedLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -189,12 +185,12 @@ public class TMMStoneLobby : MonoBehaviour
     {
         try
         {
-            joinedLobby = await LobbyService.Instance.QuickJoinLobbyAsync(new()
+            JoinedLobby = await LobbyService.Instance.QuickJoinLobbyAsync(new()
             {
                 Player = GetPlayer()
             });
             Debug.Log("QuickJoined lobby!");
-            PrintPlayers(joinedLobby);
+            PrintPlayers(JoinedLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -234,9 +230,9 @@ public class TMMStoneLobby : MonoBehaviour
     {
         try
         {
-            await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
+            await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, AuthenticationService.Instance.PlayerId);
             hostLobby = null;
-            joinedLobby = null;
+            JoinedLobby = null;
         }
         catch (LobbyServiceException e)
         {
@@ -247,30 +243,30 @@ public class TMMStoneLobby : MonoBehaviour
     {
         try
         {
-            await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, joinedLobby.Players[1].Id);
+            await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, JoinedLobby.Players[1].Id);
         }
         catch (LobbyServiceException e)
         {
             Debug.Log(e);
         }
     }
-    public bool IsLobbyHost() => joinedLobby != null && joinedLobby.HostId == AuthenticationService.Instance.PlayerId;
+    public bool IsLobbyHost() => JoinedLobby != null && JoinedLobby.HostId == AuthenticationService.Instance.PlayerId;
 
     public async void StartGame()
     {
         if (IsLobbyHost())
         {
-            if (joinedLobby.Players.Count == joinedLobby.MaxPlayers) { 
+            if (JoinedLobby.Players.Count == JoinedLobby.MaxPlayers) { 
                 try
                 {
                     string relaycode = await TMMStoneRelay.Instance.CreateRelay();
-                    Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new()
+                    Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(JoinedLobby.Id, new()
                     {
                         Data = new() {
                         {KEY_START_GAME,new (DataObject.VisibilityOptions.Member,relaycode) }
                     }
                     });
-                    joinedLobby = lobby;
+                    JoinedLobby = lobby;
                     LobbyUI.Instance.Hide();
                     JoinedLobbyUI.Instance.Hide();
                 }
