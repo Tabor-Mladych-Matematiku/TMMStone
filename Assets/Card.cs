@@ -23,6 +23,8 @@ namespace CardGame
 
         public List<int> token_list;
         public bool not_for_sale;
+        public string attack;
+        public string health;
     }
     public class Card : MonoBehaviour
     {
@@ -38,6 +40,8 @@ namespace CardGame
         Sprite cardBack;
         bool hidden;
         public Vector3 standardScale;
+        public int[] stats;
+        [SerializeField]GameObject MinionPrefab;
         readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
             {"Základ", "V2"},
             {"PTMM","GULAG" }
@@ -65,6 +69,7 @@ namespace CardGame
                 case "Token":
                 case "Jednotka":
                     cardType = CardType.Minion;
+                    stats = new int[2] { int.Parse(data.attack), int.Parse(data.health) };
                     break;
                 case "Spelltoken":
                 case "Spell":
@@ -118,6 +123,15 @@ namespace CardGame
         public void OnMouseExit()
         {
             transform.localScale = standardScale;//we cleanup regardless just in case
+        }
+
+        internal void PlayMinion(CardSlot target)
+        {
+            GameObject g = Instantiate(MinionPrefab, target.transform);
+            g.transform.localPosition = new(0, 0, -1);
+            g.transform.localRotation = Quaternion.AngleAxis(-90, new(0, 0, 1));
+            Minion m = g.GetComponent<Minion>();
+            m.Initialize(this);
         }
     }
 }

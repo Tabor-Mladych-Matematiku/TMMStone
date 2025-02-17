@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MinionScript : MonoBehaviour {
+public class MinionSlot : CardSlot
+{
     Image image;
     Color highlightc = new(0, 1, 0, 0.3f);
 

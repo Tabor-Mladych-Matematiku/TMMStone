@@ -49,6 +49,9 @@ MonoBehaviour:
   mana: 0
   cardname: 
   cardType: 0
+  standardScale: {x: 0, y: 0, z: 0}
+  stats: 
+  MinionPrefab: {fileID: 8100851684474109220, guid: 1b7af396b06820a42888db8c27a6b3e1, type: 3}
 --- !u!212 &738436939582740320
 SpriteRenderer:
   m_ObjectHideFlags: 0

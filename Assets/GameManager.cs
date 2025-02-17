@@ -90,7 +90,7 @@ namespace CardGame
         Dictionary<P, CardSlot[]> EffSlots;
         [SerializeField] Transform OwnHand;
         [SerializeField] Transform OppHand;
-         Dictionary<P, CardSlot[]> HandSlots;
+        Dictionary<P, CardSlot[]> HandSlots;
         [SerializeField] CardSlot Field;
         [SerializeField] Transform OwnHPLabel;
         [SerializeField] Transform OppHPLabel;
@@ -193,7 +193,7 @@ namespace CardGame
         }
         private void Start()
         {
-            for(int i = 0; i < maxMinionSlots; i++)
+            for (int i = 0; i < maxMinionSlots; i++)
             {
                 minionSlots[P.P1][i] = OwnMin.GetChild(i).GetComponent<CardSlot>();
                 minionSlots[P.P2][i] = OppMin.GetChild(i).GetComponent<CardSlot>();
@@ -218,6 +218,8 @@ namespace CardGame
                 {P.P1,OwnGrave },
                 {P.P2,OppGrave}
             };
+            //Load cards
+            LoadCardDatabase();
         }
         private void Update()
         {
@@ -243,8 +245,7 @@ namespace CardGame
                 StartTurn();
 
             };
-            //Load cards
-            LoadCardDatabase();
+            
             //Load decks
             var OwnDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO import from json in PlayerData
             LoadDeck(decks[P.P1], OwnDeckList);
@@ -355,17 +356,35 @@ namespace CardGame
             //Do end turn effects on my cards: (mins,eff,hand). (End of each turn will not be handled. I cannot be bothered)
             //
         }
+        Dictionary<string, Dictionary<string, string>> ParseExtraJSON()
+        {
+            var extracardsJSONfile = Resources.Load<TextAsset>("CardData/extraCardData");
+            object decodedJSON = MiniJson.JsonDecode(extracardsJSONfile.text);
+            List<object> extraloadList = (List<object>)decodedJSON;
+            Dictionary<string, Dictionary<string, string>> extraData = new();
+            foreach (Dictionary<string, object> item in extraloadList)
+            {
+                string[] stats = ((string)item["Staty"]).Split("/");
+
+                extraData.Add((string)item["Název"], new() { { "Attack", stats[0] }, { "Health", stats[1] } });
+            }
+            return extraData;
+        }
         void LoadCardDatabase()
         {
             var cardsJSONfile = Resources.Load<TextAsset>("CardData/cards");
             object decodedJSON = MiniJson.JsonDecode(cardsJSONfile.text);
             var loadDict = (Dictionary<string, object>)decodedJSON;
 
+            Dictionary<string, Dictionary<string, string>> extraData = ParseExtraJSON();
+
             CardDatabase = new();
             foreach (var pair in loadDict)
             {
                 var value = (Dictionary<string, object>)pair.Value;
                 if (value["cost"] is String) continue;//We'll deal with you later (These are the ? costs)
+                string cardname = (string)value["name"];
+                if (cardname.EndsWith(" (token)")) { cardname = cardname.Substring(0, cardname.Length - " (token)".Length); }//Truly the most elegant solution. SarcasmError: maximum sarcasm value exceeded
                 CardData data = new()
                 {
                     name = (string)value["name"],
@@ -375,7 +394,9 @@ namespace CardGame
                     tag = (string)value["tag"],
                     Class = (string)value["Class"],
                     expansion = (string)value["expansion"],
-                    not_for_sale = (bool)value["not_for_sale"]
+                    not_for_sale = (bool)value["not_for_sale"],
+                    attack = extraData[cardname]["Attack"],
+                    health = extraData[cardname]["Health"]
 
                 };
                 if (((List<object>)value["token_list"]).Count != 0)
@@ -392,7 +413,7 @@ namespace CardGame
         void AddToGrave(Card c, P who)
         {
             graves[who].Add(c);
-            c.transform.position -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
+            c.transform.localPosition -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
 
 
         }
@@ -433,6 +454,7 @@ namespace CardGame
         {
             if (!ValidateAction(action)) return;
             TakeAction(P.P1, action);//Play it out
+            Debug.Log("About to call ServerRPC!");
             TakeActionServerRpc(action, new());//Send to opponent
         }
         public bool IsCardPlayable(Card card)
@@ -450,11 +472,28 @@ namespace CardGame
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="who"> True means us. False means opponent</param>
+        /// <param name="who"></param>
         /// <param name="action"></param>
         void TakeAction(P who, PlayerAction action)
         {
-
+            switch (action.Actiontype)
+            {
+                case PlayerAction.ActionType.Play:
+                    Card card = HandSlots[who][action.Source].PopCard();
+                    if (card.cardType == Card.CardType.Minion)
+                    {
+                        CardSlot target = minionSlots[who][action.Target];
+                        target.PlaceCard(card);
+                        card.PlayMinion(target);
+                        card.gameObject.SetActive(false);
+                    }
+                    break;
+                case PlayerAction.ActionType.Attack:
+                    throw new NotImplementedException("TakeAction Attack case not implemented");
+                    break;
+                default:
+                    throw new NotImplementedException("TakeActionCase not implemented");
+            }
         }
         [ServerRpc(RequireOwnership = false)]
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
@@ -473,7 +512,7 @@ namespace CardGame
             string message = "Action Recieved on: ";
             if (IsHost) message += "Host";
             else message += "Client";
-            message += " with ID: " + crp.Send.TargetClientIds[0];
+            //message += " with ID: " + crp.Send.TargetClientIds[0];
             Debug.Log(message);
 
 
@@ -484,12 +523,14 @@ namespace CardGame
         [ServerRpc(RequireOwnership = false)]
         private void TakeActionServerRpc(PlayerAction action, ServerRpcParams srp)
         {
+            ulong target = 1 - srp.Receive.SenderClientId;
+            Debug.Log("We are in the Server RPC! This guy called: "+ srp.Receive.SenderClientId + " Calling to: "+target);
             TakeActionClientRpc(action,
                 new()
                 {
                     Send = new()
                     {
-                        TargetClientIds = new List<ulong> { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+                        TargetClientIds = new List<ulong>() { target }//We wanna talk to the other un.
                     }
                 }
             );
