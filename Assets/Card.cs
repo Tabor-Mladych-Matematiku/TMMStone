@@ -59,6 +59,7 @@ namespace CardGame
         private void Start()
         {
             standardScale = transform.localScale;
+            face = GetComponent<SpriteRenderer>().sprite;
         }
         public void Initialize(CardData data)
         {
