@@ -1,0 +1,53 @@
+Things to polish:
+	Network:
+		Loading screens and such - hide the network accesses.
+		"Your opponent left"
+	Cards: 
+		OnMouseOver they show themselves Properly over whole screen.
+		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
+
+TODO:
+LobbyUI Polish
+Minions
+Spells
+Make a manacounter and manacosts.
+Prettier Menu
+Export json form website
+Import json in lobby selection
+	Display Deck Class in Lobby
+
+
+REQUIREMENTS:
+DONE:
+R1: PC and Android
+R3: Running smoothly
+C10: Netcode
+A16 - cloud services - Lobby,Relay
+
+UNSURE:
+R4: Adaptive screen - kinda
+R7: Using input system - I mean I imported it but its not like its useful
+R8: Using Universal rendering pipeline - ???
+
+
+TODO:
+R2: Sound
+R5: Plugin - TODO UI Toolkit and Dotween?
+R6: EditorExt: TODO: cardMakyr,displayer
+
+
+1 of the bellow:
+Likely:
+A2 - Adressables - Read on this shit but its like remote assets
+A6 - Tweens
+
+Possible:
+A3 - Particle system
+A8 - animations
+A10 - polish
+A12 - Good settings
+
+Proly no:
+A1 - Save&Load
+A7 - Splitscreen
+
