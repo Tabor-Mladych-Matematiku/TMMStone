@@ -8,6 +8,13 @@ public class CardSlot : MonoBehaviour
 {
     public bool Occupied { get => transform.childCount != 0; }
     public Vector3 Position { get => Position; }
+    public GameManager.P Owner {  get; set; }
+    public int index;
+    public void Initialize(GameManager.P owner,int index)
+    {
+        Owner = owner;
+        this.index = index;
+    }
     public void PlaceCard(Card c)
     {
         if (Occupied) throw new CardSlotException("Already occupied");

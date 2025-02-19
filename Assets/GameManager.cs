@@ -41,14 +41,17 @@ namespace CardGame
             private ActionType actionType;
             public ActionType Actiontype { readonly get => actionType; private set => actionType = value; }
             private int slot;
-            public int Target { readonly get => slot; private set => slot = value; }//Used for targetting various things
-            public static PlayerAction PlayCardAction(int card, int slot)
+            public int Slot { readonly get => slot; private set => slot = value; }
+            private int target;
+            public int Target { readonly get => target; private set => target = value; }//Used for targetting various things
+            public static PlayerAction PlayCardAction(int card, int target, int slot=-1)
             {
                 return new()
                 {
                     Source = card,
                     Actiontype = ActionType.Play,
-                    Target = slot
+                    Slot = slot,
+                    Target = target
                 };
 
             }
@@ -68,6 +71,7 @@ namespace CardGame
                 serializer.SerializeValue(ref c);
                 serializer.SerializeValue(ref actionType);
                 serializer.SerializeValue(ref slot);
+                serializer.SerializeValue(ref target);
             }
         }
         public enum P
@@ -201,16 +205,22 @@ namespace CardGame
             {
                 minionSlots[P.P1][i] = OwnMin.GetChild(i).GetComponent<CardSlot>();
                 minionSlots[P.P2][i] = OppMin.GetChild(i).GetComponent<CardSlot>();
+                minionSlots[P.P1][i].Initialize(P.P1, i);
+                minionSlots[P.P2][i].Initialize(P.P2,maxMinionSlots +  i);
             }
             for (int i = 0; i < maxEffSlots; i++)
             {
                 EffSlots[P.P1][i] = OwnEff.GetChild(i).GetComponent<CardSlot>();
                 EffSlots[P.P2][i] = OppEff.GetChild(i).GetComponent<CardSlot>();
+                EffSlots[P.P1][i].Initialize(P.P1, i);
+                EffSlots[P.P2][i].Initialize(P.P2, maxEffSlots + i);
             }
             for (int i = 0; i < maxHandSlots; i++)
             {
                 HandSlots[P.P1][i] = OwnHand.GetChild(i).GetComponent<CardSlot>();
                 HandSlots[P.P2][i] = OppHand.GetChild(i).GetComponent<CardSlot>();
+                HandSlots[P.P1][i].Initialize(P.P1, i);
+                HandSlots[P.P2][i].Initialize(P.P2, maxHandSlots + i);
             }
             decks = new()
             {
@@ -412,16 +422,16 @@ namespace CardGame
                 CardDatabase.Add(int.Parse(pair.Key), data);
             }
         }
-        void AddToGrave(Card c, P who)
+        public void AddToGrave(Card c, P who)
         {
             graves[who].Add(c);
             c.transform.localPosition -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
 
 
         }
-        public void OnUIPlayMinion(Card c)
+        public void OnUIPlayMinion(Card c,int minionSlotIndex,int target=-1)
         {
-            int cardIndex = -1;
+            /*int cardIndex = -1;
             for (int i = 0; i < HandSlots[P.P1].Length; i++)
             {
                 if (c == HandSlots[P.P1][i].GetCard())
@@ -429,11 +439,11 @@ namespace CardGame
                     cardIndex = i;
                 }
             }
-            if (cardIndex < 0) return;
+            if (cardIndex < 0) return;*/
 
 
 
-            PlayerAction action = PlayerAction.PlayCardAction(cardIndex, HighlightedSlotIndex);
+            PlayerAction action = PlayerAction.PlayCardAction(c.GetComponentInParent<CardSlot>().index,target, minionSlotIndex);
             OnUITakeAction(action);
         }
         public void OnUIAttackMinion()
@@ -444,11 +454,9 @@ namespace CardGame
             PlayerAction action = PlayerAction.AttackAction(cardIndex, slot);
             OnUITakeAction(action);
         }
-        public void OnUICastSpell()
+        public void OnUICastSpell(Card c, int target = -1)
         {
-            throw new NotImplementedException();
-            int cardIndex;
-            int target;
+            int cardIndex = c.GetComponentInParent<CardSlot>().index;
             PlayerAction action = PlayerAction.PlayCardAction(cardIndex, target);
             OnUITakeAction(action);
         }
@@ -456,7 +464,7 @@ namespace CardGame
         {
             if (!ValidateAction(action)) return;
             TakeAction(P.P1, action);//Play it out
-            Debug.Log("About to call ServerRPC!");
+            //Debug.Log("About to call ServerRPC!");
             TakeActionServerRpc(action, new());//Send to opponent
         }
         public bool IsCardPlayable(Card card)
@@ -484,11 +492,25 @@ namespace CardGame
                     Card card = HandSlots[who][action.Source].PopCard();
                     if (card.cardType == Card.CardType.Minion)
                     {
-                        CardSlot target = minionSlots[who][action.Target];
-                        target.PlaceCard(card);
-                        card.PlayMinion(target);
+                        CardSlot slot = minionSlots[who][action.Slot];
+                        /*CardSlot target = null;
+                        if (action.Target != -1)
+                        {
+                            target = minionSlots[who][action.Target];
+                        }*/
+                        slot.PlaceCard(card);
+                        card.PlayMinion(slot, action.Target);
                         card.gameObject.SetActive(false);
+
                     }
+                    else if (card.cardType == Card.CardType.Spell)
+                    {
+                        Debug.Log("Cast speeeell");
+                        card.CastSpell(action.Target);
+                        AddToGrave(card,who);
+                        card.standardScale = Vector3.one;//Maybe?
+                    }
+                    else throw new Exception("Unknown cardType");
                     break;
                 case PlayerAction.ActionType.Attack:
                     throw new NotImplementedException("TakeAction Attack case not implemented");

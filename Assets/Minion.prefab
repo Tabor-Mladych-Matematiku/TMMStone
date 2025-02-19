@@ -671,3 +671,4 @@ MonoBehaviour:
   AttackLabel: {fileID: 7675458053325930885}
   HealthLabel: {fileID: 7499831031589201972}
   HighlightRim: {fileID: 8019540357931435350}
+  graphic: {fileID: 3408634470598025284}

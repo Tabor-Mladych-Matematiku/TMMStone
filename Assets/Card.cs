@@ -41,8 +41,10 @@ namespace CardGame
         bool hidden;
         public Vector3 standardScale;
         public int[] stats;
-        [SerializeField]GameObject MinionPrefab;
-        readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
+        public string expansion;
+        [SerializeField] GameObject MinionPrefab;
+        bool Targetted;
+        public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
             {"Základ", "V2"},
             {"PTMM","GULAG" }
         };
@@ -55,11 +57,18 @@ namespace CardGame
                 else GetComponent<SpriteRenderer>().sprite = face;
             }
         }
+
+        public event EventHandler<CardPlayedEventArgs> OnPlayed;
+        public class CardPlayedEventArgs
+        {
+            public int Target;
+        }
+
         private void Awake()
         {
             face = GetComponent<SpriteRenderer>().sprite;
             standardScale = transform.localScale;
-            
+            Targetted = false;//TODO: load from cardScripts.
         }
         // Start is called before the first frame update
         private void Start()
@@ -82,7 +91,7 @@ namespace CardGame
                     cardType = CardType.Spell;
                     break;
             }
-            string expansion = "Tokeny";
+            expansion = "Tokeny";
             if (expansionMapping.ContainsKey(data.expansion)) expansion = expansionMapping[data.expansion];
             Sprite sprite = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
             if (sprite != null)
@@ -100,15 +109,28 @@ namespace CardGame
         {
             if (GameManager.Instance.cursor == this)
             {
-                if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)
+                if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//TODO figure out targetted battlecries
                 {//We have source and target
-                    GameManager.Instance.OnUIPlayMinion(this);
+                    if (!Targetted)
+                        GameManager.Instance.OnUIPlayMinion(this, GameManager.Instance.HighlightedSlotIndex);
+                    else {
+                        //HEre we need to make the secondary targetting system. (MAMA mia!)
+                        throw new NotImplementedException("We did not make minions with targetted battlecries yet"); }
+                }
+                else if (cardType == CardType.Spell && !Targetted)
+                {
+                    GameManager.Instance.OnUICastSpell(this);
+                }
+                else if(cardType == CardType.Spell)
+                {
+                    throw new NotImplementedException("check valid targetting. Either a func here or let ONUICastSpell return bool.");
+                    GameManager.Instance.OnUICastSpell(this);
                 }
                 else
                 {//Reset
                     transform.localPosition = new Vector3(0, 0, -1);
-                    GameManager.Instance.cursor = null;
                 }
+                GameManager.Instance.cursor = null;
             }
         }
         public void OnMouseDown()
@@ -131,12 +153,19 @@ namespace CardGame
             transform.localScale = standardScale;//we cleanup regardless just in case
         }
 
-        internal void PlayMinion(CardSlot target)
+        internal void PlayMinion(CardSlot slot, int target)
         {
-            GameObject g = Instantiate(MinionPrefab, target.transform);
+            OnPlayed?.Invoke(this, new() { Target = target });
+            GameObject g = Instantiate(MinionPrefab, slot.transform);
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Minion m = g.GetComponent<Minion>();
+            m.Battlecry(target);//(Battlecries get procked after occupying the slot but before getting affected) therefore probably before his INIT
             m.Initialize(this);
+        }
+
+        internal void CastSpell(int target)//could be -1 rn
+        {
+            OnPlayed?.Invoke(this, new() { Target = target });
         }
     }
 }
