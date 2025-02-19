@@ -55,11 +55,16 @@ namespace CardGame
                 else GetComponent<SpriteRenderer>().sprite = face;
             }
         }
+        private void Awake()
+        {
+            face = GetComponent<SpriteRenderer>().sprite;
+            standardScale = transform.localScale;
+            
+        }
         // Start is called before the first frame update
         private void Start()
         {
             standardScale = transform.localScale;
-            face = GetComponent<SpriteRenderer>().sprite;
         }
         public void Initialize(CardData data)
         {
@@ -112,13 +117,13 @@ namespace CardGame
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
             if (!GameManager.Instance.IsCardPlayable(this)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
-            Debug.Log("Attached to cursor");
+            //Debug.Log("Attached to cursor");
         }
         public void OnMouseEnter()
         {
             if (Hidden || GameManager.Instance.cursor != null) return;
             transform.localScale = standardScale * 1.2f;
-            Debug.Log("Mice entered");
+            //Debug.Log("Mice entered");
             //TODO better highlight for reading
         }
         public void OnMouseExit()
@@ -129,8 +134,7 @@ namespace CardGame
         internal void PlayMinion(CardSlot target)
         {
             GameObject g = Instantiate(MinionPrefab, target.transform);
-            g.transform.localPosition = new(0, 0, -1);
-            g.transform.localRotation = Quaternion.AngleAxis(-90, new(0, 0, 1));
+            g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Minion m = g.GetComponent<Minion>();
             m.Initialize(this);
         }

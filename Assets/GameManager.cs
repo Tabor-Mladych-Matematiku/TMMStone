@@ -75,6 +75,28 @@ namespace CardGame
             P1,
             P2
         }
+        public class HealthDict{
+            IDictionary<P,int> dict;
+            Transform OwnHPLabel;
+            Transform OppHPLabel;
+
+            public HealthDict(Dictionary<P, int> dict, Transform ownHPLabel, Transform oppHPLabel)
+            {
+                this.dict = dict;
+                OwnHPLabel = ownHPLabel;
+                OppHPLabel = oppHPLabel;
+            }
+
+            public int this[P key]
+            {
+                get { return dict[key]; }
+                set {
+                    dict[key] = value;
+                    if(key ==P.P1) OwnHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = value.ToString();
+                    else OppHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = value.ToString();
+                }
+            }
+            }
         public static GameManager Instance { get; private set; }
         [SerializeField] Deck OwnDeck;
         [SerializeField] Deck OppDeck;
@@ -103,25 +125,7 @@ namespace CardGame
         private const int maxEffSlots = 6;
         private const int maxHandSlots = 10;
 
-        int health;
-        int opphealth;
-        public Dictionary<P, int> Healths;
-        public int Health
-        {
-            get => health; set
-            {
-                health = value;
-                OwnHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = Health.ToString();
-            }
-        }
-        public int OppHealth
-        {
-            get => opphealth; set
-            {
-                opphealth = value;
-                OppHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = OppHealth.ToString();
-            }
-        }
+        public HealthDict Healths;
         public Dictionary<P, int> MaxHealths = new() {
             {P.P1,30 },
             {P.P2,30},
@@ -171,10 +175,10 @@ namespace CardGame
         private void Awake()
         {
             Instance = this;
-            Healths = new() {
-                {P.P1,Health },
-                {P.P2,OppHealth}
-            };
+            Healths = new( new(){
+                {P.P1,MaxHealths[P.P1] },
+                {P.P2,MaxHealths[P.P2]}
+            },OwnHPLabel,OppHPLabel);
             EffSlots = new()
             {
                 {P.P1,new CardSlot[maxEffSlots] },
@@ -245,17 +249,14 @@ namespace CardGame
                 StartTurn();
 
             };
-            
+
             //Load decks
             var OwnDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO import from json in PlayerData
             LoadDeck(decks[P.P1], OwnDeckList);
             var OppDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO get from Lobby
             LoadDeck(decks[P.P2], OppDeckList);
             //StartGame stuff
-            foreach (P p in new P[] { P.P1, P.P2 })
-            {
-                Healths[p] = MaxHealths[p];
-            }
+            
 
             //Animations (Who against who)
 
@@ -332,8 +333,8 @@ namespace CardGame
                 }
                 if (!HandSlots[who][i].Occupied)
                 {
-                    c.Hidden = who != P.P1;
                     HandSlots[who][i].PlaceCard(c);
+                    c.Hidden = who != P.P1;
                     c.transform.localPosition = new Vector3(0, 0, -1);
                     c.standardScale = c.transform.localScale;
                     break;
@@ -349,6 +350,7 @@ namespace CardGame
         {
             Healths[who] -= FatigueVals[who];
             FatigueVals[who]++;
+            Debug.Log(FatigueVals[who]);
         }
         public void ShuffleDeck(P who) => decks[who].Shuffle();
         public void EndTurnEffects()
@@ -524,7 +526,7 @@ namespace CardGame
         private void TakeActionServerRpc(PlayerAction action, ServerRpcParams srp)
         {
             ulong target = 1 - srp.Receive.SenderClientId;
-            Debug.Log("We are in the Server RPC! This guy called: "+ srp.Receive.SenderClientId + " Calling to: "+target);
+            Debug.Log("We are in the Server RPC! This guy called: " + srp.Receive.SenderClientId + " Calling to: " + target);
             TakeActionClientRpc(action,
                 new()
                 {

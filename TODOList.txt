@@ -8,6 +8,7 @@ Things to polish:
 
 TODO:
 LobbyUI Polish
+	Lobby musí mít jméno, nesmí v něm být cizí znaky
 Minions
 Spells
 Make a manacounter and manacosts.

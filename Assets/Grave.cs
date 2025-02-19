@@ -14,6 +14,8 @@ public class Grave : MonoBehaviour,IList<Card>//TODO: might be better to have a 
     public void Add(Card item)
     {
         item.transform.parent = transform;
+        item.transform.localPosition = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), item.transform.localPosition.z);
+        item.Hidden = false;
     }
     /// <summary>
     /// Destroys all Cards in grave
