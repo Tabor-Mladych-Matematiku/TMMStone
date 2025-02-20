@@ -21,6 +21,8 @@ public class Deck : MonoBehaviour, IList<Card>
     {
         deck.Add(c);
         c.transform.parent=transform;
+        c.transform.localPosition = new Vector3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1), -1);
+        c.Hidden = true;
         CardCounter.text = deck.Count.ToString();
     }
     public Card PopFirst()

@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Purchasing;
+using UnityEngine.Purchasing.MiniJSON;
 using UnityEngine.UI;
-using static CardGame.GameManager;
 
 namespace CardGame
 {
@@ -78,6 +79,19 @@ namespace CardGame
         {
             P1,
             P2
+        }
+        [Serializable]
+        class DeckSave
+        {
+            public int[] data;
+            public DeckSave(int[] data)
+            {
+                this.data = data;
+            }
+            public override string ToString()
+            {
+                return new StringBuilder().AppendJoin(" ", data).ToString();
+            }
         }
         public class HealthDict{
             IDictionary<P,int> dict;
@@ -251,6 +265,7 @@ namespace CardGame
                 if (UnityEngine.Random.Range(0, 2) == 0) ServerOnTurn.Value = false;
                 Debug.Log("Host starts?: " + OnTurn);
             }
+            else Debug.Log("Client starts?: " + OnTurn);
             EndTurnBtn.onClick.AddListener(() => ToggleTurnServerRpc(new ServerRpcParams()));
             ServerOnTurn.OnValueChanged += (bool prev, bool n) =>
             {
@@ -259,40 +274,54 @@ namespace CardGame
                 StartTurn();
 
             };
-
+            NetworkManager.OnClientDisconnectCallback +=(_)=>Application.Quit();
             //Load decks
-            var OwnDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO import from json in PlayerData
-            LoadDeck(decks[P.P1], OwnDeckList);
-            var OppDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text);//TODO get from Lobby
-            LoadDeck(decks[P.P2], OppDeckList);
-            //StartGame stuff
+            string debugstringchoice = "MyDeck";
+            if (IsServer) debugstringchoice = "OppDeck";
+            int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/"+ debugstringchoice).text));//TODO import from json in PlayerData
             
+            LoadDeck(decks[P.P1], OwnDeckList);
+            if (IsServer)
+            {
+                NetworkManager.OnClientConnectedCallback += (clientId) => { if (clientId != NetworkManager.LocalClientId) onOpponentConnected(clientId, OwnDeckList); };
+            }
+            else { onOpponentConnected(NetworkManager.LocalClientId, OwnDeckList);
+                
+                //System.IO.File.WriteAllText("CurrentDeck.json", JsonUtility.ToJson(new DeckSave(OwnDeckList)));
+                //Debug.Log(JsonUtility.FromJson<DeckSave>(System.IO.File.ReadAllText("CurrentDeck.json")).ToString());
+            }
 
-            //Animations (Who against who)
-
-
-            //
-            //Cointoss anim
-            for (int i = 0; i < 3; i++)
-                if (OnTurn) DrawCard(P.P1);
-                else DrawCard(P.P2);
-            for (int i = 0; i < 4; i++)
-                if (!OnTurn) DrawCard(P.P1);
-                else DrawCard(P.P2);
-            //Mulligan
-            StartTurn();
         }
-        private void LoadDeck(Deck d, List<object> DecodedDeckList)
+        private void onOpponentConnected(ulong clientId, int[] OwnDeckList)
         {
-            foreach (long item in DecodedDeckList)
+            //Debug.Log("calling srpc");
+            AnnounceDeckServerRpc(OwnDeckList, new());//loads own deck and sends it to the other.
+            //var OppDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/OppDeck").text);//TODO get from Lobby
+            //LoadDeck(decks[P.P2], OppDeckList);
+        }
+
+
+        private int[] GetCardIDs(List<object> DecodedDeckList)
+        {
+            int[] ids = new int[DecodedDeckList.Count];
+
+            for (int i = 0; i < DecodedDeckList.Count; i++)
+            {
+                long item = (long)DecodedDeckList[i];
+                ids[i]=(int)item;
+            }
+                return ids;
+        }
+        private void LoadDeck(Deck d, int[] ids)
+        {
+            foreach (int id in ids)
             {
                 var c = Instantiate(CardPrefab);
                 Card Cardscript = c.GetComponent<Card>();
-                Cardscript.Initialize(CardDatabase[(int)item]);
-                Cardscript.Hidden = true;
+                Cardscript.Initialize(CardDatabase[id]);
                 d.Add(Cardscript);
-                c.transform.localPosition = new Vector3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1), -1);
             }
+            
         }
         public void StartTurn()
         {
@@ -532,15 +561,14 @@ namespace CardGame
         [ClientRpc(RequireOwnership = false)]
         private void TakeActionClientRpc(PlayerAction action, ClientRpcParams crp)//This runs only on opponent.
         {
+            /*
             //DebugInfo
             string message = "Action Recieved on: ";
             if (IsHost) message += "Host";
             else message += "Client";
             //message += " with ID: " + crp.Send.TargetClientIds[0];
             Debug.Log(message);
-
-
-            //TODO simulate opponents action.
+            */
             TakeAction(P.P2, action);
 
         }
@@ -548,7 +576,7 @@ namespace CardGame
         private void TakeActionServerRpc(PlayerAction action, ServerRpcParams srp)
         {
             ulong target = 1 - srp.Receive.SenderClientId;
-            Debug.Log("We are in the Server RPC! This guy called: " + srp.Receive.SenderClientId + " Calling to: " + target);
+            //Debug.Log("We are in the Server RPC! This guy called: " + srp.Receive.SenderClientId + " Calling to: " + target);
             TakeActionClientRpc(action,
                 new()
                 {
@@ -558,6 +586,42 @@ namespace CardGame
                     }
                 }
             );
+        }
+        [ServerRpc(RequireOwnership = false)]
+        private void AnnounceDeckServerRpc(int[] deck, ServerRpcParams srp)
+        {
+            ulong target = 1 - srp.Receive.SenderClientId;
+            Debug.Log("We are in the Server RPC! This guy called: " + srp.Receive.SenderClientId + " Calling to: " + target);
+            AnnounceDeckClientRpc(deck,
+                new()
+                {
+                    Send = new()
+                    {
+                        TargetClientIds = new List<ulong>() { target }//We wanna talk to the other un.
+                    }
+                }
+            );
+        }
+        [ClientRpc(RequireOwnership = false)]
+        private void AnnounceDeckClientRpc(int[] deck, ClientRpcParams crp)//This runs only on opponent.
+        {
+            LoadDeck(decks[P.P2], deck);
+            //StartGame stuff
+
+
+            //Animations (Who against who)
+
+
+            //
+            //Cointoss anim
+            for (int i = 0; i < 3; i++)
+                if (OnTurn) DrawCard(P.P1);
+                else DrawCard(P.P2);
+            for (int i = 0; i < 4; i++)
+                if (!OnTurn) DrawCard(P.P1);
+                else DrawCard(P.P2);
+            //Mulligan
+            StartTurn();
         }
     }
 }
