@@ -7,12 +7,18 @@ Things to polish:
 		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
 
 TODO:
+	Priority:
+		Make a manacounter and manacosts.
+		Face - some modification on Minion slots needed
+
 LobbyUI Polish
 	Lobby musí mít jméno, nesmí v něm být cizí znaky
 	Loading screeny - schovat Loadující se scénu
-Face - some modification on Minion slots needed
+
+BattleCry - after placing a battlecry minion attach a fake cardlike thing to the cursor that will onclick either finish the op or cancel it.
+	Will probably have to add a check to not highlight anything when we have something in the cursor.
 Spells - Make it so that you can undo casting nontargetted spell. (Probably a box around your side of the screen or distance from original spot)
-Make a manacounter and manacosts.
+
 Prettier Menu
 Export json from website
 Import json in lobby selection
@@ -39,7 +45,7 @@ R8: Using Universal rendering pipeline - ???
 
 
 TODO:
-R2: Sound
+R2: Sound - More sounds and music
 R5: Plugin - TODO UI Toolkit and Dotween?
 R6: EditorExt: TODO: cardMakyr,displayer
 

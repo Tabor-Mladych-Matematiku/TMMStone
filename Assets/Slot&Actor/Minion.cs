@@ -16,6 +16,7 @@ namespace CardGame
         protected Color defaultColor;
         [SerializeField] SpriteRenderer graphic;
         protected Card original;
+
         public virtual void OnMouseEnter()
         {
         }

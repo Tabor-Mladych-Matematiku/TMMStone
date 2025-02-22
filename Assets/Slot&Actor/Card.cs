@@ -18,6 +18,7 @@ namespace CardGame
         public event EventHandler<TurnEventArgs> OnStartTurn;
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
+        public AudioSource audioSource;
         public GameManager.P Owner { get=>transform.GetComponentInParent<CardSlot>().Owner; }
         public virtual void StartTurn(bool onTurn)=> OnStartTurn?.Invoke(this, new(onTurn));
         public virtual void EndTurn(bool onTurn)=>OnEndTurn?.Invoke(this, new(onTurn));
@@ -98,6 +99,7 @@ namespace CardGame
         private void Awake()
         {
             face = GetComponent<SpriteRenderer>().sprite;
+            audioSource = GetComponent<AudioSource>();
             standardScale = transform.localScale;
             Targetted = false;//TODO: load from cardScripts.
         }
@@ -139,12 +141,10 @@ namespace CardGame
         public void OnDiscard()=>OnDiscardEvent?.Invoke(this, new());
         private void OnMouseUp()
         {
-            bool play_sound = true;
             if (GameManager.Instance.cursor == this)
             {
                 if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//TODO figure out targetted battlecries
                 {//We have source and target
-                    play_sound = false; //Card will get disabled Must play on minion
                     if (!Targetted)
                         GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex);
                     else
@@ -169,10 +169,8 @@ namespace CardGame
                 }
                 else
                 {//Reset
-                    play_sound = false;
                     transform.localPosition = new Vector3(0, 0, -1);
                 }
-                if(play_sound)GetComponent<AudioSource>().PlayOneShot(cardPlaced);
                 GameManager.Instance.cursor = null;
             }
         }
@@ -209,7 +207,7 @@ namespace CardGame
             Minion m = g.GetComponent<Minion>();
             m.Battlecry(target);//(Battlecries get procked after occupying the slot but before getting affected) therefore probably before his INIT
             m.Initialize(this);
-            m.GetComponent<AudioSource>().PlayOneShot(cardPlaced);
+            m.audioSource.PlayOneShot(cardPlaced);//Cannot do it on card cuz that one gets disabled and cannot do sounds thus
         }
         /// <summary>
         /// 
@@ -218,6 +216,7 @@ namespace CardGame
         internal void CastSpell(int target)
         {
             OnPlayed?.Invoke(this, new(target));
+            audioSource.PlayOneShot(cardPlaced);
         }
 
         internal void PlayField()
@@ -227,7 +226,7 @@ namespace CardGame
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Field f = g.GetComponent<Field>();
             f.Initialize(this);
-            f.GetComponent<AudioSource>().PlayOneShot(cardPlaced);
+            f.audioSource.PlayOneShot(cardPlaced);
         }
     }
 }
