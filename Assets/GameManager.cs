@@ -173,7 +173,7 @@ namespace CardGame
             {
                 card = c;
             }
-            Card card;
+            readonly Card card;
         }
 
         internal int HighlightedSlotIndex
@@ -481,37 +481,10 @@ namespace CardGame
 
 
         }
-        public void OnUIPlayMinion(Card c,int minionSlotIndex,int target=-1)
-        {
-            /*int cardIndex = -1;
-            for (int i = 0; i < HandSlots[P.P1].Length; i++)
-            {
-                if (c == HandSlots[P.P1][i].GetCard())
-                {
-                    cardIndex = i;
-                }
-            }
-            if (cardIndex < 0) return;*/
-
-
-
-            PlayerAction action = PlayerAction.PlayCardAction(c.GetComponentInParent<CardSlot>().index,target, minionSlotIndex);
-            OnUITakeAction(action);
-        }
-        public void OnUIAttackMinion()
-        {
-            throw new NotImplementedException();
-            int cardIndex;
-            int slot;
-            PlayerAction action = PlayerAction.AttackAction(cardIndex, slot);
-            OnUITakeAction(action);
-        }
-        public void OnUICastSpell(Card c, int target = -1)
-        {
-            int cardIndex = c.GetComponentInParent<CardSlot>().index;
-            PlayerAction action = PlayerAction.PlayCardAction(cardIndex, target);
-            OnUITakeAction(action);
-        }
+        public void OnUIPlayMinion(int cardindex, int minionSlotIndex,int target=-1)=>OnUITakeAction(PlayerAction.PlayCardAction(cardindex,target, minionSlotIndex));
+        public void OnUIAttackMinion(int minionSlotIndex, int minionSlotTarget)=>OnUITakeAction(PlayerAction.AttackAction(minionSlotIndex, minionSlotTarget));
+        public void OnUICastSpell(int cardindex, int target = -1)=>OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target));
+        public void OnUIPlayField(int cardindex) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, -1));
         public void OnUITakeAction(PlayerAction action)
         {
             if (!ValidateAction(action)) return;
@@ -519,16 +492,16 @@ namespace CardGame
             //Debug.Log("About to call ServerRPC!");
             TakeActionServerRpc(action, new());//Send to opponent
         }
-        public void OnUIPlayField(Card c)
-        {
-            PlayerAction action = PlayerAction.PlayCardAction(c.GetComponentInParent<CardSlot>().index,-1);
-            OnUITakeAction(action);
-        }
-        public bool IsCardPlayable(Card card)
-        {
-            return true;//TODO enough mana to play it. Any eligible targets etc.
-            //Mainly for UI purposes
-        }
+        
+        /// <summary>
+        /// Mainly for UI purposes
+        /// </summary>
+        /// <param name="card"></param>
+        /// <returns></returns>
+        public bool IsCardPlayable(Card card) => true;
+        /*{
+            //TODO enough mana to play it. Any eligible targets etc.
+        }*/
         bool ValidateAction(PlayerAction action)
         {
             //TODO: Do we have enough mana
@@ -537,7 +510,7 @@ namespace CardGame
             return true;
         }
         /// <summary>
-        /// 
+        /// Simulate move (good for network, could be used for AI etc.)
         /// </summary>
         /// <param name="who"></param>
         /// <param name="action"></param>

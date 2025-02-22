@@ -60,6 +60,7 @@ namespace CardGame
         bool hidden;
         public Vector3 standardScale;
         public int[] stats;
+        int SlotIndex { get => GetComponentInParent<CardSlot>().index; }
 
         [SerializeField] GameObject MinionPrefab;
         [SerializeField] GameObject FieldPrefab;
@@ -147,28 +148,28 @@ namespace CardGame
                 if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//TODO figure out targetted battlecries
                 {//We have source and target
                     if (!Targetted)
-                        GameManager.Instance.OnUIPlayMinion(this, GameManager.Instance.HighlightedSlotIndex);
+                        GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex);
                     else
                     {
                         //HEre we need to make the secondary targetting system. (MAMA mia!)
                         throw new NotImplementedException("We did not make minions with targetted battlecries yet");
                         int target;
-                        GameManager.Instance.OnUIPlayMinion(this, GameManager.Instance.HighlightedSlotIndex,target);
+                        GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex,target);
                     }
                 }
                 else if (cardType == CardType.Spell && !Targetted)
                 {
-                    GameManager.Instance.OnUICastSpell(this);
+                    GameManager.Instance.OnUICastSpell(SlotIndex);
                 }
                 else if (cardType == CardType.Spell)
                 {
                     throw new NotImplementedException("check valid targetting. Either a func here or let ONUICastSpell return bool.");
                     int target;
-                    GameManager.Instance.OnUICastSpell(this,target);
+                    GameManager.Instance.OnUICastSpell(SlotIndex, target);
                 }
                 else if (cardType == CardType.Field)
                 {
-                    GameManager.Instance.OnUIPlayField(this);
+                    GameManager.Instance.OnUIPlayField(SlotIndex);
                 }
                 else
                 {//Reset
@@ -179,17 +180,14 @@ namespace CardGame
         }
         public void OnMouseDown()
         {
-            //Debug.Log("Click Detected!");
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
             if (!GameManager.Instance.IsCardPlayable(this)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
-            //Debug.Log("Attached to cursor");
         }
         public void OnMouseEnter()
         {
             if (Hidden || GameManager.Instance.cursor != null) return;
             transform.localScale = standardScale * 1.2f;
-            //Debug.Log("Mice entered");
             //TODO better highlight for reading
         }
         public void OnMouseExit()
