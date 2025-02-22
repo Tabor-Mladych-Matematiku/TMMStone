@@ -10,8 +10,8 @@ TODO:
 LobbyUI Polish
 	Lobby musí mít jméno, nesmí v něm být cizí znaky
 	Loading screeny
-Minions
-Spells
+Minions - Attacking
+Spells - Make it so that you can undo casting.
 Make a manacounter and manacosts.
 Prettier Menu
 Export json from website
