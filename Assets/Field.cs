@@ -1,9 +1,10 @@
-﻿using CardGame;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
-
-public class Field : TableActor
+namespace CardGame
 {
+    public class Field : TableActor
+    {
 
+    }
 }

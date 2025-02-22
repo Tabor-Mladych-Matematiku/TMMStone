@@ -152,6 +152,8 @@ namespace CardGame
                     {
                         //HEre we need to make the secondary targetting system. (MAMA mia!)
                         throw new NotImplementedException("We did not make minions with targetted battlecries yet");
+                        int target;
+                        GameManager.Instance.OnUIPlayMinion(this, GameManager.Instance.HighlightedSlotIndex,target);
                     }
                 }
                 else if (cardType == CardType.Spell && !Targetted)
@@ -161,7 +163,8 @@ namespace CardGame
                 else if (cardType == CardType.Spell)
                 {
                     throw new NotImplementedException("check valid targetting. Either a func here or let ONUICastSpell return bool.");
-                    GameManager.Instance.OnUICastSpell(this);
+                    int target;
+                    GameManager.Instance.OnUICastSpell(this,target);
                 }
                 else if (cardType == CardType.Field)
                 {

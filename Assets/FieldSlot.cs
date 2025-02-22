@@ -1,19 +1,21 @@
-using CardGame;
 using System.Collections;
 using System.Collections.Generic;
-
-public class FieldSlot : PlacableSlot
+namespace CardGame
 {
-    public override bool IsCardPlacable(Card c) => c.cardType == Card.CardType.Field;
-    public Field GetField()=>GetComponentInChildren<Field>();
-
-    public void ClearField()
+    public class FieldSlot : PlacableSlot
     {
-        Field field = GetField();
-        if(field != null) { 
-            Destroy(transform.GetComponent<Field>());
-            GameManager.Instance.AddToGrave(PopCard(), Owner);
+        public override bool IsCardPlacable(Card c) => c.cardType == Card.CardType.Field;
+        public Field GetField() => GetComponentInChildren<Field>();
+
+        public void ClearField()
+        {
+            Field field = GetField();
+            if (field != null)
+            {
+                Destroy(transform.GetComponent<Field>());
+                GameManager.Instance.AddToGrave(PopCard(), Owner);
+            }
+
         }
-        
     }
 }

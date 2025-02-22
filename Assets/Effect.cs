@@ -1,6 +1,8 @@
-﻿using CardGame;
-
-public class Effect : TableActor
+﻿namespace CardGame
 {
 
+    public class Effect : TableActor
+    {
+
+    }
 }
