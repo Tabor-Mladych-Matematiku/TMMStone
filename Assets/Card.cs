@@ -60,7 +60,7 @@ namespace CardGame
         bool hidden;
         public Vector3 standardScale;
         public int[] stats;
-        
+
         [SerializeField] GameObject MinionPrefab;
         [SerializeField] GameObject FieldPrefab;
         [SerializeField] GameObject EffectPrefab;
@@ -78,7 +78,7 @@ namespace CardGame
                 else GetComponent<SpriteRenderer>().sprite = face;
             }
         }
-        
+
         public event EventHandler OnDiscardEvent;
         public class TurnEventArgs
         {
@@ -124,7 +124,7 @@ namespace CardGame
                 case "Pole":
                     cardType = CardType.Field;
                     break;
-                default: throw new Exception("Unknown cardtype: "+data.type);
+                default: throw new Exception("Unknown cardtype: " + data.type);
             }
             expansion = "Tokeny";
             if (expansionMapping.ContainsKey(data.expansion)) expansion = expansionMapping[data.expansion];
@@ -148,20 +148,22 @@ namespace CardGame
                 {//We have source and target
                     if (!Targetted)
                         GameManager.Instance.OnUIPlayMinion(this, GameManager.Instance.HighlightedSlotIndex);
-                    else {
+                    else
+                    {
                         //HEre we need to make the secondary targetting system. (MAMA mia!)
-                        throw new NotImplementedException("We did not make minions with targetted battlecries yet"); }
+                        throw new NotImplementedException("We did not make minions with targetted battlecries yet");
+                    }
                 }
                 else if (cardType == CardType.Spell && !Targetted)
                 {
                     GameManager.Instance.OnUICastSpell(this);
                 }
-                else if(cardType == CardType.Spell)
+                else if (cardType == CardType.Spell)
                 {
                     throw new NotImplementedException("check valid targetting. Either a func here or let ONUICastSpell return bool.");
                     GameManager.Instance.OnUICastSpell(this);
                 }
-                else if(cardType == CardType.Field)
+                else if (cardType == CardType.Field)
                 {
                     GameManager.Instance.OnUIPlayField(this);
                 }
