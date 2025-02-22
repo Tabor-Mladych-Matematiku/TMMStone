@@ -11,9 +11,7 @@ GameObject:
   - component: {fileID: 4236923623408474061}
   - component: {fileID: 5507379548684661908}
   - component: {fileID: 8365368629449040962}
-  - component: {fileID: 6410573334864252133}
   - component: {fileID: 8458478221378815098}
-  - component: {fileID: -2145452607702475511}
   - component: {fileID: 2565500236046560419}
   m_Layer: 0
   m_Name: MinionSlot
@@ -79,19 +77,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6410573334864252133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2546454111416854676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89e7f8e445020ed418e751273e98a739, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  index: 0
 --- !u!65 &8458478221378815098
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -113,23 +98,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 10, y: 10, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-2145452607702475511
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2546454111416854676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b933f4d58c0fc04e8893b8066232ee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  expansion: 
-  HighlightRim: {fileID: 0}
-  graphic: {fileID: 0}
-  AttackLabel: {fileID: 0}
-  HealthLabel: {fileID: 0}
 --- !u!114 &2565500236046560419
 MonoBehaviour:
   m_ObjectHideFlags: 0

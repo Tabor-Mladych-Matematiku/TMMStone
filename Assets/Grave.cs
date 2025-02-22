@@ -15,6 +15,7 @@ namespace CardGame
         {
             item.transform.parent = transform;
             item.transform.localPosition = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), item.transform.localPosition.z);
+            item.standardScale = transform.localScale;
             item.Hidden = false;
         }
         /// <summary>

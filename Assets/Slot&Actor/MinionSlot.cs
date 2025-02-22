@@ -7,17 +7,6 @@ namespace CardGame
     {
 
 
-
-        public void RemoveMinion()
-        {
-            Destroy(GetMinion());
-            GameManager.Instance.AddToGrave(PopCard(), Owner);
-        }
-        public Minion GetMinion()
-        {
-            return transform.GetComponentInChildren<Minion>();
-        }
-
         public override bool IsCardPlacable(Card c) => c.cardType == Card.CardType.Minion;
         protected override void OnMouseOver()
         {

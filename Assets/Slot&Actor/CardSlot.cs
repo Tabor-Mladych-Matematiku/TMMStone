@@ -19,8 +19,7 @@ namespace CardGame
         }
         protected virtual void OnMouseOver()
         {
-            Card holding = GameManager.Instance.cursor;
-            if (holding != null && IsCardPlacable(holding) && transform.childCount == 0)
+            if (GameManager.Instance.cursor != null && GameManager.Instance.cursor is Card holding && IsCardPlacable(holding) && transform.childCount == 0)
             {
                 HighlightBox.color = highlightc;
                 GameManager.Instance.highlightedSlot = transform;
@@ -56,11 +55,18 @@ namespace CardGame
         }
         public Card PopCard()
         {
-            Card c = transform.GetComponentInChildren<Card>();
+            Card c = transform.GetComponentInChildren<Card>(true);
             c.transform.parent = null;
             return c;
         }
-
+        public Minion GetMinion()=> transform.GetComponentInChildren<Minion>();
+        public void RemoveMinion()
+        {
+            Destroy(GetMinion().gameObject);
+            Card card = PopCard();
+            card.gameObject.SetActive(true);
+            GameManager.Instance.AddToGrave(card, Owner);
+        }
         public class CardSlotException : Exception
         {
             public CardSlotException(string message) : base(message) { }

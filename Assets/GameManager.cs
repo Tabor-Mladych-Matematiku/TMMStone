@@ -5,10 +5,8 @@ using System.Linq;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Purchasing;
-using UnityEngine.Purchasing.MiniJSON;
 using UnityEngine.UI;
 
 namespace CardGame
@@ -27,6 +25,11 @@ namespace CardGame
             }
         }
 
+        public static GameManager.P Other(this GameManager.P who)
+        {
+            if (who == GameManager.P.P1) return GameManager.P.P2;
+            return GameManager.P.P1;
+        } 
     }
 
     public class GameManager : NetworkBehaviour
@@ -53,11 +56,11 @@ namespace CardGame
                 Slot = slot,
                 Target = target
             };
-            public static PlayerAction AttackAction(int card, int slot) => new()
+            public static PlayerAction AttackAction(int minion, int target) => new()
             {
-                Source = card,
+                Source = minion,
                 Actiontype = ActionType.Attack,
-                Target = slot
+                Target = target
             };
 
             public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -149,7 +152,7 @@ namespace CardGame
         public int TurnCount = 0;//This is not Round counter - tzn this is double of RoundCount
 
         public NetworkVariable<bool> ServerOnTurn = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        internal Card cursor;
+        internal GameActor cursor;
         internal Transform highlightedSlot;
         internal GameActor highlightedActor;
 
@@ -194,7 +197,7 @@ namespace CardGame
                 if (slot != -1) return slot;
                 for (int i = 0; i < maxMinionSlots; i++)
                 {
-                    if (((MinionSlot)minionSlots[P.P2][i]).GetMinion() == highlightedActor) { slot = maxMinionSlots + i; break; }
+                    if (minionSlots[P.P2][i].GetComponentInChildren<Minion>() == highlightedActor) { slot = maxMinionSlots + i; break; }
                 }
                 return slot;
             }
@@ -407,7 +410,6 @@ namespace CardGame
         {
             foreach (GameActor actor in AllActors)
             {
-                //if (actor != null)
                 actor.EndTurn(OnTurn);
             }
         }
@@ -537,7 +539,9 @@ namespace CardGame
                     else throw new Exception("Unknown cardType");
                     break;
                 case PlayerAction.ActionType.Attack:
-                    throw new NotImplementedException("TakeAction Attack case not implemented");
+                    Minion Ownminion = minionSlots[who][action.Source].GetComponentInChildren<Minion>();//Opponents dont have minion slots so we cannot cast and do GetMinion
+                    Minion Oppminion = minionSlots[who.Other()][action.Target-maxMinionSlots].GetComponentInChildren<Minion>();
+                    Ownminion.AttackAction(Oppminion);
                     break;
                 default:
                     throw new NotImplementedException("TakeActionCase not implemented");

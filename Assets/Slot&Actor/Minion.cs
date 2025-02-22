@@ -12,6 +12,7 @@ namespace CardGame
     {
         [SerializeField] protected SpriteRenderer HighlightRim;
         protected Color highlightColor;
+        protected Color attkColor;
         protected Color defaultColor;
         [SerializeField] SpriteRenderer graphic;
         public virtual void OnMouseEnter()
@@ -19,7 +20,7 @@ namespace CardGame
         }
         public virtual void OnMouseExit()
         {
-            
+
         }
         public virtual void Initialize(Card c)
         {
@@ -30,15 +31,18 @@ namespace CardGame
 
     public class Minion : TableActor
     {
-        private int h;
-        private int a;
+        private int h = 0;
+        private int a = 0;
         [SerializeField] TextMesh AttackLabel;
         [SerializeField] TextMesh HealthLabel;
 
 
-        public event EventHandler<BattlecryEventArgs> OnBattleCry;
+        public event EventHandler<TargetedEventEventArgs> OnBattleCry;
+        public event EventHandler<TargetedEventEventArgs> OnAttack;
         public event EventHandler OnDeath;
-        public class BattlecryEventArgs
+        public event EventHandler OnHealed;
+        public event EventHandler OnDamaged;
+        public class TargetedEventEventArgs
         {
             public int target;
         }
@@ -47,6 +51,8 @@ namespace CardGame
             get => h;
             private set
             {
+                if (h < value && h != 0) OnHealed?.Invoke(this, new());//the !=0 should dodge the init phase
+                else OnDamaged?.Invoke(this, new());
                 h = value;
                 HealthLabel.text = h.ToString();
                 if (value <= 0) Death();
@@ -56,16 +62,17 @@ namespace CardGame
         {
             defaultColor = HighlightRim.color;
             highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
+            attkColor = new(defaultColor.g, defaultColor.r, defaultColor.b, 0.8f);//Interesting choice but ok
         }
         private void Death()
         {
             OnDeath?.Invoke(this, new());
-            transform.parent.GetComponent<MinionSlot>().RemoveMinion();
+            transform.parent.GetComponent<CardSlot>().RemoveMinion();
         }
 
         public int Attack
         {
-            get=> a;
+            get => a;
             private set
             {
                 a = math.max(0, value);
@@ -86,20 +93,51 @@ namespace CardGame
 
         public void OnMouseDown()
         {
-            if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<MinionSlot>().Owner == GameManager.P.P2) return;//We must be on turn and we must be owner
-            if (!CanAttack) return;
+            if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<MinionSlot>().Owner == GameManager.P.P2 || Attack==0) return;//We must be on turn and we must be owner
+            if (!CanAttack) return;//"That minion cannot attack yet!"
+            GameManager.Instance.cursor = this;
 
+        }
+        public void OnMouseUp()
+        {
+            if(GameManager.Instance.cursor == this)
+            {
+                if (GameManager.Instance.highlightedActor != null)
+                {
+                    GameManager.Instance.OnUIAttackMinion(GetComponentInParent<CardSlot>().index, GameManager.Instance.HighlightedActorIndex);
+                    CanAttack = false;//TODO windfury shit.
+                }
+                transform.localPosition = new Vector3(0, 0, -1);
+                GameManager.Instance.cursor = null;
+            }
         }
         public override void OnMouseEnter()
         {
-            if (GameManager.Instance.OnTurn && Owner == GameManager.P.P1)
-                HighlightRim.color = highlightColor;
-            Card holding = GameManager.Instance.cursor;
-            if (holding != null && holding.cardType == Card.CardType.Spell && holding.Targetted && holding.IsTargetValid(this) && transform.childCount == 0)
+            if (GameManager.Instance.cursor != null)
             {
-                GameManager.Instance.highlightedActor = this;
+                //This is being targetted by spell
+                if (GameManager.Instance.cursor is Card h && h.cardType == Card.CardType.Spell && h.Targetted && h.IsTargetValid(this))// && transform.childCount == 0) Idk this was here but it makes little sense.
+                {
+                    GameManager.Instance.highlightedActor = this;
+                    HighlightRim.color = highlightColor;
+                }
+                //This is being targetted by attack
+                else if (GameManager.Instance.cursor is Minion m && Owner==GameManager.P.P2 && m.IsTargetValid(this))
+                {
+                    GameManager.Instance.highlightedActor = this;
+                    HighlightRim.color = attkColor;
+                }
             }
+            //Can this attack someone?
+            else if (GameManager.Instance.OnTurn && Owner == GameManager.P.P1 && CanAttack && Attack!=0)
+                HighlightRim.color = highlightColor;
         }
+
+        private bool IsTargetValid(Minion minion)
+        {
+            return true; //TODO taunt and such
+        }
+
         public override void OnMouseExit()
         {
             HighlightRim.color = defaultColor;
@@ -117,6 +155,14 @@ namespace CardGame
         {
             base.StartTurn(onTurn);
             if (CanAwake()) CanAttack = true;
+        }
+
+        internal void AttackAction(Minion oppminion)
+        {
+            OnAttack?.Invoke(this, new() { target = oppminion.GetComponentInParent<CardSlot>().index });
+            Health -= oppminion.Attack;
+            oppminion.Health -= Attack;
+            //TODO visuals
         }
     }
 }
