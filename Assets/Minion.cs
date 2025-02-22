@@ -6,16 +6,40 @@ using Unity.Mathematics;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
-public class Minion : MonoBehaviour
+
+public abstract class TableActor : GameActor
+{
+    [SerializeField] SpriteRenderer HighlightRim;
+    [SerializeField] SpriteRenderer graphic;
+    Color highlightColor;
+    Color defaultColor;
+    private void Awake()
+    {
+        defaultColor = HighlightRim.color;
+        highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
+    }
+    public void OnMouseEnter()
+    {
+        HighlightRim.color = highlightColor;
+    }
+    public void OnMouseExit()
+    {
+        HighlightRim.color = defaultColor;
+    }
+    public virtual void Initialize(Card c)
+    {
+        Sprite sprite = Resources.Load<Sprite>("CardPlainImages/" + c.expansion + "/" + c.cardname);
+        if (sprite != null) graphic.sprite = sprite;
+    }
+}
+
+public class Minion : TableActor
 {
     private int h;
     private int a;
     [SerializeField] TextMesh AttackLabel;
     [SerializeField] TextMesh HealthLabel;
-    [SerializeField] SpriteRenderer HighlightRim;
-    [SerializeField] SpriteRenderer graphic;
-    Color highlightColor;
-    Color defaultColor;
+
 
     public event EventHandler<BattlecryEventArgs> OnBattleCry;
     public event EventHandler OnDeath;
@@ -54,29 +78,36 @@ public class Minion : MonoBehaviour
             AttackLabel.text = a.ToString();
         }
     }
-    private void Awake()
+
+    public bool CanAttack { get; private set; }
+
+
+    public override void Initialize(Card c)
     {
-        defaultColor = HighlightRim.color;
-        highlightColor =new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
-    }
-    public void Initialize(Card c)
-    {
+        base.Initialize(c);
         Attack = c.stats[0];
         Health = c.stats[1];
-        Sprite sprite = Resources.Load<Sprite>("CardPlainImages/" + c.expansion + "/" + c.cardname);
-        if (sprite != null) graphic.sprite = sprite;
+        CanAttack = false;
     }
-    public void OnMouseEnter()
+
+    public void OnMouseDown()
     {
-        HighlightRim.color = highlightColor;
-    }
-    public void OnMouseExit()
-    {
-        HighlightRim.color =defaultColor;
+        if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<MinionSlot>().Owner == GameManager.P.P2) return;//We must be on turn and we must be owner
+        if (!CanAttack) return;
+
     }
 
     internal void Battlecry(int target)
     {
         OnBattleCry?.Invoke(this,new() { target = target });
+    }
+    public bool CanAwake()
+    {
+        return true; // Freeze effects and the sort
+    }
+    public override void StartTurn(bool onTurn)
+    {
+        base.StartTurn(onTurn);
+        if (CanAwake()) CanAttack = true;
     }
 }

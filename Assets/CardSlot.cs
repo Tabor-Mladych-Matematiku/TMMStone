@@ -2,7 +2,37 @@ using CardGame;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
+
+
+public abstract class PlacableSlot : CardSlot
+{
+    public abstract bool IsCardPlacable(Card c);
+    Image HighlightBox;
+    Color highlightc = new(0, 1, 0, 0.3f);
+
+    void Start()
+    {
+        HighlightBox = GetComponent<Image>();
+    }
+    protected virtual void OnMouseOver()
+    {
+        Card holding = GameManager.Instance.cursor;
+        if (holding != null && IsCardPlacable(holding) && transform.childCount == 0)
+        {
+            HighlightBox.color = highlightc;
+            GameManager.Instance.highlightedSlot = transform;
+        }
+    }
+    private void OnMouseExit()
+    {
+        if (Owner != GameManager.P.P1) return;
+        HighlightBox.color = new(0, 0, 0, 0);
+        GameManager.Instance.highlightedSlot = null;
+    }
+}
 
 public class CardSlot : MonoBehaviour
 {

@@ -2,9 +2,27 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static CardGame.Card;
+using static UnityEngine.GraphicsBuffer;
 
 namespace CardGame
 {
+    public abstract class GameActor : MonoBehaviour
+    {
+        public event EventHandler<TurnEventArgs> OnStartTurn;
+        public event EventHandler<TurnEventArgs> OnEndTurn;
+        public string expansion;
+        public virtual void StartTurn(bool onTurn)
+        {
+            OnStartTurn?.Invoke(this, new(onTurn));
+        }
+        public virtual void EndTurn(bool onTurn)
+        {
+            OnEndTurn?.Invoke(this, new(onTurn));
+        }
+    }
+
+
     public struct CardData
     {
         public string name;
@@ -26,12 +44,13 @@ namespace CardGame
         public string attack;
         public string health;
     }
-    public class Card : MonoBehaviour
+    public class Card : GameActor
     {
         public enum CardType
         {
             Minion,
-            Spell
+            Spell,
+            Field
         }
         public int mana;
         public string cardname;
@@ -41,8 +60,10 @@ namespace CardGame
         bool hidden;
         public Vector3 standardScale;
         public int[] stats;
-        public string expansion;
+        
         [SerializeField] GameObject MinionPrefab;
+        [SerializeField] GameObject FieldPrefab;
+        [SerializeField] GameObject EffectPrefab;
         bool Targetted;
         public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
             {"Základ", "V2"},
@@ -56,6 +77,16 @@ namespace CardGame
                 if (hidden) GetComponent<SpriteRenderer>().sprite = cardBack;
                 else GetComponent<SpriteRenderer>().sprite = face;
             }
+        }
+        
+        public event EventHandler OnDiscardEvent;
+        public class TurnEventArgs
+        {
+            public TurnEventArgs(bool onTurn)
+            {
+                this.onTurn = onTurn;
+            }
+            public bool onTurn;
         }
 
         public event EventHandler<CardPlayedEventArgs> OnPlayed;
@@ -90,6 +121,10 @@ namespace CardGame
                 case "Spell":
                     cardType = CardType.Spell;
                     break;
+                case "Pole":
+                    cardType = CardType.Field;
+                    break;
+                default: throw new Exception("Unknown cardtype: "+data.type);
             }
             expansion = "Tokeny";
             if (expansionMapping.ContainsKey(data.expansion)) expansion = expansionMapping[data.expansion];
@@ -103,7 +138,7 @@ namespace CardGame
         }
         public void OnDiscard()
         {
-
+            OnDiscardEvent?.Invoke(this, new());
         }
         private void OnMouseUp()
         {
@@ -126,6 +161,10 @@ namespace CardGame
                     throw new NotImplementedException("check valid targetting. Either a func here or let ONUICastSpell return bool.");
                     GameManager.Instance.OnUICastSpell(this);
                 }
+                else if(cardType == CardType.Field)
+                {
+                    GameManager.Instance.OnUIPlayField(this);
+                }
                 else
                 {//Reset
                     transform.localPosition = new Vector3(0, 0, -1);
@@ -135,7 +174,7 @@ namespace CardGame
         }
         public void OnMouseDown()
         {
-            Debug.Log("Click Detected!");
+            //Debug.Log("Click Detected!");
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
             if (!GameManager.Instance.IsCardPlayable(this)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
@@ -162,10 +201,22 @@ namespace CardGame
             m.Battlecry(target);//(Battlecries get procked after occupying the slot but before getting affected) therefore probably before his INIT
             m.Initialize(this);
         }
-
-        internal void CastSpell(int target)//could be -1 rn
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target">-1 if no target given</param>
+        internal void CastSpell(int target)
         {
             OnPlayed?.Invoke(this, new() { Target = target });
+        }
+
+        internal void PlayField()
+        {
+            OnPlayed?.Invoke(this, new());
+            GameObject g = Instantiate(FieldPrefab, GameManager.Instance.FieldSlot.transform);
+            g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
+            Field f = g.GetComponent<Field>();
+            f.Initialize(this);
         }
     }
 }

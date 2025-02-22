@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.MiniJSON;
@@ -95,8 +96,8 @@ namespace CardGame
         }
         public class HealthDict{
             IDictionary<P,int> dict;
-            Transform OwnHPLabel;
-            Transform OppHPLabel;
+            private readonly Transform OwnHPLabel;
+            private readonly Transform OppHPLabel;
 
             public HealthDict(Dictionary<P, int> dict, Transform ownHPLabel, Transform oppHPLabel)
             {
@@ -131,11 +132,13 @@ namespace CardGame
         [SerializeField] Transform OwnHand;
         [SerializeField] Transform OppHand;
         Dictionary<P, CardSlot[]> HandSlots;
-        [SerializeField] CardSlot Field;
+        [SerializeField] public FieldSlot FieldSlot;
         [SerializeField] Transform OwnHPLabel;
         [SerializeField] Transform OppHPLabel;
         [SerializeField] Transform OwnCardCounter;
         [SerializeField] Transform OppCardCounter;
+        IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
+        IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c!=null select c; }//Will fail on null exception if you forget to assign Field slot.
         public Dictionary<int, CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
@@ -159,6 +162,20 @@ namespace CardGame
         public NetworkVariable<bool> ServerOnTurn = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         internal Card cursor;
         internal Transform highlightedSlot;
+
+        /// <summary>
+        /// Discard cards subscribe to this
+        /// </summary>
+        public event EventHandler<CardActionEventArgs> CardDiscarded;
+        public class CardActionEventArgs
+        {
+            public CardActionEventArgs(Card c)
+            {
+                card = c;
+            }
+            Card card;
+        }
+
         internal int HighlightedSlotIndex
         {
             get
@@ -199,17 +216,17 @@ namespace CardGame
             },OwnHPLabel,OppHPLabel);
             EffSlots = new()
             {
-                {P.P1,new CardSlot[maxEffSlots] },
+                {P.P1,new EffectSlot[maxEffSlots] },
                 {P.P2,new CardSlot[maxEffSlots] }
             };
             minionSlots = new()
             {
-                {P.P1,new CardSlot[maxMinionSlots] },
+                {P.P1,new MinionSlot[maxMinionSlots] },
                 {P.P2,new CardSlot[maxMinionSlots] }
             };
             HandSlots = new()
             {
-                {P.P1,new CardSlot[maxHandSlots] },
+                {P.P1,new HandSlot[maxHandSlots] },
                 {P.P2,new CardSlot[maxHandSlots] }
             };
         }
@@ -217,21 +234,21 @@ namespace CardGame
         {
             for (int i = 0; i < maxMinionSlots; i++)
             {
-                minionSlots[P.P1][i] = OwnMin.GetChild(i).GetComponent<CardSlot>();
+                minionSlots[P.P1][i] = OwnMin.GetChild(i).GetComponent<MinionSlot>();
                 minionSlots[P.P2][i] = OppMin.GetChild(i).GetComponent<CardSlot>();
                 minionSlots[P.P1][i].Initialize(P.P1, i);
                 minionSlots[P.P2][i].Initialize(P.P2,maxMinionSlots +  i);
             }
             for (int i = 0; i < maxEffSlots; i++)
             {
-                EffSlots[P.P1][i] = OwnEff.GetChild(i).GetComponent<CardSlot>();
+                EffSlots[P.P1][i] = OwnEff.GetChild(i).GetComponent<EffectSlot>();
                 EffSlots[P.P2][i] = OppEff.GetChild(i).GetComponent<CardSlot>();
                 EffSlots[P.P1][i].Initialize(P.P1, i);
                 EffSlots[P.P2][i].Initialize(P.P2, maxEffSlots + i);
             }
             for (int i = 0; i < maxHandSlots; i++)
             {
-                HandSlots[P.P1][i] = OwnHand.GetChild(i).GetComponent<CardSlot>();
+                HandSlots[P.P1][i] = OwnHand.GetChild(i).GetComponent<HandSlot>();
                 HandSlots[P.P2][i] = OppHand.GetChild(i).GetComponent<CardSlot>();
                 HandSlots[P.P1][i].Initialize(P.P1, i);
                 HandSlots[P.P2][i].Initialize(P.P2, maxHandSlots + i);
@@ -325,6 +342,11 @@ namespace CardGame
         }
         public void StartTurn()
         {
+            foreach (GameActor actor in AllActors )
+            {
+                actor.StartTurn(OnTurn);
+            }
+
             TurnCount++;
             if (!OnTurn)
             {
@@ -340,10 +362,7 @@ namespace CardGame
             }
 
 
-            if (OnTurn)
-            {
-                //Enable actions etc.
-            }
+            
         }
         public void DrawCard(P who)//We are true opp is false.
         {
@@ -383,6 +402,7 @@ namespace CardGame
         public void Discard(Card c, P who)
         {
             c.OnDiscard();
+            CardDiscarded?.Invoke(this, new(c));
             AddToGrave(c, who);
         }
         public void Fatigue(P who)
@@ -394,8 +414,11 @@ namespace CardGame
         public void ShuffleDeck(P who) => decks[who].Shuffle();
         public void EndTurnEffects()
         {
-            //Do end turn effects on my cards: (mins,eff,hand). (End of each turn will not be handled. I cannot be bothered)
-            //
+            foreach (GameActor actor in AllActors)
+            {
+                //if (actor != null)
+                actor.EndTurn(OnTurn);
+            }
         }
         Dictionary<string, Dictionary<string, string>> ParseExtraJSON()
         {
@@ -425,13 +448,13 @@ namespace CardGame
                 var value = (Dictionary<string, object>)pair.Value;
                 if (value["cost"] is String) continue;//We'll deal with you later (These are the ? costs)
                 string cardname = (string)value["name"];
-                if (cardname.EndsWith(" (token)")) { cardname = cardname.Substring(0, cardname.Length - " (token)".Length); }//Truly the most elegant solution. SarcasmError: maximum sarcasm value exceeded
+                if (cardname.EndsWith(" (token)")) { cardname = cardname[..^" (token)".Length]; }//Truly the most elegant solution. SarcasmError: maximum sarcasm value exceeded
                 CardData data = new()
                 {
                     name = (string)value["name"],
                     rarity = (string)value["rarity"],
                     type = (string)value["type"],
-                    cost = (int)((System.Int64)value["cost"]),
+                    cost = (int)(System.Int64)value["cost"],
                     tag = (string)value["tag"],
                     Class = (string)value["Class"],
                     expansion = (string)value["expansion"],
@@ -496,6 +519,11 @@ namespace CardGame
             //Debug.Log("About to call ServerRPC!");
             TakeActionServerRpc(action, new());//Send to opponent
         }
+        public void OnUIPlayField(Card c)
+        {
+            PlayerAction action = PlayerAction.PlayCardAction(c.GetComponentInParent<CardSlot>().index,-1);
+            OnUITakeAction(action);
+        }
         public bool IsCardPlayable(Card card)
         {
             return true;//TODO enough mana to play it. Any eligible targets etc.
@@ -503,7 +531,7 @@ namespace CardGame
         }
         bool ValidateAction(PlayerAction action)
         {
-            //Do we have enough mana
+            //TODO: Do we have enough mana
             //Is the slot free
             //etc.
             return true;
@@ -532,9 +560,15 @@ namespace CardGame
                         card.gameObject.SetActive(false);
 
                     }
+                    else if (card.cardType == Card.CardType.Field)
+                    {
+                        FieldSlot.ClearField();
+                        FieldSlot.PlaceCard(card);
+                        card.PlayField();
+                        card.gameObject.SetActive(false);
+                    }
                     else if (card.cardType == Card.CardType.Spell)
                     {
-                        Debug.Log("Cast speeeell");
                         card.CastSpell(action.Target);
                         AddToGrave(card,who);
                         card.standardScale = Vector3.one;//Maybe?
