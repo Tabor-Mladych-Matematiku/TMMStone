@@ -3,28 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.Services.Lobbies.Models;
+using UnityEditor;
 using UnityEngine;
 
 namespace CardGame
 {
     public abstract class TableActor : GameActor
     {
-        [SerializeField] SpriteRenderer HighlightRim;
+        [SerializeField] protected SpriteRenderer HighlightRim;
+        protected Color highlightColor;
+        protected Color defaultColor;
         [SerializeField] SpriteRenderer graphic;
-        Color highlightColor;
-        Color defaultColor;
-        private void Awake()
+        public virtual void OnMouseEnter()
         {
-            defaultColor = HighlightRim.color;
-            highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
         }
-        public void OnMouseEnter()
+        public virtual void OnMouseExit()
         {
-            HighlightRim.color = highlightColor;
-        }
-        public void OnMouseExit()
-        {
-            HighlightRim.color = defaultColor;
+            
         }
         public virtual void Initialize(Card c)
         {
@@ -49,10 +44,7 @@ namespace CardGame
         }
         public int Health
         {
-            get
-            {
-                return h;
-            }
+            get => h;
             private set
             {
                 h = value;
@@ -60,7 +52,11 @@ namespace CardGame
                 if (value <= 0) Death();
             }
         }
-
+        private void Awake()
+        {
+            defaultColor = HighlightRim.color;
+            highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
+        }
         private void Death()
         {
             OnDeath?.Invoke(this, new());
@@ -69,10 +65,7 @@ namespace CardGame
 
         public int Attack
         {
-            get
-            {
-                return a;
-            }
+            get=> a;
             private set
             {
                 a = math.max(0, value);
@@ -97,7 +90,21 @@ namespace CardGame
             if (!CanAttack) return;
 
         }
-
+        public override void OnMouseEnter()
+        {
+            if (GameManager.Instance.OnTurn && Owner == GameManager.P.P1)
+                HighlightRim.color = highlightColor;
+            Card holding = GameManager.Instance.cursor;
+            if (holding != null && holding.cardType == Card.CardType.Spell && holding.Targetted && holding.IsTargetValid(this) && transform.childCount == 0)
+            {
+                GameManager.Instance.highlightedActor = this;
+            }
+        }
+        public override void OnMouseExit()
+        {
+            HighlightRim.color = defaultColor;
+            GameManager.Instance.highlightedActor = null;
+        }
         internal void Battlecry(int target)
         {
             OnBattleCry?.Invoke(this, new() { target = target });

@@ -19,6 +19,9 @@ Import json in lobby selection
 	Display Deck Class in Lobby
 
 
+Notes:
+I think there are cases in which "highlighted slot" and "highlightedActor" may keep wrong data - fix?
+
 REQUIREMENTS:
 DONE:
 R1: PC and Android

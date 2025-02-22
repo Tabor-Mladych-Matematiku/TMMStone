@@ -26,7 +26,7 @@ namespace CardGame
                 GameManager.Instance.highlightedSlot = transform;
             }
         }
-        private void OnMouseExit()
+        protected virtual void OnMouseExit()
         {
             if (Owner != GameManager.P.P1) return;
             HighlightBox.color = new(0, 0, 0, 0);

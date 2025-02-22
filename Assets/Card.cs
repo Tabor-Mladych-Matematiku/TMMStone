@@ -9,17 +9,17 @@ namespace CardGame
 {
     public abstract class GameActor : MonoBehaviour
     {
+        public class TurnEventArgs
+        {
+            public TurnEventArgs(bool onTurn) => this.OnTurn = onTurn;
+            public bool OnTurn { get; private set; }
+        }
         public event EventHandler<TurnEventArgs> OnStartTurn;
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
-        public virtual void StartTurn(bool onTurn)
-        {
-            OnStartTurn?.Invoke(this, new(onTurn));
-        }
-        public virtual void EndTurn(bool onTurn)
-        {
-            OnEndTurn?.Invoke(this, new(onTurn));
-        }
+        public GameManager.P Owner { get=>transform.GetComponentInParent<CardSlot>().Owner; }
+        public virtual void StartTurn(bool onTurn)=> OnStartTurn?.Invoke(this, new(onTurn));
+        public virtual void EndTurn(bool onTurn)=>OnEndTurn?.Invoke(this, new(onTurn));
     }
 
 
@@ -65,7 +65,7 @@ namespace CardGame
         [SerializeField] GameObject MinionPrefab;
         [SerializeField] GameObject FieldPrefab;
         [SerializeField] GameObject EffectPrefab;
-        bool Targetted;
+        public bool Targetted { get; private set; }
         public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
             {"Základ", "V2"},
             {"PTMM","GULAG" }
@@ -81,20 +81,16 @@ namespace CardGame
         }
 
         public event EventHandler OnDiscardEvent;
-        public class TurnEventArgs
-        {
-            public TurnEventArgs(bool onTurn)
-            {
-                this.onTurn = onTurn;
-            }
-            public bool onTurn;
-        }
-
         public event EventHandler<CardPlayedEventArgs> OnPlayed;
         public class CardPlayedEventArgs
         {
-            public int Target;
+            public CardPlayedEventArgs(int target=-1) => Target = target;
+            public int Target { get; private set; }
         }
+        /// <summary>
+        /// Scripts reasign this to modify what is valid target
+        /// </summary>
+        public Func<bool> TargetValidator = ()=>true;
 
         private void Awake()
         {
@@ -137,10 +133,7 @@ namespace CardGame
             }
             cardBack = Resources.Load<Sprite>("CardData/card-back");
         }
-        public void OnDiscard()
-        {
-            OnDiscardEvent?.Invoke(this, new());
-        }
+        public void OnDiscard()=>OnDiscardEvent?.Invoke(this, new());
         private void OnMouseUp()
         {
             if (GameManager.Instance.cursor == this)
@@ -163,9 +156,7 @@ namespace CardGame
                 }
                 else if (cardType == CardType.Spell)
                 {
-                    throw new NotImplementedException("check valid targetting. Either a func here or let ONUICastSpell return bool.");
-                    int target;
-                    GameManager.Instance.OnUICastSpell(SlotIndex, target);
+                    GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);
                 }
                 else if (cardType == CardType.Field)
                 {
@@ -178,6 +169,13 @@ namespace CardGame
                 GameManager.Instance.cursor = null;
             }
         }
+
+        public bool IsTargetValid(GameActor actor)
+        {
+            if (actor == null) return false;
+            return TargetValidator();
+        }
+
         public void OnMouseDown()
         {
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
@@ -197,7 +195,7 @@ namespace CardGame
 
         internal void PlayMinion(CardSlot slot, int target)
         {
-            OnPlayed?.Invoke(this, new() { Target = target });
+            OnPlayed?.Invoke(this, new(target));
             GameObject g = Instantiate(MinionPrefab, slot.transform);
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Minion m = g.GetComponent<Minion>();
@@ -210,7 +208,7 @@ namespace CardGame
         /// <param name="target">-1 if no target given</param>
         internal void CastSpell(int target)
         {
-            OnPlayed?.Invoke(this, new() { Target = target });
+            OnPlayed?.Invoke(this, new(target));
         }
 
         internal void PlayField()

@@ -46,27 +46,19 @@ namespace CardGame
             public int Slot { readonly get => slot; private set => slot = value; }
             private int target;
             public int Target { readonly get => target; private set => target = value; }//Used for targetting various things
-            public static PlayerAction PlayCardAction(int card, int target, int slot=-1)
+            public static PlayerAction PlayCardAction(int card, int target, int slot = -1) => new()
             {
-                return new()
-                {
-                    Source = card,
-                    Actiontype = ActionType.Play,
-                    Slot = slot,
-                    Target = target
-                };
-
-            }
-            public static PlayerAction AttackAction(int card, int slot)
+                Source = card,
+                Actiontype = ActionType.Play,
+                Slot = slot,
+                Target = target
+            };
+            public static PlayerAction AttackAction(int card, int slot) => new()
             {
-                return new()
-                {
-                    Source = card,
-                    Actiontype = ActionType.Attack,
-                    Target = slot
-                };
-
-            }
+                Source = card,
+                Actiontype = ActionType.Attack,
+                Target = slot
+            };
 
             public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
             {
@@ -85,17 +77,13 @@ namespace CardGame
         class DeckSave
         {
             public int[] data;
-            public DeckSave(int[] data)
-            {
-                this.data = data;
-            }
-            public override string ToString()
-            {
-                return new StringBuilder().AppendJoin(" ", data).ToString();
-            }
+            public DeckSave(int[] data)=>this.data = data;
+            
+            public override string ToString() => new StringBuilder().AppendJoin(" ", data).ToString();
         }
-        public class HealthDict{
-            IDictionary<P,int> dict;
+        public class HealthDict
+        {
+            IDictionary<P, int> dict;
             private readonly Transform OwnHPLabel;
             private readonly Transform OppHPLabel;
 
@@ -108,14 +96,15 @@ namespace CardGame
 
             public int this[P key]
             {
-                get { return dict[key]; }
-                set {
+                get => dict[key];
+                set
+                {
                     dict[key] = value;
-                    if(key ==P.P1) OwnHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = value.ToString();
+                    if (key == P.P1) OwnHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = value.ToString();
                     else OppHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = value.ToString();
                 }
             }
-            }
+        }
         public static GameManager Instance { get; private set; }
         [SerializeField] Deck OwnDeck;
         [SerializeField] Deck OppDeck;
@@ -138,7 +127,7 @@ namespace CardGame
         [SerializeField] Transform OwnCardCounter;
         [SerializeField] Transform OppCardCounter;
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
-        IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c!=null select c; }//Will fail on null exception if you forget to assign Field slot.
+        IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
         public Dictionary<int, CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
@@ -162,6 +151,7 @@ namespace CardGame
         public NetworkVariable<bool> ServerOnTurn = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         internal Card cursor;
         internal Transform highlightedSlot;
+        internal GameActor highlightedActor;
 
         /// <summary>
         /// Discard cards subscribe to this
@@ -169,10 +159,7 @@ namespace CardGame
         public event EventHandler<CardActionEventArgs> CardDiscarded;
         public class CardActionEventArgs
         {
-            public CardActionEventArgs(Card c)
-            {
-                card = c;
-            }
+            public CardActionEventArgs(Card c)=>card = c;
             readonly Card card;
         }
 
@@ -194,13 +181,28 @@ namespace CardGame
                 return slot;
             }
         }
-
-        public bool OnTurn
+        internal int HighlightedActorIndex
         {
             get
             {
-                return IsServer == ServerOnTurn.Value;
+                int slot = -1;
+                if (highlightedActor == null) return slot;
+                for (int i = 0; i < maxMinionSlots; i++)
+                {
+                    if (((MinionSlot)minionSlots[P.P1][i]).GetMinion() == highlightedActor) { slot = i; break; }
+                }
+                if (slot != -1) return slot;
+                for (int i = 0; i < maxMinionSlots; i++)
+                {
+                    if (((MinionSlot)minionSlots[P.P2][i]).GetMinion() == highlightedActor) { slot = maxMinionSlots + i; break; }
+                }
+                return slot;
             }
+        }
+
+        public bool OnTurn
+        {
+            get => IsServer == ServerOnTurn.Value;
             set
             {
                 if (IsServer) ServerOnTurn.Value = value;
@@ -210,10 +212,10 @@ namespace CardGame
         private void Awake()
         {
             Instance = this;
-            Healths = new( new(){
+            Healths = new(new(){
                 {P.P1,MaxHealths[P.P1] },
                 {P.P2,MaxHealths[P.P2]}
-            },OwnHPLabel,OppHPLabel);
+            }, OwnHPLabel, OppHPLabel);
             EffSlots = new()
             {
                 {P.P1,new EffectSlot[maxEffSlots] },
@@ -237,7 +239,7 @@ namespace CardGame
                 minionSlots[P.P1][i] = OwnMin.GetChild(i).GetComponent<MinionSlot>();
                 minionSlots[P.P2][i] = OppMin.GetChild(i).GetComponent<CardSlot>();
                 minionSlots[P.P1][i].Initialize(P.P1, i);
-                minionSlots[P.P2][i].Initialize(P.P2,maxMinionSlots +  i);
+                minionSlots[P.P2][i].Initialize(P.P2, maxMinionSlots + i);
             }
             for (int i = 0; i < maxEffSlots; i++)
             {
@@ -289,35 +291,30 @@ namespace CardGame
                 if (prev == n) return;//Should not happen but to make sure.
                 EndTurnEffects();
                 StartTurn();
-
             };
-            NetworkManager.OnClientDisconnectCallback +=(_)=>Application.Quit();
+            NetworkManager.OnClientDisconnectCallback += (_) => ClientDisconnected();
             //Load decks
             string debugstringchoice = "MyDeck";
             if (IsServer) debugstringchoice = "OppDeck";
-            int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/"+ debugstringchoice).text));//TODO import from json in PlayerData
-            
+            int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/" + debugstringchoice).text));//TODO import from json in PlayerData
+
             LoadDeck(decks[P.P1], OwnDeckList);
             if (IsServer)
+                NetworkManager.OnClientConnectedCallback += (clientId) => { if (clientId != NetworkManager.LocalClientId) OnOpponentConnected(OwnDeckList); };
+            else
             {
-                NetworkManager.OnClientConnectedCallback += (clientId) => { if (clientId != NetworkManager.LocalClientId) onOpponentConnected(clientId, OwnDeckList); };
-            }
-            else { onOpponentConnected(NetworkManager.LocalClientId, OwnDeckList);
-                
+                OnOpponentConnected(OwnDeckList);
                 //System.IO.File.WriteAllText("CurrentDeck.json", JsonUtility.ToJson(new DeckSave(OwnDeckList)));
                 //Debug.Log(JsonUtility.FromJson<DeckSave>(System.IO.File.ReadAllText("CurrentDeck.json")).ToString());
             }
-
         }
-        private void onOpponentConnected(ulong clientId, int[] OwnDeckList)
+
+        private void ClientDisconnected()//TODO: "Yer opponent left!"
         {
-            //Debug.Log("calling srpc");
-            AnnounceDeckServerRpc(OwnDeckList, new());//loads own deck and sends it to the other.
-            //var OppDeckList = (List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/OppDeck").text);//TODO get from Lobby
-            //LoadDeck(decks[P.P2], OppDeckList);
+            Application.Quit();
         }
 
-
+        private void OnOpponentConnected(int[] OwnDeckList) => AnnounceDeckServerRpc(OwnDeckList, new());//loads own deck and sends it to the other.
         private int[] GetCardIDs(List<object> DecodedDeckList)
         {
             int[] ids = new int[DecodedDeckList.Count];
@@ -325,24 +322,23 @@ namespace CardGame
             for (int i = 0; i < DecodedDeckList.Count; i++)
             {
                 long item = (long)DecodedDeckList[i];
-                ids[i]=(int)item;
+                ids[i] = (int)item;
             }
-                return ids;
+            return ids;
         }
         private void LoadDeck(Deck d, int[] ids)
         {
             foreach (int id in ids)
             {
-                var c = Instantiate(CardPrefab);
-                Card Cardscript = c.GetComponent<Card>();
+                Card Cardscript = Instantiate(CardPrefab).GetComponent<Card>();
                 Cardscript.Initialize(CardDatabase[id]);
                 d.Add(Cardscript);
             }
-            
+
         }
         public void StartTurn()
         {
-            foreach (GameActor actor in AllActors )
+            foreach (GameActor actor in AllActors)
             {
                 actor.StartTurn(OnTurn);
             }
@@ -360,14 +356,9 @@ namespace CardGame
                 EndTurnBtn.interactable = true;
                 DrawCard(P.P1);
             }
-
-
-            
         }
         public void DrawCard(P who)//We are true opp is false.
         {
-
-            //We draw card
             Card card = decks[who].PopFirst();
 
             if (card == null)
@@ -478,21 +469,18 @@ namespace CardGame
         {
             graves[who].Add(c);
             c.transform.localPosition -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
-
-
         }
-        public void OnUIPlayMinion(int cardindex, int minionSlotIndex,int target=-1)=>OnUITakeAction(PlayerAction.PlayCardAction(cardindex,target, minionSlotIndex));
-        public void OnUIAttackMinion(int minionSlotIndex, int minionSlotTarget)=>OnUITakeAction(PlayerAction.AttackAction(minionSlotIndex, minionSlotTarget));
-        public void OnUICastSpell(int cardindex, int target = -1)=>OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target));
+        public void OnUIPlayMinion(int cardindex, int minionSlotIndex, int target = -1) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target, minionSlotIndex));
+        public void OnUIAttackMinion(int minionSlotIndex, int minionSlotTarget) => OnUITakeAction(PlayerAction.AttackAction(minionSlotIndex, minionSlotTarget));
+        public void OnUICastSpell(int cardindex, int target = -1) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target));
         public void OnUIPlayField(int cardindex) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, -1));
         public void OnUITakeAction(PlayerAction action)
         {
             if (!ValidateAction(action)) return;
             TakeAction(P.P1, action);//Play it out
-            //Debug.Log("About to call ServerRPC!");
             TakeActionServerRpc(action, new());//Send to opponent
         }
-        
+
         /// <summary>
         /// Mainly for UI purposes
         /// </summary>
@@ -543,7 +531,7 @@ namespace CardGame
                     else if (card.cardType == Card.CardType.Spell)
                     {
                         card.CastSpell(action.Target);
-                        AddToGrave(card,who);
+                        AddToGrave(card, who);
                         card.standardScale = Vector3.one;//Maybe?
                     }
                     else throw new Exception("Unknown cardType");
@@ -566,49 +554,24 @@ namespace CardGame
             else if (!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
         }
         [ClientRpc(RequireOwnership = false)]
-        private void TakeActionClientRpc(PlayerAction action, ClientRpcParams crp)//This runs only on opponent.
-        {
-            /*
-            //DebugInfo
-            string message = "Action Recieved on: ";
-            if (IsHost) message += "Host";
-            else message += "Client";
-            //message += " with ID: " + crp.Send.TargetClientIds[0];
-            Debug.Log(message);
-            */
-            TakeAction(P.P2, action);
-
-        }
+        private void TakeActionClientRpc(PlayerAction action, ClientRpcParams crp) => TakeAction(P.P2, action);//This runs only on opponent.
         [ServerRpc(RequireOwnership = false)]
-        private void TakeActionServerRpc(PlayerAction action, ServerRpcParams srp)
+        private void TakeActionServerRpc(PlayerAction action, ServerRpcParams srp) => TakeActionClientRpc(action, new()
         {
-            ulong target = 1 - srp.Receive.SenderClientId;
-            //Debug.Log("We are in the Server RPC! This guy called: " + srp.Receive.SenderClientId + " Calling to: " + target);
-            TakeActionClientRpc(action,
-                new()
-                {
-                    Send = new()
-                    {
-                        TargetClientIds = new List<ulong>() { target }//We wanna talk to the other un.
-                    }
-                }
-            );
+            Send = new()
+            {
+                TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+            }
         }
+        );
         [ServerRpc(RequireOwnership = false)]
-        private void AnnounceDeckServerRpc(int[] deck, ServerRpcParams srp)
+        private void AnnounceDeckServerRpc(int[] deck, ServerRpcParams srp) => AnnounceDeckClientRpc(deck, new()
         {
-            ulong target = 1 - srp.Receive.SenderClientId;
-            Debug.Log("We are in the Server RPC! This guy called: " + srp.Receive.SenderClientId + " Calling to: " + target);
-            AnnounceDeckClientRpc(deck,
-                new()
-                {
-                    Send = new()
-                    {
-                        TargetClientIds = new List<ulong>() { target }//We wanna talk to the other un.
-                    }
-                }
-            );
-        }
+            Send = new()
+            {
+                TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+            }
+        });
         [ClientRpc(RequireOwnership = false)]
         private void AnnounceDeckClientRpc(int[] deck, ClientRpcParams crp)//This runs only on opponent.
         {
