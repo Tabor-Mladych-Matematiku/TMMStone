@@ -15,6 +15,7 @@ namespace CardGame
         protected Color attkColor;
         protected Color defaultColor;
         [SerializeField] SpriteRenderer graphic;
+        protected Card original;
         public virtual void OnMouseEnter()
         {
         }
@@ -24,6 +25,7 @@ namespace CardGame
         }
         public virtual void Initialize(Card c)
         {
+            original = c;
             Sprite sprite = Resources.Load<Sprite>("CardPlainImages/" + c.expansion + "/" + c.cardname);
             if (sprite != null) graphic.sprite = sprite;
         }

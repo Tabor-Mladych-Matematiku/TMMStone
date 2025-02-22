@@ -9,18 +9,21 @@ Things to polish:
 TODO:
 LobbyUI Polish
 	Lobby musí mít jméno, nesmí v něm být cizí znaky
-	Loading screeny
-Minions - Attacking
-Spells - Make it so that you can undo casting.
+	Loading screeny - schovat Loadující se scénu
+Face - some modification on Minion slots needed
+Spells - Make it so that you can undo casting nontargetted spell. (Probably a box around your side of the screen or distance from original spot)
 Make a manacounter and manacosts.
 Prettier Menu
 Export json from website
 Import json in lobby selection
 	Display Deck Class in Lobby
+	Probably make a deck folder with JSONs
+	List them in Lobby selection and allow the selection of one.
 
 
 Notes:
 I think there are cases in which "highlighted slot" and "highlightedActor" may keep wrong data - fix?
+(They null themselves on leaving the mouse. But that may not be enough)
 
 REQUIREMENTS:
 DONE:
@@ -53,6 +56,6 @@ A10 - polish
 A12 - Good settings
 
 Proly no:
-A1 - Save&Load
-A7 - Splitscreen
+A1 - Save&Load (Could just store actions and play them really quickly at the start)
+A7 - Splitscreen (Would have to bypass all the network code and I don't wanna do that)
 

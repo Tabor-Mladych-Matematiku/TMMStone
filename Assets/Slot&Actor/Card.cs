@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static CardGame.Card;
 using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.UI.Image;
 
 namespace CardGame
 {
@@ -65,6 +66,8 @@ namespace CardGame
         [SerializeField] GameObject MinionPrefab;
         [SerializeField] GameObject FieldPrefab;
         [SerializeField] GameObject EffectPrefab;
+
+        [SerializeField] public AudioClip cardPlaced;
         public bool Targetted { get; private set; }
         public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
             {"Základ", "V2"},
@@ -136,10 +139,12 @@ namespace CardGame
         public void OnDiscard()=>OnDiscardEvent?.Invoke(this, new());
         private void OnMouseUp()
         {
+            bool play_sound = true;
             if (GameManager.Instance.cursor == this)
             {
                 if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//TODO figure out targetted battlecries
                 {//We have source and target
+                    play_sound = false; //Card will get disabled Must play on minion
                     if (!Targetted)
                         GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex);
                     else
@@ -164,8 +169,10 @@ namespace CardGame
                 }
                 else
                 {//Reset
+                    play_sound = false;
                     transform.localPosition = new Vector3(0, 0, -1);
                 }
+                if(play_sound)GetComponent<AudioSource>().PlayOneShot(cardPlaced);
                 GameManager.Instance.cursor = null;
             }
         }
@@ -181,6 +188,7 @@ namespace CardGame
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
             if (!GameManager.Instance.IsCardPlayable(this)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
+            GetComponent<AudioSource>().Play();
         }
         public void OnMouseEnter()
         {
@@ -201,6 +209,7 @@ namespace CardGame
             Minion m = g.GetComponent<Minion>();
             m.Battlecry(target);//(Battlecries get procked after occupying the slot but before getting affected) therefore probably before his INIT
             m.Initialize(this);
+            m.GetComponent<AudioSource>().PlayOneShot(cardPlaced);
         }
         /// <summary>
         /// 
@@ -218,6 +227,7 @@ namespace CardGame
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Field f = g.GetComponent<Field>();
             f.Initialize(this);
+            f.GetComponent<AudioSource>().PlayOneShot(cardPlaced);
         }
     }
 }
