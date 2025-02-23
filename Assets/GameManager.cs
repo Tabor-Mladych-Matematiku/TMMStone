@@ -517,15 +517,10 @@ namespace CardGame
             {
                 case PlayerAction.ActionType.Play:
                     Card card = HandSlots[who][action.Source].PopCard();
-                    ManaCounters[who].Mana -= card.mana;
+                    ManaCounters[who].Mana -= card.mana;//TODO: mana modifiers. probably do it on card.mana
                     if (card.cardType == Card.CardType.Minion)
                     {
                         CardSlot slot = minionSlots[who][action.Slot];
-                        /*CardSlot target = null;
-                        if (action.Target != -1)
-                        {
-                            target = minionSlots[who][action.Target];
-                        }*/
                         slot.PlaceCard(card);
                         card.PlayMinion(slot, action.Target);
                         card.gameObject.SetActive(false);
@@ -559,10 +554,7 @@ namespace CardGame
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
         {
             //Debug.Log("SenderID: " + Srpcparams.Receive.SenderClientId);
-            if (ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 0)
-            {
-                ServerOnTurn.Value = false;
-            }
+            if (ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 0)ServerOnTurn.Value = false;
             else if (!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
         }
         [ClientRpc(RequireOwnership = false)]
@@ -589,12 +581,9 @@ namespace CardGame
         {
             LoadDeck(decks[P.P2], deck);
             //StartGame stuff
-
-
             //Animations (Who against who)
 
 
-            //
             //Cointoss anim
             for (int i = 0; i < 3; i++)
                 if (OnTurn) DrawCard(P.P1);
