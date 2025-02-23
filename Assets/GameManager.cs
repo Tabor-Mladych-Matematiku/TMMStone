@@ -490,7 +490,6 @@ namespace CardGame
         public void OnUIPlayField(int cardindex) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, -1));
         public void OnUITakeAction(PlayerAction action)
         {
-            if (!ValidateAction(action)) return;
             TakeAction(P.P1, action);//Play it out
             TakeActionServerRpc(action, new());//Send to opponent
         }
@@ -500,17 +499,13 @@ namespace CardGame
         /// </summary>
         /// <param name="card"></param>
         /// <returns></returns>
-        public bool IsCardPlayable(Card card) => true;
-        /*{
-            //TODO enough mana to play it. Any eligible targets etc.
-        }*/
-        bool ValidateAction(PlayerAction action)
+        public bool IsCardPlayable(Card card)
         {
-            //TODO: Do we have enough mana
-            //Is the slot free
-            //etc.
-            return true;
+            return card.mana <= ManaCounters[P.P1].Mana;
+            //TODO Any eligible targets etc.
         }
+
+
         /// <summary>
         /// Simulate move (good for network, could be used for AI etc.)
         /// </summary>
@@ -522,6 +517,7 @@ namespace CardGame
             {
                 case PlayerAction.ActionType.Play:
                     Card card = HandSlots[who][action.Source].PopCard();
+                    ManaCounters[who].Mana -= card.mana;
                     if (card.cardType == Card.CardType.Minion)
                     {
                         CardSlot slot = minionSlots[who][action.Slot];
