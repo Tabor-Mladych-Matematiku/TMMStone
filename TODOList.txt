@@ -1,30 +1,31 @@
-Things to polish:
-	Network:
-		Loading screens and such - hide the network accesses.
-		"Your opponent left"
-	Cards: 
-		OnMouseOver they show themselves Properly over whole screen.
-		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
-
 TODO:
 	Priority:
 		Make a manacounter and manacosts.
 		Face - some modification on Minion slots needed
 
-LobbyUI Polish
-	Lobby musí mít jméno, nesmí v něm být cizí znaky
-	Loading screeny - schovat Loadující se scénu
 
-BattleCry - after placing a battlecry minion attach a fake cardlike thing to the cursor that will onclick either finish the op or cancel it.
-	Will probably have to add a check to not highlight anything when we have something in the cursor.
-Spells - Make it so that you can undo casting nontargetted spell. (Probably a box around your side of the screen or distance from original spot)
+	BattleCry - after placing a battlecry minion attach a fake cardlike thing to the cursor that will onclick either finish the op or cancel it.
+		Will probably have to add a check to not highlight anything when we have something in the cursor.
+	Spells - Make it so that you can undo casting nontargetted spell. (Probably a box around your side of the screen or distance from original spot)
 
-Prettier Menu
-Export json from website
-Import json in lobby selection
-	Display Deck Class in Lobby
-	Probably make a deck folder with JSONs
-	List them in Lobby selection and allow the selection of one.
+	Export json from website
+	Import json in lobby selection
+		Display Deck Class in Lobby
+		Probably make a deck folder with JSONs
+		List them in Lobby selection and allow the selection of one.
+
+
+Things to polish:
+	- Network:
+		Loading screens and such - hide the network accesses.
+		"Your opponent left"
+	- Cards: 
+		OnMouseOver they show themselves Properly over whole screen.
+		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
+	- Prettier Menu
+	- LobbyUI:
+		Lobby musí mít jméno, nesmí v něm být cizí znaky
+		Loading screeny - schovat Loadující se scénu
 
 
 Notes:
@@ -38,8 +39,9 @@ R3: Running smoothly
 C10: Netcode
 A16 - cloud services - Lobby,Relay
 
+
 UNSURE:
-R2: Sound - More sounds, music volume, muting etc.
+R2: Sound - Music volume, muting etc.
 R4: Adaptive screen - kinda
 R7: Using input system - I mean I imported it but its not like its useful
 R8: Using Universal rendering pipeline - ???
@@ -48,20 +50,5 @@ R8: Using Universal rendering pipeline - ???
 TODO:
 R5: Plugin - TODO UI Toolkit and Dotween?
 R6: EditorExt: TODO: cardMakyr,displayer
-
-
-1 of the bellow:
-Likely:
-A2 - Adressables - Read on this shit but its like remote assets
-A6 - Tweens
-
-Possible:
-A3 - Particle system
-A8 - animations
-A10 - polish
-A12 - Good settings
-
-Proly no:
-A1 - Save&Load (Could just store actions and play them really quickly at the start)
-A7 - Splitscreen (Would have to bypass all the network code and I don't wanna do that)
+A2 - Adressables - Do once all other is done.
 

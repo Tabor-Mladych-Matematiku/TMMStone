@@ -55,10 +55,7 @@ namespace CardGame
             if (Occupied) throw new CardSlotException("Already occupied");
             c.transform.parent = transform;
         }
-        public Card GetCard()
-        {
-            return transform.GetComponentInChildren<Card>();
-        }
+        public Card GetCard()=> transform.GetComponentInChildren<Card>();
         public Card PopCard()
         {
             Card c = transform.GetComponentInChildren<Card>(true);

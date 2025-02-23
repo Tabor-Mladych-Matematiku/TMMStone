@@ -29,7 +29,7 @@ namespace CardGame
         {
             if (who == GameManager.P.P1) return GameManager.P.P2;
             return GameManager.P.P1;
-        } 
+        }
     }
 
     public class GameManager : NetworkBehaviour
@@ -80,8 +80,8 @@ namespace CardGame
         class DeckSave
         {
             public int[] data;
-            public DeckSave(int[] data)=>this.data = data;
-            
+            public DeckSave(int[] data) => this.data = data;
+
             public override string ToString() => new StringBuilder().AppendJoin(" ", data).ToString();
         }
         public class HealthDict
@@ -129,6 +129,9 @@ namespace CardGame
         [SerializeField] Transform OppHPLabel;
         [SerializeField] Transform OwnCardCounter;
         [SerializeField] Transform OppCardCounter;
+        public ManaCounter OwnManaCounter;
+        public ManaCounter OppManaCounter;
+        Dictionary<P, ManaCounter> ManaCounters;
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
         public Dictionary<int, CardData> CardDatabase;
@@ -162,7 +165,7 @@ namespace CardGame
         public event EventHandler<CardActionEventArgs> CardDiscarded;
         public class CardActionEventArgs
         {
-            public CardActionEventArgs(Card c)=>card = c;
+            public CardActionEventArgs(Card c) => card = c;
             readonly Card card;
         }
 
@@ -234,6 +237,7 @@ namespace CardGame
                 {P.P1,new HandSlot[maxHandSlots] },
                 {P.P2,new CardSlot[maxHandSlots] }
             };
+
         }
         private void Start()
         {
@@ -267,6 +271,10 @@ namespace CardGame
             {
                 {P.P1,OwnGrave },
                 {P.P2,OppGrave}
+            };
+            ManaCounters = new() {
+                {P.P1 , OwnManaCounter },
+                {P.P2 , OppManaCounter }
             };
             //Load cards
             LoadCardDatabase();
@@ -351,12 +359,16 @@ namespace CardGame
             {
                 EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "Opponents Turn";
                 EndTurnBtn.interactable = false;
+                if (OppManaCounter.MaxMana < 10) OppManaCounter.MaxMana++;
+                OppManaCounter.Mana = OppManaCounter.MaxMana;
                 DrawCard(P.P2);
             }
             else
             {
                 EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "End Turn";
                 EndTurnBtn.interactable = true;
+                if (OwnManaCounter.MaxMana < 10) OwnManaCounter.MaxMana++;
+                OwnManaCounter.Mana = OwnManaCounter.MaxMana;
                 DrawCard(P.P1);
             }
         }
@@ -540,7 +552,7 @@ namespace CardGame
                     break;
                 case PlayerAction.ActionType.Attack:
                     Minion Ownminion = minionSlots[who][action.Source].GetComponentInChildren<Minion>();//Opponents dont have minion slots so we cannot cast and do GetMinion
-                    Minion Oppminion = minionSlots[who.Other()][action.Target-maxMinionSlots].GetComponentInChildren<Minion>();
+                    Minion Oppminion = minionSlots[who.Other()][action.Target - maxMinionSlots].GetComponentInChildren<Minion>();
                     Ownminion.AttackAction(Oppminion);
                     break;
                 default:
