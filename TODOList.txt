@@ -1,6 +1,5 @@
 TODO:
 	Priority:
-		Make a manacounter and manacosts.
 		Face - some modification on Minion slots needed
 
 
