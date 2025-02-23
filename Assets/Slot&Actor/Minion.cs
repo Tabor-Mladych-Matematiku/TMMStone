@@ -61,8 +61,9 @@ namespace CardGame
                 if (value <= 0) Death();
             }
         }
-        private void Awake()
+        internal override void Awake()
         {
+            base.Awake();
             defaultColor = HighlightRim.color;
             highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
             attkColor = new(defaultColor.g, defaultColor.r, defaultColor.b, 0.8f);//Interesting choice but ok

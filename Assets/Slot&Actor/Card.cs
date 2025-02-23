@@ -22,6 +22,11 @@ namespace CardGame
         public GameManager.P Owner { get=>transform.GetComponentInParent<CardSlot>().Owner; }
         public virtual void StartTurn(bool onTurn)=> OnStartTurn?.Invoke(this, new(onTurn));
         public virtual void EndTurn(bool onTurn)=>OnEndTurn?.Invoke(this, new(onTurn));
+
+        internal virtual void Awake()
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
 
@@ -68,7 +73,7 @@ namespace CardGame
         [SerializeField] GameObject FieldPrefab;
         [SerializeField] GameObject EffectPrefab;
 
-        [SerializeField] public AudioClip cardPlaced;
+        public AudioClip cardPlaced;
         public bool Targetted { get; private set; }
         public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
             {"Základ", "V2"},
@@ -96,10 +101,10 @@ namespace CardGame
         /// </summary>
         public Func<bool> TargetValidator = ()=>true;
 
-        private void Awake()
+        internal override void Awake()
         {
+            base.Awake();
             face = GetComponent<SpriteRenderer>().sprite;
-            audioSource = GetComponent<AudioSource>();
             standardScale = transform.localScale;
             Targetted = false;//TODO: load from cardScripts.
         }

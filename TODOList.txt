@@ -39,13 +39,13 @@ C10: Netcode
 A16 - cloud services - Lobby,Relay
 
 UNSURE:
+R2: Sound - More sounds, music volume, muting etc.
 R4: Adaptive screen - kinda
 R7: Using input system - I mean I imported it but its not like its useful
 R8: Using Universal rendering pipeline - ???
 
 
 TODO:
-R2: Sound - More sounds and music
 R5: Plugin - TODO UI Toolkit and Dotween?
 R6: EditorExt: TODO: cardMakyr,displayer
 

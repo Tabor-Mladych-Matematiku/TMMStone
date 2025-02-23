@@ -670,6 +670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   expansion: 
+  audioSource: {fileID: 3070553303570824999}
   HighlightRim: {fileID: 8019540357931435350}
   graphic: {fileID: 3408634470598025284}
   AttackLabel: {fileID: 7675458053325930885}
@@ -686,7 +687,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
