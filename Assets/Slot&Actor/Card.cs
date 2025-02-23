@@ -19,9 +19,9 @@ namespace CardGame
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
         public AudioSource audioSource;
-        public GameManager.P Owner { get=>transform.GetComponentInParent<CardSlot>().Owner; }
-        public virtual void StartTurn(bool onTurn)=> OnStartTurn?.Invoke(this, new(onTurn));
-        public virtual void EndTurn(bool onTurn)=>OnEndTurn?.Invoke(this, new(onTurn));
+        public GameManager.P Owner { get => transform.GetComponentInParent<CardSlot>().Owner; }
+        public virtual void StartTurn(bool onTurn) => OnStartTurn?.Invoke(this, new(onTurn));
+        public virtual void EndTurn(bool onTurn) => OnEndTurn?.Invoke(this, new(onTurn));
 
         internal virtual void Awake()
         {
@@ -93,13 +93,13 @@ namespace CardGame
         public event EventHandler<CardPlayedEventArgs> OnPlayed;
         public class CardPlayedEventArgs
         {
-            public CardPlayedEventArgs(int target=-1) => Target = target;
+            public CardPlayedEventArgs(int target = -1) => Target = target;
             public int Target { get; private set; }
         }
         /// <summary>
         /// Scripts reasign this to modify what is valid target
         /// </summary>
-        public Func<bool> TargetValidator = ()=>true;
+        public Func<bool> TargetValidator = () => true;
 
         internal override void Awake()
         {
@@ -143,7 +143,7 @@ namespace CardGame
             }
             cardBack = Resources.Load<Sprite>("CardData/card-back");
         }
-        public void OnDiscard()=>OnDiscardEvent?.Invoke(this, new());
+        public void OnDiscard() => OnDiscardEvent?.Invoke(this, new());
         private void OnMouseUp()
         {
             if (GameManager.Instance.cursor == this)
@@ -157,21 +157,12 @@ namespace CardGame
                         //HEre we need to make the secondary targetting system. (MAMA mia!)
                         throw new NotImplementedException("We did not make minions with targetted battlecries yet");
                         int target;
-                        GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex,target);
+                        GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex, target);
                     }
                 }
-                else if (cardType == CardType.Spell && !Targetted)
-                {
-                    GameManager.Instance.OnUICastSpell(SlotIndex);
-                }
-                else if (cardType == CardType.Spell)
-                {
-                    GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);
-                }
-                else if (cardType == CardType.Field)
-                {
-                    GameManager.Instance.OnUIPlayField(SlotIndex);
-                }
+                else if (cardType == CardType.Spell && !Targetted) GameManager.Instance.OnUICastSpell(SlotIndex);
+                else if (cardType == CardType.Spell) GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);
+                else if (cardType == CardType.Field) GameManager.Instance.OnUIPlayField(SlotIndex);
                 else
                 {//Reset
                     transform.localPosition = new Vector3(0, 0, -1);
