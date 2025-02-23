@@ -13,7 +13,7 @@ namespace CardGame
         Image HighlightBox;
         Color highlightc = new(0, 1, 0, 0.3f);
 
-        void Awake()
+        public /*override*/ void Awake()
         {
             HighlightBox = GetComponent<Image>();
         }
@@ -38,7 +38,13 @@ namespace CardGame
         public bool Occupied { get => transform.childCount != 0; }
         public Vector3 Position { get => Position; }
         public GameManager.P Owner { get; set; }
+        AudioSource minionDestroyPlayer;
         public int index;
+        public virtual void Start()
+        {
+            minionDestroyPlayer = gameObject.AddComponent<AudioSource>();
+            minionDestroyPlayer.clip = Resources.Load<AudioClip>("Sounds/MinionDestroyed");
+        }
         public void Initialize(GameManager.P owner, int index)
         {
             Owner = owner;
@@ -66,6 +72,7 @@ namespace CardGame
             Card card = PopCard();
             card.gameObject.SetActive(true);
             GameManager.Instance.AddToGrave(card, Owner);
+            minionDestroyPlayer.Play();
         }
         public class CardSlotException : Exception
         {

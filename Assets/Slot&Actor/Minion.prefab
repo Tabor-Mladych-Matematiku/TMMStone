@@ -675,6 +675,7 @@ MonoBehaviour:
   graphic: {fileID: 3408634470598025284}
   AttackLabel: {fileID: 7675458053325930885}
   HealthLabel: {fileID: 7499831031589201972}
+  attackSound: {fileID: 8300000, guid: 2204b68259f60704888b3a1b8752bedc, type: 3}
 --- !u!82 &3070553303570824999
 AudioSource:
   m_ObjectHideFlags: 0

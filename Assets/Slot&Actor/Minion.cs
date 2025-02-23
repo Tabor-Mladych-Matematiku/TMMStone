@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.Services.Lobbies.Models;
-using UnityEditor;
 using UnityEngine;
 
 namespace CardGame
@@ -39,6 +37,7 @@ namespace CardGame
         [SerializeField] TextMesh AttackLabel;
         [SerializeField] TextMesh HealthLabel;
 
+        [SerializeField] AudioClip attackSound;
 
         public event EventHandler<TargetedEventEventArgs> OnBattleCry;
         public event EventHandler<TargetedEventEventArgs> OnAttack;
@@ -166,6 +165,7 @@ namespace CardGame
             OnAttack?.Invoke(this, new() { target = oppminion.GetComponentInParent<CardSlot>().index });
             Health -= oppminion.Attack;
             oppminion.Health -= Attack;
+            audioSource.PlayOneShot(attackSound);
             //TODO visuals
         }
     }
