@@ -1,7 +1,12 @@
 TODO:
 	Priority:
 		Face - some modification on Minion slots needed
+		EditorExt
+		Make at least one deck with the EditorExt
+		Ask about the plugin
+		Do Adressables at the end
 
+	-------Less Important:
 
 	BattleCry - after placing a battlecry minion attach a fake cardlike thing to the cursor that will onclick either finish the op or cancel it.
 		Will probably have to add a check to not highlight anything when we have something in the cursor.

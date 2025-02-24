@@ -96,7 +96,7 @@ namespace CardGame
 
         public void OnMouseDown()
         {
-            if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<MinionSlot>().Owner == GameManager.P.P2 || Attack==0) return;//We must be on turn and we must be owner
+            if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<CardSlot>().Owner == GameManager.P.P2 || Attack==0) return;//We must be on turn and we must be owner
             if (!CanAttack) return;//"That minion cannot attack yet!"
             GameManager.Instance.cursor = this;
 

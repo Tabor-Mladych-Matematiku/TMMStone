@@ -84,30 +84,6 @@ namespace CardGame
 
             public override string ToString() => new StringBuilder().AppendJoin(" ", data).ToString();
         }
-        public class HealthDict
-        {
-            IDictionary<P, int> dict;
-            private readonly Transform OwnHPLabel;
-            private readonly Transform OppHPLabel;
-
-            public HealthDict(Dictionary<P, int> dict, Transform ownHPLabel, Transform oppHPLabel)
-            {
-                this.dict = dict;
-                OwnHPLabel = ownHPLabel;
-                OppHPLabel = oppHPLabel;
-            }
-
-            public int this[P key]
-            {
-                get => dict[key];
-                set
-                {
-                    dict[key] = value;
-                    if (key == P.P1) OwnHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = value.ToString();
-                    else OppHPLabel.gameObject.GetComponent<TextMeshProUGUI>().text = value.ToString();
-                }
-            }
-        }
         public static GameManager Instance { get; private set; }
         [SerializeField] Deck OwnDeck;
         [SerializeField] Deck OppDeck;
@@ -125,13 +101,14 @@ namespace CardGame
         [SerializeField] Transform OppHand;
         Dictionary<P, CardSlot[]> HandSlots;
         [SerializeField] public FieldSlot FieldSlot;
-        [SerializeField] Transform OwnHPLabel;
-        [SerializeField] Transform OppHPLabel;
+        [SerializeField] HPCounter OwnHPCounter;
+        [SerializeField] HPCounter OppHPCounter;
         [SerializeField] Transform OwnCardCounter;
         [SerializeField] Transform OppCardCounter;
         public ManaCounter OwnManaCounter;
         public ManaCounter OppManaCounter;
         Dictionary<P, ManaCounter> ManaCounters;
+        Dictionary<P, HPCounter> HPCounters;
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
         public Dictionary<int, CardData> CardDatabase;
@@ -141,7 +118,6 @@ namespace CardGame
         private const int maxEffSlots = 6;
         private const int maxHandSlots = 10;
 
-        public HealthDict Healths;
         public Dictionary<P, int> MaxHealths = new() {
             {P.P1,30 },
             {P.P2,30},
@@ -218,10 +194,6 @@ namespace CardGame
         private void Awake()
         {
             Instance = this;
-            Healths = new(new(){
-                {P.P1,MaxHealths[P.P1] },
-                {P.P2,MaxHealths[P.P2]}
-            }, OwnHPLabel, OppHPLabel);
             EffSlots = new()
             {
                 {P.P1,new EffectSlot[maxEffSlots] },
@@ -276,6 +248,12 @@ namespace CardGame
                 {P.P1 , OwnManaCounter },
                 {P.P2 , OppManaCounter }
             };
+            HPCounters = new(){
+                {P.P1,OwnHPCounter},
+                {P.P2,OppHPCounter}
+            };
+            HPCounters[P.P1].Health = MaxHealths[P.P1];
+            HPCounters[P.P2].Health = MaxHealths[P.P2];
             //Load cards
             LoadCardDatabase();
         }
@@ -413,9 +391,9 @@ namespace CardGame
         }
         public void Fatigue(P who)
         {
-            Healths[who] -= FatigueVals[who];
+            HPCounters[who].Health -= FatigueVals[who];
             FatigueVals[who]++;
-            Debug.Log(FatigueVals[who]);
+            //Debug.Log(FatigueVals[who]);
         }
         public void ShuffleDeck(P who) => decks[who].Shuffle();
         public void EndTurnEffects()
@@ -554,7 +532,7 @@ namespace CardGame
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
         {
             //Debug.Log("SenderID: " + Srpcparams.Receive.SenderClientId);
-            if (ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 0)ServerOnTurn.Value = false;
+            if (ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 0) ServerOnTurn.Value = false;
             else if (!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
         }
         [ClientRpc(RequireOwnership = false)]

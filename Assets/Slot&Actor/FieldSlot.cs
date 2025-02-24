@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Generic; 
 namespace CardGame
 {
     public class FieldSlot : PlacableSlot
@@ -12,10 +12,9 @@ namespace CardGame
             Field field = GetField();
             if (field != null)
             {
-                Destroy(transform.GetComponent<Field>());
+                Destroy(field.gameObject);
                 GameManager.Instance.AddToGrave(PopCard(), Owner);
             }
-
         }
     }
 }
