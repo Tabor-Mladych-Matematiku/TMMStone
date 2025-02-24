@@ -19,7 +19,7 @@ namespace CardGame
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
         public AudioSource audioSource;
-        public GameManager.P Owner { get => transform.GetComponentInParent<CardSlot>().Owner; }
+        public virtual GameManager.P Owner { get => transform.GetComponentInParent<CardSlot>().Owner; }
         public virtual void StartTurn(bool onTurn) => OnStartTurn?.Invoke(this, new(onTurn));
         public virtual void EndTurn(bool onTurn) => OnEndTurn?.Invoke(this, new(onTurn));
 
@@ -171,7 +171,7 @@ namespace CardGame
             }
         }
 
-        public bool IsTargetValid(GameActor actor)
+        public bool IsTargetValid(TableActor actor)
         {
             if (actor == null) return false;
             return TargetValidator();

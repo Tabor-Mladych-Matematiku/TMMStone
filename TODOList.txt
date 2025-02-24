@@ -1,6 +1,6 @@
 TODO:
 	Priority:
-		Face - some modification on Minion slots needed
+		EndGame
 		EditorExt
 		Make at least one deck with the EditorExt
 		Ask about the plugin

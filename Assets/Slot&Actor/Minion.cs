@@ -96,23 +96,22 @@ namespace CardGame
 
         public void OnMouseDown()
         {
-            if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<CardSlot>().Owner == GameManager.P.P2 || Attack==0) return;//We must be on turn and we must be owner
+            if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<CardSlot>().Owner == GameManager.P.P2 || Attack == 0) return;//We must be on turn and we must be owner
             if (!CanAttack) return;//"That minion cannot attack yet!"
             GameManager.Instance.cursor = this;
 
         }
         public void OnMouseUp()
         {
-            if(GameManager.Instance.cursor == this)
+            if (GameManager.Instance.cursor != this) return;
+            if (GameManager.Instance.highlightedActor != null)
             {
-                if (GameManager.Instance.highlightedActor != null)
-                {
-                    GameManager.Instance.OnUIAttackMinion(GetComponentInParent<CardSlot>().index, GameManager.Instance.HighlightedActorIndex);
-                    CanAttack = false;//TODO windfury shit.
-                }
-                transform.localPosition = new Vector3(0, 0, -1);
-                GameManager.Instance.cursor = null;
+                GameManager.Instance.OnUIMinionAttack(GetComponentInParent<CardSlot>().index, GameManager.Instance.HighlightedActorIndex);
+                CanAttack = false;//TODO windfury shit.
             }
+            transform.localPosition = new Vector3(0, 0, -1);
+            GameManager.Instance.cursor = null;
+
         }
         public override void OnMouseEnter()
         {
@@ -125,18 +124,18 @@ namespace CardGame
                     HighlightRim.color = highlightColor;
                 }
                 //This is being targetted by attack
-                else if (GameManager.Instance.cursor is Minion m && Owner==GameManager.P.P2 && m.IsTargetValid(this))
+                else if (GameManager.Instance.cursor is Minion m && Owner == GameManager.P.P2 && m.IsTargetValid(this))
                 {
                     GameManager.Instance.highlightedActor = this;
                     HighlightRim.color = attkColor;
                 }
             }
             //Can this attack someone?
-            else if (GameManager.Instance.OnTurn && Owner == GameManager.P.P1 && CanAttack && Attack!=0)
+            else if (GameManager.Instance.OnTurn && Owner == GameManager.P.P1 && CanAttack && Attack != 0)
                 HighlightRim.color = highlightColor;
         }
 
-        private bool IsTargetValid(Minion minion)
+        public bool IsTargetValid(TableActor target)
         {
             return true; //TODO taunt and such
         }
@@ -152,7 +151,7 @@ namespace CardGame
         }
         public bool CanAwake()
         {
-            return true; // Freeze effects and the sort
+            return true; // TODO: Freeze effects and the sort
         }
         public override void StartTurn(bool onTurn)
         {
@@ -167,6 +166,12 @@ namespace CardGame
             oppminion.Health -= Attack;
             audioSource.PlayOneShot(attackSound);
             //TODO visuals
+        }
+        internal void AttackAction(HPCounter face)
+        {
+            OnAttack?.Invoke(this, new() { target = 2*GameManager.maxMinionSlots+1 });
+            face.Health -= Attack;
+            audioSource.PlayOneShot(attackSound);
         }
     }
 }

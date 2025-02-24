@@ -114,9 +114,9 @@ namespace CardGame
         public Dictionary<int, CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
-        private const int maxMinionSlots = 7;
-        private const int maxEffSlots = 6;
-        private const int maxHandSlots = 10;
+        public const int maxMinionSlots = 7;
+        public const int maxEffSlots = 6;
+        public const int maxHandSlots = 10;
 
         public Dictionary<P, int> MaxHealths = new() {
             {P.P1,30 },
@@ -169,14 +169,22 @@ namespace CardGame
             {
                 int slot = -1;
                 if (highlightedActor == null) return slot;
-                for (int i = 0; i < maxMinionSlots; i++)
+                if (highlightedActor is Minion m)
                 {
-                    if (((MinionSlot)minionSlots[P.P1][i]).GetMinion() == highlightedActor) { slot = i; break; }
+                    for (int i = 0; i < maxMinionSlots; i++)
+                    {
+                        if (((MinionSlot)minionSlots[P.P1][i]).GetMinion() == m) { slot = i; break; }
+                    }
+                    if (slot != -1) return slot;
+                    for (int i = 0; i < maxMinionSlots; i++)
+                    {
+                        if (minionSlots[P.P2][i].GetComponentInChildren<Minion>() == m) { slot = maxMinionSlots + i; break; }
+                    }
                 }
-                if (slot != -1) return slot;
-                for (int i = 0; i < maxMinionSlots; i++)
+                else if(highlightedActor is Face f)
                 {
-                    if (minionSlots[P.P2][i].GetComponentInChildren<Minion>() == highlightedActor) { slot = maxMinionSlots + i; break; }
+                    if (f.Owner == P.P1) return 2 * maxMinionSlots;
+                    else return 2 * maxMinionSlots + 1;
                 }
                 return slot;
             }
@@ -252,8 +260,8 @@ namespace CardGame
                 {P.P1,OwnHPCounter},
                 {P.P2,OppHPCounter}
             };
-            HPCounters[P.P1].Health = MaxHealths[P.P1];
-            HPCounters[P.P2].Health = MaxHealths[P.P2];
+            HPCounters[P.P1].GetComponent<Face>().o = P.P1;
+            HPCounters[P.P2].GetComponent<Face>().o = P.P2;
             //Load cards
             LoadCardDatabase();
         }
@@ -288,6 +296,8 @@ namespace CardGame
             int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/" + debugstringchoice).text));//TODO import from json in PlayerData
 
             LoadDeck(decks[P.P1], OwnDeckList);
+            HPCounters[P.P1].Health = MaxHealths[P.P1];
+            HPCounters[P.P2].Health = MaxHealths[P.P2];
             if (IsServer)
                 NetworkManager.OnClientConnectedCallback += (clientId) => { if (clientId != NetworkManager.LocalClientId) OnOpponentConnected(OwnDeckList); };
             else
@@ -463,7 +473,7 @@ namespace CardGame
             c.transform.localPosition -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
         }
         public void OnUIPlayMinion(int cardindex, int minionSlotIndex, int target = -1) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target, minionSlotIndex));
-        public void OnUIAttackMinion(int minionSlotIndex, int minionSlotTarget) => OnUITakeAction(PlayerAction.AttackAction(minionSlotIndex, minionSlotTarget));
+        public void OnUIMinionAttack(int minionSlotIndex, int actorSlotTarget) => OnUITakeAction(PlayerAction.AttackAction(minionSlotIndex, actorSlotTarget));
         public void OnUICastSpell(int cardindex, int target = -1) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target));
         public void OnUIPlayField(int cardindex) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, -1));
         public void OnUITakeAction(PlayerAction action)
@@ -521,8 +531,14 @@ namespace CardGame
                     break;
                 case PlayerAction.ActionType.Attack:
                     Minion Ownminion = minionSlots[who][action.Source].GetComponentInChildren<Minion>();//Opponents dont have minion slots so we cannot cast and do GetMinion
-                    Minion Oppminion = minionSlots[who.Other()][action.Target - maxMinionSlots].GetComponentInChildren<Minion>();
-                    Ownminion.AttackAction(Oppminion);
+                    if (action.Target < 2 * maxMinionSlots) { 
+                        Minion Oppminion = minionSlots[who.Other()][action.Target - maxMinionSlots].GetComponentInChildren<Minion>();
+                        Ownminion.AttackAction(Oppminion);
+                    }
+                    else
+                    {
+                        Ownminion.AttackAction(HPCounters[who.Other()]);
+                    }
                     break;
                 default:
                     throw new NotImplementedException("TakeActionCase not implemented");
