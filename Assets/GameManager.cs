@@ -7,20 +7,46 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Purchasing;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using CardData;
 
 namespace CardGame
 {
 
     public static class Extensions
     {
-        public static void Shuffle<T>(this IList<T> list)
+        /// <summary>
+        /// Shuffles randomly and returns permutation of elements
+        /// </summary>
+        /// <typeparam name="T">IList element type</typeparam>
+        /// <param name="list">this</param>
+        /// <returns></returns>
+        public static int[] Shuffle<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            int[] permutation = new int[n];
+            while (n > 1)
+            {
+                n--;
+                int k = permutation[n] =  UnityEngine.Random.Range(0, n + 1);
+                (list[n], list[k]) = (list[k], list[n]);
+            }
+            return permutation;
+        }
+        /// <summary>
+        /// Uses a permutation to shuffle elements
+        /// </summary>
+        /// <typeparam name="T">IList element type</typeparam>
+        /// <param name="list">this</param>
+        /// <param name="permutation">Can be aquired from the parameterless Shuffle</param>
+        public static void Shuffle<T>(this IList<T> list, int[] permutation)
         {
             int n = list.Count;
             while (n > 1)
             {
                 n--;
-                int k = UnityEngine.Random.Range(0, n + 1);
+                int k = permutation[n];
                 (list[n], list[k]) = (list[k], list[n]);
             }
         }
@@ -30,6 +56,10 @@ namespace CardGame
             if (who == GameManager.P.P1) return GameManager.P.P2;
             return GameManager.P.P1;
         }
+    }
+    public static class MatchResults
+    {
+        public static string result;
     }
 
     public class GameManager : NetworkBehaviour
@@ -111,12 +141,13 @@ namespace CardGame
         Dictionary<P, HPCounter> HPCounters;
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
-        public Dictionary<int, CardData> CardDatabase;
+        public Dictionary<int, CardData.CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
         public const int maxMinionSlots = 7;
         public const int maxEffSlots = 6;
         public const int maxHandSlots = 10;
+        public const bool DEBUG = false;
 
         public Dictionary<P, int> MaxHealths = new() {
             {P.P1,30 },
@@ -181,7 +212,7 @@ namespace CardGame
                         if (minionSlots[P.P2][i].GetComponentInChildren<Minion>() == m) { slot = maxMinionSlots + i; break; }
                     }
                 }
-                else if(highlightedActor is Face f)
+                else if (highlightedActor is Face f)
                 {
                     if (f.Owner == P.P1) return 2 * maxMinionSlots;
                     else return 2 * maxMinionSlots + 1;
@@ -262,9 +293,21 @@ namespace CardGame
             };
             HPCounters[P.P1].GetComponent<Face>().o = P.P1;
             HPCounters[P.P2].GetComponent<Face>().o = P.P2;
+            HPCounters[P.P1].Death += (_,_)=> GameManager_PlayerDeath(P.P1);
+            HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
-            LoadCardDatabase();
+            CardDatabase = CDJsonUtils.LoadCardDatabase();
+            Debug.Log(CardDatabase);
         }
+
+        private void GameManager_PlayerDeath(P who)
+        {
+            //TODO: You win screen
+            MatchResults.result = who == P.P1 ? "You lose!" : "You win!";
+            SceneManager.LoadScene("ResultsScene");
+            SceneManager.UnloadSceneAsync(1);//To reset it maybe?
+        }
+
         private void Update()
         {
             if (cursor != null)
@@ -286,16 +329,20 @@ namespace CardGame
             ServerOnTurn.OnValueChanged += (bool prev, bool n) =>
             {
                 if (prev == n) return;//Should not happen but to make sure.
-                EndTurnEffects();
+                EndTurn();
                 StartTurn();
             };
-            NetworkManager.OnClientDisconnectCallback += (_) => ClientDisconnected();
+            NetworkManager.OnClientDisconnectCallback += (id) => ClientDisconnected(id);
             //Load decks
             string debugstringchoice = "MyDeck";
             if (IsServer) debugstringchoice = "OppDeck";
             int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/" + debugstringchoice).text));//TODO import from json in PlayerData
 
+            if (!DEBUG) OwnDeckList.Shuffle();
             LoadDeck(decks[P.P1], OwnDeckList);
+               
+
+            
             HPCounters[P.P1].Health = MaxHealths[P.P1];
             HPCounters[P.P2].Health = MaxHealths[P.P2];
             if (IsServer)
@@ -308,9 +355,11 @@ namespace CardGame
             }
         }
 
-        private void ClientDisconnected()//TODO: "Yer opponent left!"
+        private void ClientDisconnected(ulong id)
         {
-            Application.Quit();
+            if (DEBUG) Application.Quit();
+            //TODO: "Yer opponent left!"
+            GameManager_PlayerDeath((P)id);//This might work
         }
 
         private void OnOpponentConnected(int[] OwnDeckList) => AnnounceDeckServerRpc(OwnDeckList, new());//loads own deck and sends it to the other.
@@ -337,7 +386,7 @@ namespace CardGame
         }
         public void StartTurn()
         {
-            foreach (GameActor actor in AllActors)
+            foreach (GameActor actor in AllActors)//Might be reasonable to do it through events. but this should ensure consistency with the rules as in which order things happen
             {
                 actor.StartTurn(OnTurn);
             }
@@ -405,66 +454,11 @@ namespace CardGame
             FatigueVals[who]++;
             //Debug.Log(FatigueVals[who]);
         }
-        public void ShuffleDeck(P who) => decks[who].Shuffle();
-        public void EndTurnEffects()
+        public void EndTurn()
         {
             foreach (GameActor actor in AllActors)
             {
                 actor.EndTurn(OnTurn);
-            }
-        }
-        Dictionary<string, Dictionary<string, string>> ParseExtraJSON()
-        {
-            var extracardsJSONfile = Resources.Load<TextAsset>("CardData/extraCardData");
-            object decodedJSON = MiniJson.JsonDecode(extracardsJSONfile.text);
-            List<object> extraloadList = (List<object>)decodedJSON;
-            Dictionary<string, Dictionary<string, string>> extraData = new();
-            foreach (Dictionary<string, object> item in extraloadList)
-            {
-                string[] stats = ((string)item["Staty"]).Split("/");
-
-                extraData.Add((string)item["Název"], new() { { "Attack", stats[0] }, { "Health", stats[1] } });
-            }
-            return extraData;
-        }
-        void LoadCardDatabase()
-        {
-            var cardsJSONfile = Resources.Load<TextAsset>("CardData/cards");
-            object decodedJSON = MiniJson.JsonDecode(cardsJSONfile.text);
-            var loadDict = (Dictionary<string, object>)decodedJSON;
-
-            Dictionary<string, Dictionary<string, string>> extraData = ParseExtraJSON();
-
-            CardDatabase = new();
-            foreach (var pair in loadDict)
-            {
-                var value = (Dictionary<string, object>)pair.Value;
-                if (value["cost"] is String) continue;//We'll deal with you later (These are the ? costs)
-                string cardname = (string)value["name"];
-                if (cardname.EndsWith(" (token)")) { cardname = cardname[..^" (token)".Length]; }//Truly the most elegant solution. SarcasmError: maximum sarcasm value exceeded
-                CardData data = new()
-                {
-                    name = (string)value["name"],
-                    rarity = (string)value["rarity"],
-                    type = (string)value["type"],
-                    cost = (int)(System.Int64)value["cost"],
-                    tag = (string)value["tag"],
-                    Class = (string)value["Class"],
-                    expansion = (string)value["expansion"],
-                    not_for_sale = (bool)value["not_for_sale"],
-                    attack = extraData[cardname]["Attack"],
-                    health = extraData[cardname]["Health"]
-
-                };
-                if (((List<object>)value["token_list"]).Count != 0)
-                {
-                    data.token_list = new();
-                    foreach (long item in (List<object>)value["token_list"])
-                    {
-                        data.token_list.Add((int)item);
-                    }
-                }
-                CardDatabase.Add(int.Parse(pair.Key), data);
             }
         }
         public void AddToGrave(Card c, P who)
@@ -531,7 +525,8 @@ namespace CardGame
                     break;
                 case PlayerAction.ActionType.Attack:
                     Minion Ownminion = minionSlots[who][action.Source].GetComponentInChildren<Minion>();//Opponents dont have minion slots so we cannot cast and do GetMinion
-                    if (action.Target < 2 * maxMinionSlots) { 
+                    if (action.Target < 2 * maxMinionSlots)
+                    {
                         Minion Oppminion = minionSlots[who.Other()][action.Target - maxMinionSlots].GetComponentInChildren<Minion>();
                         Ownminion.AttackAction(Oppminion);
                     }
@@ -587,6 +582,25 @@ namespace CardGame
                 else DrawCard(P.P2);
             //Mulligan
             StartTurn();
+        }
+        private void ShuffleDeckRequest(P who)
+        {
+            int[] permutation = decks[who].Shuffle();//I shuffle mine and tell the other guy how I shuffled it.
+            ShuffleDeckServerRpc(who.Other(),permutation, new());
+        }
+        [ServerRpc(RequireOwnership = false)]
+        private void ShuffleDeckServerRpc(P who, int[] permutation, ServerRpcParams srp) => ShuffleDeckClientRpc(who, permutation, new()
+            {
+                Send = new()
+                {
+                    TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+                }
+            });
+
+        [ClientRpc(RequireOwnership = false)]
+        private void ShuffleDeckClientRpc(P who, int[] permutation, ClientRpcParams crp)
+        {
+            decks[who].Shuffle(permutation);
         }
     }
 }

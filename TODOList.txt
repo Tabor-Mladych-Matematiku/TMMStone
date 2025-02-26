@@ -1,6 +1,5 @@
 TODO:
 	Priority:
-		EndGame
 		EditorExt
 		Make at least one deck with the EditorExt
 		Ask about the plugin
@@ -27,6 +26,7 @@ Things to polish:
 		OnMouseOver they show themselves Properly over whole screen.
 		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
 	- Prettier Menu
+	- EndGame (Its just a copy of the main menu which itself is garbage)
 	- LobbyUI:
 		Lobby musí mít jméno, nesmí v něm být cizí znaky
 		Loading screeny - schovat Loadující se scénu

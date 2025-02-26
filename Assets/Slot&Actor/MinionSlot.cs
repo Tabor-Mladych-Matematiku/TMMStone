@@ -5,8 +5,6 @@ namespace CardGame
 {
     public class MinionSlot : PlacableSlot
     {
-
-
         public override bool IsCardPlacable(Card c) => c.cardType == Card.CardType.Minion;
         protected override void OnMouseOver()
         {

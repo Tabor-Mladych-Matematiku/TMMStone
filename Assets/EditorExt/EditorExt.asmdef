@@ -1,0 +1,16 @@
+{
+    "name": "EditorExt",
+    "rootNamespace": "",
+    "references": [
+        "GUID:79b25dc763df0bf4ebce9f8ebf3e7341"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -15,13 +15,8 @@ namespace CardGame
         [SerializeField] SpriteRenderer graphic;
         protected Card original;
 
-        public virtual void OnMouseEnter()
-        {
-        }
-        public virtual void OnMouseExit()
-        {
-
-        }
+        public virtual void OnMouseEnter(){}
+        public virtual void OnMouseExit(){}
         public virtual void Initialize(Card c)
         {
             original = c;

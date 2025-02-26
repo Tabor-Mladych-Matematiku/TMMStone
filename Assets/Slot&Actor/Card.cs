@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static CardGame.Card;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.UI.Image;
+using CardData;
 
 namespace CardGame
 {
@@ -30,27 +28,7 @@ namespace CardGame
     }
 
 
-    public struct CardData
-    {
-        public string name;
-
-        public string rarity;
-
-        public string type;
-
-        public int cost;
-
-        public string tag;
-
-        public string Class;
-
-        public string expansion;
-
-        public List<int> token_list;
-        public bool not_for_sale;
-        public string attack;
-        public string health;
-    }
+    
     public class Card : GameActor
     {
         public enum CardType
@@ -75,10 +53,6 @@ namespace CardGame
 
         public AudioClip cardPlaced;
         public bool Targetted { get; private set; }
-        public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
-            {"Základ", "V2"},
-            {"PTMM","GULAG" }
-        };
         public bool Hidden
         {
             get => hidden; set
@@ -113,7 +87,7 @@ namespace CardGame
         {
             standardScale = transform.localScale;
         }
-        public void Initialize(CardData data)
+        public void Initialize(CardData.CardData data)
         {
             mana = data.cost;
             cardname = data.name;
@@ -134,7 +108,7 @@ namespace CardGame
                 default: throw new Exception("Unknown cardtype: " + data.type);
             }
             expansion = "Tokeny";
-            if (expansionMapping.ContainsKey(data.expansion)) expansion = expansionMapping[data.expansion];
+            if (CDJsonUtils.expansionMapping.ContainsKey(data.expansion)) expansion = CDJsonUtils.expansionMapping[data.expansion];
             Sprite sprite = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
             if (sprite != null)
             {
