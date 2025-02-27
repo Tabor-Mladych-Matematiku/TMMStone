@@ -10,24 +10,6 @@ using System.Linq;
 
 namespace CardEditor
 {
-    /*struct DropdownSlot
-    {
-        int id;
-        string name;
-        public DropdownSlot(int i, string s)
-        {
-            id = i;
-            name = s;
-        }
-        public override string ToString()
-        {
-            return name + " "+id;
-        }
-        public static implicit operator string(DropdownSlot x)
-        {
-            return x.ToString();
-        }
-    }*/
     public class CardEditor : EditorWindow
     {
         Dictionary<int, CardData.CardData> CardDatabase;
@@ -78,6 +60,7 @@ namespace CardEditor
                 else
                 {
                     box.Add(new Label("Has script"));
+                    box.Add(new Label(script.text));
                 }
             });
             root.Add(cardList);
@@ -109,7 +92,7 @@ namespace CardEditor
         }
         bool CheckFilter(string card)
         {
-            if (GetScript(card) != null) return false;
+            if (GetScript(card) == null) return false;
             return true;
         }
     }
