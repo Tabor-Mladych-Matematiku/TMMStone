@@ -1,6 +1,5 @@
 TODO:
 	Priority:
-		EditorExt
 		Make at least one deck with the EditorExt
 		Ask about the plugin
 		Do Adressables at the end
@@ -30,6 +29,8 @@ Things to polish:
 	- LobbyUI:
 		Lobby musí mít jméno, nesmí v něm být cizí znaky
 		Loading screeny - schovat Loadující se scénu
+	- EditorExt:
+		Make a button to show the editor script in filesystem
 
 
 Notes:

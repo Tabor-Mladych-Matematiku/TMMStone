@@ -1,10 +1,14 @@
 {
-    "name": "EditorExt",
+    "name": "TMMGameActors",
     "rootNamespace": "",
     "references": [
+        "GUID:d8b63aba1907145bea998dd612889d6b",
         "GUID:79b25dc763df0bf4ebce9f8ebf3e7341",
-        "GUID:7bb1ee73ebb9f114188944f67b1333d6",
-        "GUID:60bfecf5cb232594891bc622f40d6bed"
+        "GUID:60bfecf5cb232594891bc622f40d6bed",
+        "GUID:3b8ed52f1b5c64994af4c4e0aa4b6c4b",
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:7bb1ee73ebb9f114188944f67b1333d6"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -116,7 +116,16 @@ namespace CardGame
                 GetComponent<SpriteRenderer>().sprite = face;
             }
             cardBack = Resources.Load<Sprite>("CardData/card-back");
+            
+            if (data.scripts != null)
+            {
+                foreach (var script in data.scripts) {
+                    /*var cmp = */gameObject.AddComponent(script.GetType());
+                    //((CardScriptBase)cmp).Initialize(script); Figure out how to pass args (Eh. Wont work. CardScriptBase is in a different assembly which we cannot reference since it references us.)
+                }
+            }
         }
+
         public void OnDiscard() => OnDiscardEvent?.Invoke(this, new());
         private void OnMouseUp()
         {

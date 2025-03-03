@@ -230,7 +230,8 @@ public class TMMStoneLobby : MonoBehaviour
     {
         try
         {
-            await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, AuthenticationService.Instance.PlayerId);
+            if (hostLobby != null && hostLobby.Players.Count == 1) { await LobbyService.Instance.DeleteLobbyAsync(hostLobby.Id); }
+            else await LobbyService.Instance.RemovePlayerAsync(JoinedLobby.Id, AuthenticationService.Instance.PlayerId);
             hostLobby = null;
             JoinedLobby = null;
         }

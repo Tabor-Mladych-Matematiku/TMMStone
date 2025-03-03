@@ -137,8 +137,8 @@ namespace CardGame
         [SerializeField] Transform OppCardCounter;
         public ManaCounter OwnManaCounter;
         public ManaCounter OppManaCounter;
-        Dictionary<P, ManaCounter> ManaCounters;
-        Dictionary<P, HPCounter> HPCounters;
+        public Dictionary<P, ManaCounter> ManaCounters;
+        public Dictionary<P, HPCounter> HPCounters;
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
         public Dictionary<int, CardData.CardData> CardDatabase;
@@ -297,7 +297,7 @@ namespace CardGame
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
             CardDatabase = CDJsonUtils.LoadCardDatabase();
-            Debug.Log(CardDatabase);
+            //Debug.Log(CardDatabase);
         }
 
         private void GameManager_PlayerDeath(P who)

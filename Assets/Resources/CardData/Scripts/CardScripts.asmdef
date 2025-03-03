@@ -1,3 +1,16 @@
 {
-	"name": "CardScripts"
+    "name": "CardScripts",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3ada64de755d7b4469311eb67596dc20"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

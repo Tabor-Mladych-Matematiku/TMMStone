@@ -3,14 +3,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 public class HPCounter : MonoBehaviour
 {
     [SerializeField] SpriteRenderer[] circles;
     [SerializeField] TextMeshProUGUI HPLabel;
-
+    public int maxHP;
     int h;
     public int Health
     {
@@ -26,4 +26,11 @@ public class HPCounter : MonoBehaviour
         }
     }
     public event EventHandler Death;
+    public event EventHandler Healed;
+    public void Heal(int ammount)
+    {
+        int newHealth = math.min(Health + ammount, maxHP);
+        if(newHealth>Health) Healed?.Invoke(this, new());
+        Health = newHealth;
+    }
 }

@@ -2,7 +2,7 @@
     "name": "CardData",
     "rootNamespace": "",
     "references": [
-        "GUID:7bb1ee73ebb9f114188944f67b1333d6"
+        "Purchasing.Common"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
