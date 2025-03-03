@@ -16,7 +16,7 @@ namespace CardEditor
     public class CardEditor : EditorWindow
     {
         static Dictionary<int, CardData.CardData> CardDatabase;
-        Dictionary<string, int> nameToId = new();
+        readonly Dictionary<string, int> nameToId = new();
         //static Dictionary<int, string[]> scriptpaths;
         List<string> choices;
         DropdownField cardList;
@@ -28,6 +28,7 @@ namespace CardEditor
         }
         public void CreateGUI()
         {
+            //Debug.Log(Application.dataPath+ "/../Build/TMMstone_Data/Managed/");
             CardDatabase = CDJsonUtils.LoadCardDatabase();//Loads appropriate data
             VisualElement root = rootVisualElement;
             //root.Add(new Label("Behold Card Script editor!"));
@@ -64,7 +65,7 @@ namespace CardEditor
                     {
                         button.SetEnabled(false);
                         var endNameEditHandler = CreateInstance<EndNameEditHandler>();
-                        endNameEditHandler.Init(button, id);
+                        endNameEditHandler.Init(/*button,*/ id);
                         ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, endNameEditHandler, "Assets/Resources/CardData/Scripts/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + name + ".cs", null, null);
 
 
@@ -115,7 +116,7 @@ namespace CardEditor
         {
             //Button button;
             int id;
-            public void Init(Button button, int id)
+            public void Init(/*Button button,*/ int id)
             {
                 //this.button = button;
                 this.id = id;
@@ -135,7 +136,7 @@ namespace CardEditor
                     Debug.LogError("Empty template recieved");
                     return;
                 }
-                var classname = SanitizeToClassName(Path.GetFileNameWithoutExtension(pathName));
+                var classname = CDJsonUtils.SanitizeToClassName(Path.GetFileNameWithoutExtension(pathName));
                 templateContent = templateContent.Replace("#NAME#", classname);
                 File.WriteAllText(pathName, templateContent);
                 AssetDatabase.ImportAsset(pathName);
@@ -153,49 +154,7 @@ namespace CardEditor
                 //TODO: add to script JSON
                 ProjectWindowUtil.ShowCreatedAsset(newScript);
             }
-            /// <summary>
-            /// Sanitizes input into valid C# classname
-            /// ChatGPTied
-            /// </summary>
-            /// <param name="input"></param>
-            /// <returns>Sanitized input</returns>
-            /// <exception cref="ArgumentException"></exception>
-            public static string SanitizeToClassName(string input)
-            {
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    throw new ArgumentException("Input cannot be null or empty.");
-                }
-                var sanitized = new StringBuilder();
-
-                // Ensure the first character is a letter or underscore
-                if (!char.IsLetter(input[0]) && input[0] != '_')
-                {
-                    sanitized.Append('_');
-                }
-
-                foreach (var ch in input)
-                {
-                    // Allow letters, digits, and underscores
-                    if (char.IsLetterOrDigit(ch) || ch == '_')
-                    {
-                        sanitized.Append(ch);
-                    }
-                    else
-                    {
-                        sanitized.Append('_');  // Replace invalid characters with underscores
-                    }
-                }
-
-                // Ensure it does not start with a digit (if it's not already handled)
-                if (char.IsDigit(sanitized[0]))
-                {
-                    sanitized.Insert(0, '_');
-                }
-
-                // Return sanitized string (e.g., "MyClassName123")
-                return sanitized.ToString();
-            }
+            
         }
         /*
         private MonoScript GetScript(string name)

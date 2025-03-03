@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 using System.Linq;
 using UnityEditor;
+using System.Text;
 
 namespace CardData
 {
@@ -30,6 +31,7 @@ namespace CardData
         public string health;
         public bool processed;
         public List<string> scripts;
+        public List<string> names;
     }
     public static class CDJsonUtils
     {
@@ -75,12 +77,12 @@ namespace CardData
         {
             List<object> extraloadList = JSONToList(Resources.Load<TextAsset>("CardData/extraCardData").text);
             Dictionary<string, Dictionary<string, string>> extraData = new();
-            foreach (Dictionary<string, object> item in extraloadList)
+            foreach (var (item, stats) in from Dictionary<string, object> item in extraloadList
+                                          select (item, ((string)item["Staty"]).Split("/")))
             {
-                string[] stats = ((string)item["Staty"]).Split("/");
-
                 extraData.Add((string)item["Název"], new() { { "Attack", stats[0] }, { "Health", stats[1] } });
             }
+
             return extraData;
         }
         public static Dictionary<int, CardData> LoadCardDatabase()
@@ -106,9 +108,10 @@ namespace CardData
                     not_for_sale = (bool)value["not_for_sale"],
                     attack = extraData[cardname]["Attack"],
                     health = extraData[cardname]["Health"],
-                    scripts = Scriptpaths.ContainsKey(id) ? Scriptpaths[id] : new()
-
+                    scripts = Scriptpaths.ContainsKey(id) ? Scriptpaths[id] : new(),
+                    names = Scriptpaths.ContainsKey(id) ? LoadNames(Scriptpaths[id]) : new()
                 };
+
                 //if (Scriptpaths.ContainsKey(id)) { data.scripts = LoadScripts(Scriptpaths[id]); }
                 /*if (((List<object>)value["token_list"]).Count != 0) // I doubt we'd be using tokenlists
                                 {
@@ -123,6 +126,64 @@ namespace CardData
 
             return CardDatabase;
         }
+        static List<string> LoadNames(List<string> paths)
+        {
+            List<string> names = new();
+            foreach (string path in paths) {
+                string name = SanitizeToClassName(Resources.Load(path).name);
+                //Debug.Log(name);
+                names.Add(name);
+            }
+
+            return names;
+        }
+
+        /// <summary>
+        /// Sanitizes input into valid C# classname
+        /// ChatGPTied
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns>Sanitized input</returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static string SanitizeToClassName(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                throw new ArgumentException("Input cannot be null or empty.");
+            }
+            var sanitized = new StringBuilder();
+
+            // Ensure the first character is a letter or underscore
+            if (!char.IsLetter(input[0]) && input[0] != '_')
+            {
+                sanitized.Append('_');
+            }
+
+            foreach (var ch in input)
+            {
+                // Allow letters, digits, and underscores
+                if (char.IsLetterOrDigit(ch) || ch == '_')
+                {
+                    sanitized.Append(ch);
+                }
+                else
+                {
+                    sanitized.Append('_');  // Replace invalid characters with underscores
+                }
+            }
+
+            // Ensure it does not start with a digit (if it's not already handled)
+            if (char.IsDigit(sanitized[0]))
+            {
+                sanitized.Insert(0, '_');
+            }
+
+            // Return sanitized string (e.g., "MyClassName123")
+            return sanitized.ToString();
+        }
+
+
+
 
     }
 }

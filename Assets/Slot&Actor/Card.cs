@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CardData;
+using System.Reflection;
+using System.IO;
 
 namespace CardGame
 {
@@ -119,8 +121,15 @@ namespace CardGame
             
             if (data.scripts != null)
             {
-                foreach (var script in data.scripts) {
-                    /*var cmp = */gameObject.AddComponent(script.GetType());
+                Assembly asm = Assembly.LoadFile("C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll");
+
+                foreach (var script in data.names) {
+                    
+                    
+                    System.Type testBehaviour = asm.GetType(script);
+                    Debug.Log("Type: "+testBehaviour);
+                    gameObject.AddComponent(testBehaviour);
+                    
                     //((CardScriptBase)cmp).Initialize(script); Figure out how to pass args (Eh. Wont work. CardScriptBase is in a different assembly which we cannot reference since it references us.)
                 }
             }

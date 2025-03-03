@@ -79,6 +79,7 @@ public class LobbyUI : MonoBehaviour
     /// <summary>
     /// Sanitizes input into valid C# classname
     /// ChatGPTied
+    /// Its duplicated but its like in completely different assembly and I did not want to clean that up
     /// </summary>
     /// <param name="input"></param>
     /// <returns>Sanitized input</returns>

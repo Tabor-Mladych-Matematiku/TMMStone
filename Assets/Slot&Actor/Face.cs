@@ -6,11 +6,11 @@ namespace CardGame
 {
     public class Face : TableActor//We may wanna do some class Targettable or something. Its too similar to Minions and yet I don't want to do deeper inheritance from TableActors
     {
-        public GameManager.P o { get;  set; }
+        public GameManager.P O { get;  set; }
         public override GameManager.P Owner
         {
             get {
-                return o;
+                return O;
             }
         }
         public override void Initialize(Card c)

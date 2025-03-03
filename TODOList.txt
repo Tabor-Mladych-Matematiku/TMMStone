@@ -1,6 +1,8 @@
 TODO:
 	Priority:
 		Make at least one deck with the EditorExt
+		Fix the path to the assembly in the Card code
+		Figure out how the race conds are happening and add loading screens as necessary
 		Ask about the plugin
 		Do Adressables at the end
 

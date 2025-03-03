@@ -130,7 +130,7 @@ namespace CardGame
         [SerializeField] Transform OwnHand;
         [SerializeField] Transform OppHand;
         Dictionary<P, CardSlot[]> HandSlots;
-        [SerializeField] public FieldSlot FieldSlot;
+        public FieldSlot FieldSlot;
         [SerializeField] HPCounter OwnHPCounter;
         [SerializeField] HPCounter OppHPCounter;
         [SerializeField] Transform OwnCardCounter;
@@ -173,7 +173,7 @@ namespace CardGame
         public class CardActionEventArgs
         {
             public CardActionEventArgs(Card c) => card = c;
-            readonly Card card;
+            public readonly Card card;
         }
 
         internal int HighlightedSlotIndex
@@ -291,8 +291,8 @@ namespace CardGame
                 {P.P1,OwnHPCounter},
                 {P.P2,OppHPCounter}
             };
-            HPCounters[P.P1].GetComponent<Face>().o = P.P1;
-            HPCounters[P.P2].GetComponent<Face>().o = P.P2;
+            HPCounters[P.P1].GetComponent<Face>().O = P.P1;
+            HPCounters[P.P2].GetComponent<Face>().O = P.P2;
             HPCounters[P.P1].Death += (_,_)=> GameManager_PlayerDeath(P.P1);
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
@@ -340,9 +340,10 @@ namespace CardGame
 
             if (!DEBUG) OwnDeckList.Shuffle();
             LoadDeck(decks[P.P1], OwnDeckList);
-               
 
-            
+
+            HPCounters[P.P1].maxHP = MaxHealths[P.P1];
+            HPCounters[P.P2].maxHP = MaxHealths[P.P2];
             HPCounters[P.P1].Health = MaxHealths[P.P1];
             HPCounters[P.P2].Health = MaxHealths[P.P2];
             if (IsServer)
@@ -583,7 +584,7 @@ namespace CardGame
             //Mulligan
             StartTurn();
         }
-        private void ShuffleDeckRequest(P who)
+        public void ShuffleDeckRequest(P who)
         {
             int[] permutation = decks[who].Shuffle();//I shuffle mine and tell the other guy how I shuffled it.
             ShuffleDeckServerRpc(who.Other(),permutation, new());

@@ -181,7 +181,7 @@ public class TMMStoneLobby : MonoBehaviour
             Debug.Log(e);
         }
     }
-    public async void QuickJoin(string LobbyId)
+    public async void QuickJoin(/*string LobbyId*/)
     {
         try
         {
