@@ -55,20 +55,18 @@ Petr, Sportovní vedoucí - test how random works and figure out how to sync ran
 REQUIREMENTS:
 DONE:
 R1: PC and Android
+R2: Sound - Music volume, muting etc.
 R3: Running smoothly
 C10: Netcode
 A16 - cloud services - Lobby,Relay
-
-
-UNSURE:
-R2: Sound - Music volume, muting etc.
-R4: Adaptive screen - kinda
+R5: Plugin - Netcode
+R6: EditorExt: TODO: cardMakyr,displayer
 R7: Using input system - I mean I imported it but its not like its useful
 R8: Using Universal rendering pipeline - ???
 
+UNSURE:
+R4: Adaptive screen - kinda
 
 TODO:
-R5: Plugin - TODO UI Toolkit and Dotween?
-R6: EditorExt: TODO: cardMakyr,displayer
 A2 - Adressables - Do once all other is done.
 
