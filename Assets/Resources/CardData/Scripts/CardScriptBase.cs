@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
 using System;
+using UnityEngine.TextCore.Text;
+using System.Linq;
 
 /// <summary>
 /// This will ensure I don't forget to set Targetable on future scripts
@@ -20,6 +22,7 @@ public abstract class TargetableCardScriptBase : CardScriptBase
 
 public abstract class CardScriptBase : MonoBehaviour
 {
+    protected int RandomRange(int startInc,int endExc) => UnityEngine.Random.Range(startInc, endExc);
     protected virtual void StartTurnBinder(Card card)
     {
         card.OnSelfPlayed += (sender, args) => OnSelfPlayed(sender, new(args.cardType));//OnSelfPlayed is called when the card is played from hand and triggers before OnPlayed
@@ -148,6 +151,26 @@ public abstract class CardScriptBase : MonoBehaviour
     {
         action(owner);
         action(owner.Other());
+    }
+    /// <summary>
+    /// Do action for all characters opposing the sender
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="action"></param>
+    protected void ToRandomEnemyCharacterDo(object sender,Action<DamageableActor> action)
+    {
+        var characters = GameManager.Instance.GetAllCharactersOwnedBy(GetOwner(sender).Other());
+        action(characters.ElementAt(RandomRange(0, characters.Count())));
+    }
+    /// <summary>
+    /// Do action for all minions opposing the sender
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="action"></param>
+    protected void ToRandomEnemyMinionDo(object sender, Action<Minion> action)
+    {
+        var characters = GameManager.Instance.GetAllMinionsOwnedBy(GetOwner(sender).Other());
+        action(characters.ElementAt(RandomRange(0, characters.Count())));
     }
     /// <summary>
     /// Use with caution as this is casting into GameActor

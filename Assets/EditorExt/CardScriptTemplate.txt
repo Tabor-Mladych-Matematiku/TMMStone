@@ -11,8 +11,10 @@ public class #NAME# : CardScriptBase
     //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnHealed(object sender, EventArgs e) { }
     //protected override void OnDamaged(object sender, EventArgs e) { }
-    //protected override void OnMinionEndTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnMinionStartTurn(object sender, GameActor.TurnEventArgs e) { }
+    //protected override void OnTableActorEndTurn(object sender, GameActor.TurnEventArgs e) { }
+    //protected override void OnTableActorStartTurn(object sender, GameActor.TurnEventArgs e) { }
+    //protected override void OnTableActorEndOwnTurn(object sender, GameActor.TurnEventArgs e) { }
+    //protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e) { }
     //protected override void OnDeath(object sender, EventArgs e) { }
 
     //Card events

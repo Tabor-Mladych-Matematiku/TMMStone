@@ -146,7 +146,8 @@ namespace CardGame
         public IEnumerable<CardSlot> AllCharacterSlots { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]).Concat(new CardSlot[] { OwnHPCounter, OppHPCounter }) select s; }
         public IEnumerable<DamageableActor> AllCharacters { get => from CardSlot s in AllCharacterSlots let d = s.GetComponentInChildren<DamageableActor>() where d!=null select d ; }
         public IEnumerable<Minion> AllMinions { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]) where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; }
-        public IEnumerable<Minion> GetAllOpponentMinions(P owner) => from CardSlot s in minionSlots[owner.Other()] where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; 
+        public IEnumerable<Minion> GetAllMinionsOwnedBy(P owner) => from CardSlot s in minionSlots[owner] where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m;
+        public IEnumerable<DamageableActor> GetAllCharactersOwnedBy(P owner) => from CardSlot s in minionSlots[owner].Concat(new[] { HPCounters[owner] }) where s.Occupied let m = s.GetComponentInChildren<DamageableActor>() where m != null select m;
         public Dictionary<int, CardData.CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
@@ -334,7 +335,7 @@ namespace CardGame
                 Debug.Log("Host starts?: " + OnTurn);
             }
             else Debug.Log("Client starts?: " + OnTurn);
-            EndTurnBtn.onClick.AddListener(() => ToggleTurnServerRpc(new ServerRpcParams()));
+            EndTurnBtn.onClick.AddListener(() => ToggleTurnServerRpc(new()));
             ServerOnTurn.OnValueChanged += (bool prev, bool n) =>
             {
                 if (prev == n) return;//Should not happen but to make sure.

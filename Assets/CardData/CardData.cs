@@ -45,9 +45,10 @@ namespace CardData
                 {
                     TextAsset json = Resources.Load<TextAsset>("CardData/Scripts/cardScriptsPaths");
                     //Debug.Log(json);
-                    Dictionary<string, object> decodedJSON = JSONToDict(json.text); 
+                    Dictionary<string, object> decodedJSON = JSONToDict(json.text);
                     scriptpaths = new();
-                    foreach (KeyValuePair<string, object> item in decodedJSON) {
+                    foreach (KeyValuePair<string, object> item in decodedJSON)
+                    {
                         List<string> strings = new();
                         foreach (object item1 in (List<object>)item.Value) { strings.Add((string)item1); }
                         scriptpaths.Add(int.Parse(item.Key), strings);
@@ -94,6 +95,15 @@ namespace CardData
                 if (value["cost"] is String) continue;//We'll deal with you later (These are the ? costs)
                 string cardname = (string)value["name"];
                 if (cardname.EndsWith(" (token)")) { cardname = cardname[..^" (token)".Length]; }//Truly the most elegant solution. SarcasmError: maximum sarcasm value exceeded
+                /*
+                if (Scriptpaths.ContainsKey(id))
+                {
+                    Debug.Log(id);
+                    foreach (var item in LoadNames(Scriptpaths[id]))
+                    {
+                        Debug.Log(item);
+                    }
+                }*/
 
                 CardData data = new()
                 {
@@ -110,8 +120,6 @@ namespace CardData
                     scripts = Scriptpaths.ContainsKey(id) ? Scriptpaths[id] : new(),
                     names = Scriptpaths.ContainsKey(id) ? LoadNames(Scriptpaths[id]) : new()
                 };
-
-                //if (Scriptpaths.ContainsKey(id)) { data.scripts = LoadScripts(Scriptpaths[id]); }
                 /*if (((List<object>)value["token_list"]).Count != 0) // I doubt we'd be using tokenlists
                                 {
                                     data.token_list = new();
@@ -128,7 +136,8 @@ namespace CardData
         static List<string> LoadNames(List<string> paths)
         {
             List<string> names = new();
-            foreach (string path in paths) {
+            foreach (string path in paths)
+            {
                 string name = SanitizeToClassName(Resources.Load(path).name);
                 //Debug.Log(name);
                 names.Add(name);

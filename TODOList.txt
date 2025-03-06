@@ -33,6 +33,7 @@ Things to polish:
 		Loading screeny - schovat Loadující se scénu
 	- EditorExt:
 		Make a button to show the editor script in filesystem
+		Allow attaching a script to a card without creating a new one
 
 
 Notes:
@@ -46,9 +47,7 @@ If the endturn/startturn effects kill the other player the caller kicks himself 
 We do not disconnect from the relay on loss/victory
 
 Test:
-ŘÁDNÝ STRÁVNÍK - He may now call himself twice (On Minion spawn and on card played)
-Otrok matfyzu
-Ezomatematik
+Petr, Sportovní vedoucí - test how random works and figure out how to sync randomness.
 
 REQUIREMENTS:
 DONE:
