@@ -39,6 +39,9 @@ Things to polish:
 Notes:
 I think there are cases in which "highlighted slot" and "highlightedActor" may keep wrong data - fix?
 (They null themselves on leaving the mouse. But that may not be enough)
+	Random:
+		We pass seed around but we should be SUPER mindfull to use it only on things that happen on both sides.
+		Probably would be better to make some kind of Network random or something that we will pinky promise that it gets used only in the synched cases.
 
 Bugs:
 ServerOnTurn.OnValueChanged seems to happen sequentially first on the client who ended the turn and then on the other player.

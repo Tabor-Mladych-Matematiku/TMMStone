@@ -22,6 +22,7 @@ public abstract class TargetableCardScriptBase : CardScriptBase
 
 public abstract class CardScriptBase : MonoBehaviour
 {
+    protected int spelldamage = 0;
     protected int RandomRange(int startInc,int endExc) => UnityEngine.Random.Range(startInc, endExc);
     protected virtual void StartTurnBinder(Card card)
     {
@@ -178,4 +179,22 @@ public abstract class CardScriptBase : MonoBehaviour
     /// <param name="sender"></param>
     /// <returns></returns>
     protected GameManager.P GetOwner(object sender) => ((GameActor)sender).Owner;
+    protected void DealSpellDamage(DamageableActor target,int damage,object sender)
+    {
+        target.Damage(damage + GetOwnersSpellDamage(GetOwner(sender)));
+    }
+    public int GetOwnersSpellDamage(GameManager.P owner)
+    {
+        int spellDamage = 0;
+        foreach (Minion m in GameManager.Instance.GetAllMinionsOwnedBy(owner))
+        {
+            foreach (var script in m.GetComponents< CardScriptBase>())
+            {
+                spellDamage += script.spelldamage;
+            }
+
+        }
+        return spellDamage;
+    }
+
 }

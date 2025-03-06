@@ -74,10 +74,14 @@ namespace CardGame
         }
 
         public bool Contains(Card item) => deck.Contains(item);
-
+        /// <summary>
+        /// I don't know whether this should be used. Just don't delete the cards or something
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="arrayIndex"></param>
         public void CopyTo(Card[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            deck.CopyTo(array, arrayIndex);
         }
         /// <summary>
         /// Removes Card from deck. Does not destroy Card but purges its parent
@@ -95,15 +99,12 @@ namespace CardGame
             return false;
         }
 
-        public IEnumerator<Card> GetEnumerator()
+        public IEnumerator<Card> GetEnumerator() => deck.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator()=> deck.GetEnumerator();
+        public void AddRandom(Card spell)
         {
-            throw new NotImplementedException();
+            Insert(UnityEngine.Random.Range(0, deck.Count+1), spell);//+1 because we want to be able to insert at the end
+            //WARNING, TODO: I still did not make a good random. I don't know if it works
         }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }

@@ -121,7 +121,7 @@ namespace CardGame
         [SerializeField] Deck OppDeck;
         [SerializeField] Grave OwnGrave;
         [SerializeField] Grave OppGrave;
-        private Dictionary<P, Deck> decks;
+        public Dictionary<P, Deck> decks;
         public Dictionary<P, Grave> graves;
         [SerializeField] Transform OwnMin;
         [SerializeField] Transform OppMin;
@@ -144,7 +144,7 @@ namespace CardGame
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
         public IEnumerable<CardSlot> AllCharacterSlots { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]).Concat(new CardSlot[] { OwnHPCounter, OppHPCounter }) select s; }
-        public IEnumerable<DamageableActor> AllCharacters { get => from CardSlot s in AllCharacterSlots let d = s.GetComponentInChildren<DamageableActor>() where d!=null select d ; }
+        public IEnumerable<DamageableActor> AllCharacters { get => from CardSlot s in AllCharacterSlots let d = s.GetComponentInChildren<DamageableActor>() where d != null select d; }
         public IEnumerable<Minion> AllMinions { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]) where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; }
         public IEnumerable<Minion> GetAllMinionsOwnedBy(P owner) => from CardSlot s in minionSlots[owner] where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m;
         public IEnumerable<DamageableActor> GetAllCharactersOwnedBy(P owner) => from CardSlot s in minionSlots[owner].Concat(new[] { HPCounters[owner] }) where s.Occupied let m = s.GetComponentInChildren<DamageableActor>() where m != null select m;
@@ -155,6 +155,8 @@ namespace CardGame
         public const int maxEffSlots = 6;
         public const int maxHandSlots = 10;
         public const bool DEBUG = false;
+
+        public int seed { get; private set; }
 
         public event EventHandler<CardPlayedEventArgs> OnPlayed;//Maybe split it but idk
 
@@ -240,6 +242,7 @@ namespace CardGame
             }
         }
         public P PlayerOnTurn { get => OnTurn ? P.P1 : P.P2; }
+
         private void Awake()
         {
             Instance = this;
@@ -301,8 +304,8 @@ namespace CardGame
                 {P.P1,OwnHPCounter},
                 {P.P2,OppHPCounter}
             };
-            HPCounters[P.P1].Initialize(P.P1,2* maxMinionSlots);
-            HPCounters[P.P2].Initialize(P.P2, 2 * maxMinionSlots+1);
+            HPCounters[P.P1].Initialize(P.P1, 2 * maxMinionSlots);
+            HPCounters[P.P2].Initialize(P.P2, 2 * maxMinionSlots + 1);
             HPCounters[P.P1].Death += (_, _) => GameManager_PlayerDeath(P.P1);
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
@@ -333,6 +336,7 @@ namespace CardGame
             {
                 if (UnityEngine.Random.Range(0, 2) == 0) ServerOnTurn.Value = false;
                 Debug.Log("Host starts?: " + OnTurn);
+                seed = (int)DateTime.Now.Ticks;
             }
             else Debug.Log("Client starts?: " + OnTurn);
             EndTurnBtn.onClick.AddListener(() => ToggleTurnServerRpc(new()));
@@ -357,7 +361,7 @@ namespace CardGame
             HPCounters[P.P1].Health = MaxHealths[P.P1];
             HPCounters[P.P2].Health = MaxHealths[P.P2];
             if (IsServer)
-                NetworkManager.OnClientConnectedCallback += (clientId) => { if (clientId != NetworkManager.LocalClientId) OnOpponentConnected(OwnDeckList); };
+                NetworkManager.OnClientConnectedCallback += (clientId) => { if (clientId != NetworkManager.LocalClientId) OnOpponentConnected(OwnDeckList, seed); };
             else
             {
                 OnOpponentConnected(OwnDeckList);
@@ -373,7 +377,7 @@ namespace CardGame
             GameManager_PlayerDeath((P)id);//This might work
         }
 
-        private void OnOpponentConnected(int[] OwnDeckList) => AnnounceDeckServerRpc(OwnDeckList, new());//loads own deck and sends it to the other.
+        private void OnOpponentConnected(int[] OwnDeckList, int seed = 0) => AnnounceDeckServerRpc(OwnDeckList, seed, new());//loads own deck and sends it to the other.
         private int[] GetCardIDs(List<object> DecodedDeckList)
         {
             int[] ids = new int[DecodedDeckList.Count];
@@ -428,17 +432,17 @@ namespace CardGame
             }
             else
             {
-                AddCardToHand(who, card);
+                AddCardToHand(who, card,true);
             }
 
         }
-        public void AddCardToHand(P who, Card c,bool discardExcesive=true)
+        public void AddCardToHand(P who, Card c, bool discardExcesive = false)
         {
             for (int i = 0; i < 11; i++)
             {
                 if (i == 10)
                 {
-                    if(discardExcesive) Discard(c, who);
+                    if (discardExcesive) Discard(c, who);
                     break;
                 }
                 if (!HandSlots[who][i].Occupied)
@@ -572,7 +576,7 @@ namespace CardGame
             else if (index == 2 * maxMinionSlots) index++;
             else if (index == 2 * maxMinionSlots + 1) index--;
             else index -= maxMinionSlots;
-            
+
             return index;
         }
         [ServerRpc(RequireOwnership = false)]
@@ -594,7 +598,7 @@ namespace CardGame
         }
         );
         [ServerRpc(RequireOwnership = false)]
-        private void AnnounceDeckServerRpc(int[] deck, ServerRpcParams srp) => AnnounceDeckClientRpc(deck, new()
+        private void AnnounceDeckServerRpc(int[] deck, int seed, ServerRpcParams srp) => AnnounceDeckClientRpc(deck, seed, new()
         {
             Send = new()
             {
@@ -602,10 +606,12 @@ namespace CardGame
             }
         });
         [ClientRpc(RequireOwnership = false)]
-        private void AnnounceDeckClientRpc(int[] deck, ClientRpcParams crp)//This runs only on opponent.
+        private void AnnounceDeckClientRpc(int[] deck, int seed, ClientRpcParams crp)//This runs only on opponent.
         {
             LoadDeck(decks[P.P2], deck);
             //StartGame stuff
+            if (!IsServer) UnityEngine.Random.InitState(seed);
+            else UnityEngine.Random.InitState(this.seed);
             //Animations (Who against who)
 
 

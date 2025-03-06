@@ -53,7 +53,7 @@ namespace CardGame
 
         public bool Remove(Card item)
         {
-            throw new System.NotImplementedException();
+            return true;//throw new System.NotImplementedException();
         }
 
         public void RemoveAt(int index)
