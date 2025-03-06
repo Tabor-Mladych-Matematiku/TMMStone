@@ -39,6 +39,17 @@ Notes:
 I think there are cases in which "highlighted slot" and "highlightedActor" may keep wrong data - fix?
 (They null themselves on leaving the mouse. But that may not be enough)
 
+Bugs:
+ServerOnTurn.OnValueChanged seems to happen sequentially first on the client who ended the turn and then on the other player.
+If the endturn/startturn effects kill the other player the caller kicks himself from the game and the ServerOnTurn.OnValueChanged does not get called on the opponent.
+
+We do not disconnect from the relay on loss/victory
+
+Test:
+ŘÁDNÝ STRÁVNÍK - He may now call himself twice (On Minion spawn and on card played)
+Otrok matfyzu
+Ezomatematik
+
 REQUIREMENTS:
 DONE:
 R1: PC and Android

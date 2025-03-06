@@ -4,13 +4,12 @@ using UnityEngine;
 
 namespace CardGame
 {
-    public class Face : TableActor//We may wanna do some class Targettable or something. Its too similar to Minions and yet I don't want to do deeper inheritance from TableActors
+    public class Face : DamageableActor//We may wanna do some class Targettable or something. Its too similar to Minions and yet I don't want to do deeper inheritance from TableActors Well look at what I did. I did deeper inheritance yipeee
     {
-        public GameManager.P O { get;  set; }
         public override GameManager.P Owner
         {
             get {
-                return O;
+                return GetComponentInParent<HPCounter>().Owner;
             }
         }
         public override void Initialize(Card c)
@@ -46,6 +45,16 @@ namespace CardGame
         {
             HighlightRim.color = defaultColor;
             GameManager.Instance.highlightedActor = null;
+        }
+
+        public override void Damage(int ammount)
+        {
+            GetComponentInParent<HPCounter>().Health-= ammount;
+        }
+
+        public override void Heal(int ammount)
+        {
+            GetComponentInParent<HPCounter>().Heal(ammount);
         }
     }
 }

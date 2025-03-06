@@ -36,7 +36,6 @@ namespace CardData
     public static class CDJsonUtils
     {
         static Dictionary<int, List<string>> scriptpaths;
-        public static string jsonGUID;
 
         public static Dictionary<int, List<string>> Scriptpaths
         {
@@ -45,7 +44,7 @@ namespace CardData
                 if (scriptpaths == null)
                 {
                     TextAsset json = Resources.Load<TextAsset>("CardData/Scripts/cardScriptsPaths");
-                    Debug.Log(json);
+                    //Debug.Log(json);
                     Dictionary<string, object> decodedJSON = JSONToDict(json.text); 
                     scriptpaths = new();
                     foreach (KeyValuePair<string, object> item in decodedJSON) {

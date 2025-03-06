@@ -81,3 +81,4 @@ crashlytics-build.properties
 /Assets/Resources/CardData/
 /Assets/Resources/CardPlainImages/
 
+/AndroidBuild/TMMstone_BurstDebugInformation_DoNotShip/tempburstlibs/armeabi-v7a

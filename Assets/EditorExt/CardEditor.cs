@@ -17,6 +17,7 @@ namespace CardEditor
     {
         static Dictionary<int, CardData.CardData> CardDatabase;
         readonly Dictionary<string, int> nameToId = new();
+        static string jsonGUID;
         //static Dictionary<int, string[]> scriptpaths;
         List<string> choices;
         DropdownField cardList;
@@ -28,6 +29,12 @@ namespace CardEditor
         }
         public void CreateGUI()
         {
+            string[] jsonGUIDs = AssetDatabase.FindAssets($"{"cardScriptsPaths"} t:TextAsset", new[] { "Assets/Resources/CardData/Scripts" });
+            if (jsonGUIDs.Length != 1)
+            {
+                Debug.LogError($"Looking for json resulted in: {jsonGUIDs.Length} GUIDs found");
+            }
+            jsonGUID = jsonGUIDs[0];
             //Debug.Log(Application.dataPath+ "/../Build/TMMstone_Data/Managed/");
             CardDatabase = CDJsonUtils.LoadCardDatabase();//Loads appropriate data
             VisualElement root = rootVisualElement;
@@ -146,8 +153,8 @@ namespace CardEditor
                 CDJsonUtils.Scriptpaths.Add(id, new() { Resourcepath });
 
                 string json = MiniJson.JsonEncode(CDJsonUtils.Scriptpaths);
-                Debug.Log("Encoding: " + json);
-                File.WriteAllText(AssetDatabase.GUIDToAssetPath(CDJsonUtils.jsonGUID), json);
+                //Debug.Log("Encoding: " + json);
+                File.WriteAllText(AssetDatabase.GUIDToAssetPath(jsonGUID), json);
 
                 CardDatabase[id].scripts.Add(Resourcepath);//This is only so that I don't need to reload the whole database after every change
 
@@ -189,12 +196,4 @@ namespace CardEditor
         }
     }
 }
-/*
-                     string[] jsonGUIDs = AssetDatabase.FindAssets($"{"cardScriptsPaths"} t:TextAsset", new[] { "Assets/Resources/CardData/Scripts" });
-                    if (jsonGUIDs.Length != 1)
-                    {
-                        Debug.LogError($"Looking for json resulted in: {jsonGUIDs.Length} GUIDs found");
-                    }
-                    jsonGUID = jsonGUIDs[0];
- */
 #endif

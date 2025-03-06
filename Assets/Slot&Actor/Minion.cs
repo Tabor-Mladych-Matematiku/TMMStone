@@ -12,11 +12,11 @@ namespace CardGame
         protected Color highlightColor;
         protected Color attkColor;
         protected Color defaultColor;
-        [SerializeField] SpriteRenderer graphic;
+        [SerializeField] protected SpriteRenderer graphic;
         protected Card original;
 
-        public virtual void OnMouseEnter(){}
-        public virtual void OnMouseExit(){}
+        public virtual void OnMouseEnter() { }
+        public virtual void OnMouseExit() { }
         public virtual void Initialize(Card c)
         {
             original = c;
@@ -24,8 +24,25 @@ namespace CardGame
             if (sprite != null) graphic.sprite = sprite;
         }
     }
+    public abstract class DamageableActor : TableActor
+    {
+        internal override void Awake() { base.Awake(); baseColor = graphic.color; }
+        public abstract void Damage(int ammount);
+        public abstract void Heal(int ammount);
+        private bool f = false;
+        Color frozenColor = new(0.1f, 0.1f, 1, 1);//This would/will be handled differently in the future
+        Color baseColor;
+        public bool Frozen
+        {
+            get => f; set
+            {
+                graphic.color = value ? frozenColor : baseColor;
+                f = value;
+            }
+        }
+    }
 
-    public class Minion : TableActor
+    public class Minion : DamageableActor
     {
         private int h = 0;
         private int a = 0;
@@ -35,25 +52,52 @@ namespace CardGame
         [SerializeField] AudioClip attackSound;
 
         public event EventHandler<TargetedEventEventArgs> OnBattleCry;
-        public event EventHandler<TargetedEventEventArgs> OnAttack;
+        public event EventHandler<TargetedEventEventArgs> OnBeforeAttack;
+        public event EventHandler<TargetedEventEventArgs> OnAfterAttack;
         public event EventHandler OnDeath;
         public event EventHandler OnHealed;
         public event EventHandler OnDamaged;
         public class TargetedEventEventArgs
         {
-            public int target;
+            public GameActor target;
         }
+        //Health on card
+        private int baseHealth;
+        private int mh;
+        //Current max Health
+        public int MaxHealth
+        {
+            get => mh; set
+            {
+                mh = value;
+                h = math.min(h, mh);
+            }
+        }
+        //Curent Health
         public int Health
         {
             get => h;
             private set
             {
-                if (h < value && h != 0) OnHealed?.Invoke(this, new());//the !=0 should dodge the init phase
-                else OnDamaged?.Invoke(this, new());
                 h = value;
                 HealthLabel.text = h.ToString();
                 if (value <= 0) Death();
             }
+        }
+        //On Silence and such
+        public void ResetHealth()
+        {
+            MaxHealth = baseHealth;
+        }
+        public override void Heal(int ammount)
+        {
+            Health = math.min(Health + ammount, MaxHealth);
+            OnHealed?.Invoke(this, new());
+        }
+        public override void Damage(int ammount)
+        {
+            Health -= ammount;
+            OnDamaged?.Invoke(this, new());
         }
         internal override void Awake()
         {
@@ -62,20 +106,30 @@ namespace CardGame
             highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
             attkColor = new(defaultColor.g, defaultColor.r, defaultColor.b, 0.8f);//Interesting choice but ok
         }
-        private void Death()
+        public void Death()
         {
             OnDeath?.Invoke(this, new());
-            transform.parent.GetComponent<CardSlot>().RemoveMinion();
+            GetComponentInParent<CardSlot>().RemoveMinion();
         }
-
+        private int baseAttack;
         public int Attack
         {
             get => a;
-            private set
+            set
             {
                 a = math.max(0, value);
                 AttackLabel.text = a.ToString();
             }
+        }
+        public void ResetAttack()
+        {
+            Attack = baseAttack;
+        }
+        public void Buff(int attack, int health)
+        {
+            Attack += attack;
+            MaxHealth += health;
+            Health += health;
         }
 
         public bool CanAttack { get; private set; }
@@ -85,7 +139,10 @@ namespace CardGame
         {
             base.Initialize(c);
             Attack = c.stats[0];
+            baseAttack = c.stats[0];
             Health = c.stats[1];
+            MaxHealth = c.stats[1];
+            baseHealth = c.stats[1];
             CanAttack = false;
         }
 
@@ -102,7 +159,6 @@ namespace CardGame
             if (GameManager.Instance.highlightedActor != null)
             {
                 GameManager.Instance.OnUIMinionAttack(GetComponentInParent<CardSlot>().index, GameManager.Instance.HighlightedActorIndex);
-                CanAttack = false;//TODO windfury shit.
             }
             transform.localPosition = new Vector3(0, 0, -1);
             GameManager.Instance.cursor = null;
@@ -140,33 +196,42 @@ namespace CardGame
             HighlightRim.color = defaultColor;
             GameManager.Instance.highlightedActor = null;
         }
-        internal void Battlecry(int target)
+        internal void Battlecry(GameActor target)
         {
             OnBattleCry?.Invoke(this, new() { target = target });
         }
         public bool CanAwake()
         {
-            return true; // TODO: Freeze effects and the sort
+            if (Frozen)
+            {
+                Frozen = false;
+                return false;
+            }
+            return true;
         }
         public override void StartTurn(bool onTurn)
         {
             base.StartTurn(onTurn);
-            if (CanAwake()) CanAttack = true;
+            if (GameManager.Instance.PlayerOnTurn == Owner && CanAwake()) CanAttack = true;//Cannot use onTurn cuz we also need to know if the minion is owned by the player who is on turn
         }
 
         internal void AttackAction(Minion oppminion)
         {
-            OnAttack?.Invoke(this, new() { target = oppminion.GetComponentInParent<CardSlot>().index });
-            Health -= oppminion.Attack;
-            oppminion.Health -= Attack;
+            OnBeforeAttack?.Invoke(this, new() { target = oppminion });
+            CanAttack = false;//TODO windfury shit.
+            Damage(oppminion.Attack);
+            oppminion.Damage(Attack);
             audioSource.PlayOneShot(attackSound);
+            OnAfterAttack?.Invoke(this, new() { target = oppminion });
             //TODO visuals
         }
-        internal void AttackAction(HPCounter face)
+        internal void AttackAction(Face face)
         {
-            OnAttack?.Invoke(this, new() { target = 2*GameManager.maxMinionSlots+1 });
-            face.Health -= Attack;
+            OnBeforeAttack?.Invoke(this, new() { target = face });
+            CanAttack = false;//TODO windfury shit.
+            face.Damage(Attack);
             audioSource.PlayOneShot(attackSound);
+            OnAfterAttack?.Invoke(this, new() { target = face });
         }
     }
 }

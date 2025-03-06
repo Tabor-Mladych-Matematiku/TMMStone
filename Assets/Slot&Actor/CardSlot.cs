@@ -62,6 +62,7 @@ namespace CardGame
         public Card PopCard()
         {
             Card c = transform.GetComponentInChildren<Card>(true);
+            c.backupOwner = Owner;
             c.transform.parent = null;
             return c;
         }

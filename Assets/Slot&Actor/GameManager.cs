@@ -10,6 +10,8 @@ using UnityEngine.Purchasing;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using CardData;
+using static CardGame.Card;
+using System.Security.Cryptography;
 
 namespace CardGame
 {
@@ -29,7 +31,7 @@ namespace CardGame
             while (n > 1)
             {
                 n--;
-                int k = permutation[n] =  UnityEngine.Random.Range(0, n + 1);
+                int k = permutation[n] = UnityEngine.Random.Range(0, n + 1);
                 (list[n], list[k]) = (list[k], list[n]);
             }
             return permutation;
@@ -141,6 +143,10 @@ namespace CardGame
         public Dictionary<P, HPCounter> HPCounters;
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
+        public IEnumerable<CardSlot> AllCharacterSlots { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]).Concat(new CardSlot[] { OwnHPCounter, OppHPCounter }) select s; }
+        public IEnumerable<DamageableActor> AllCharacters { get => from CardSlot s in AllCharacterSlots let d = s.GetComponentInChildren<DamageableActor>() where d!=null select d ; }
+        public IEnumerable<Minion> AllMinions { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]) where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; }
+        public IEnumerable<Minion> GetAllOpponentMinions(P owner) => from CardSlot s in minionSlots[owner.Other()] where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; 
         public Dictionary<int, CardData.CardData> CardDatabase;
         public GameObject CardPrefab;
         public Button EndTurnBtn;
@@ -148,6 +154,8 @@ namespace CardGame
         public const int maxEffSlots = 6;
         public const int maxHandSlots = 10;
         public const bool DEBUG = false;
+
+        public event EventHandler<CardPlayedEventArgs> OnPlayed;//Maybe split it but idk
 
         public Dictionary<P, int> MaxHealths = new() {
             {P.P1,30 },
@@ -230,6 +238,7 @@ namespace CardGame
                 else ServerOnTurn.Value = !value;
             }
         }
+        public P PlayerOnTurn { get => OnTurn ? P.P1 : P.P2; }
         private void Awake()
         {
             Instance = this;
@@ -291,9 +300,9 @@ namespace CardGame
                 {P.P1,OwnHPCounter},
                 {P.P2,OppHPCounter}
             };
-            HPCounters[P.P1].GetComponent<Face>().O = P.P1;
-            HPCounters[P.P2].GetComponent<Face>().O = P.P2;
-            HPCounters[P.P1].Death += (_,_)=> GameManager_PlayerDeath(P.P1);
+            HPCounters[P.P1].Initialize(P.P1,2* maxMinionSlots);
+            HPCounters[P.P2].Initialize(P.P2, 2 * maxMinionSlots+1);
+            HPCounters[P.P1].Death += (_, _) => GameManager_PlayerDeath(P.P1);
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
             CardDatabase = CDJsonUtils.LoadCardDatabase();
@@ -379,9 +388,7 @@ namespace CardGame
         {
             foreach (int id in ids)
             {
-                Card Cardscript = Instantiate(CardPrefab).GetComponent<Card>();
-                Cardscript.Initialize(CardDatabase[id]);
-                d.Add(Cardscript);
+                d.Add(Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[id]));
             }
 
         }
@@ -424,13 +431,13 @@ namespace CardGame
             }
 
         }
-        public void AddCardToHand(P who, Card c)
+        public void AddCardToHand(P who, Card c,bool discardExcesive=true)
         {
             for (int i = 0; i < 11; i++)
             {
                 if (i == 10)
                 {
-                    Discard(c, who);
+                    if(discardExcesive) Discard(c, who);
                     break;
                 }
                 if (!HandSlots[who][i].Occupied)
@@ -442,6 +449,10 @@ namespace CardGame
                     break;
                 }
             }
+        }
+        public void AddCardToHandByID(P who, int ID, bool discardExcesive = false)
+        {
+            AddCardToHand(who, Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID]), discardExcesive);
         }
         public void Discard(Card c, P who)
         {
@@ -501,44 +512,67 @@ namespace CardGame
                 case PlayerAction.ActionType.Play:
                     Card card = HandSlots[who][action.Source].PopCard();
                     ManaCounters[who].Mana -= card.mana;//TODO: mana modifiers. probably do it on card.mana
-                    if (card.cardType == Card.CardType.Minion)
+                    CardSlot targetSlot = null;
+                    GameActor target = null;
+                    int targetInex = action.Target;
+                    //Debug.Log(targetInex);
+                    if (targetInex != -1)
+                    {
+                        if (who == P.P2) targetInex = InvertIndex(targetInex);//Must invert from opponents point of view
+                        var enumerator = AllCharacterSlots.GetEnumerator();
+                        for (int i = 0; i <= targetInex; i++) enumerator.MoveNext();
+                        targetSlot = enumerator.Current;
+                        target = targetSlot.GetComponentInChildren<DamageableActor>();
+                    }
+                    if (card.cardType == CardType.Minion)
                     {
                         CardSlot slot = minionSlots[who][action.Slot];
                         slot.PlaceCard(card);
-                        card.PlayMinion(slot, action.Target);
                         card.gameObject.SetActive(false);
-
+                        OnPlayed?.Invoke(card.PlayMinion(slot, target), new(CardType.Minion, target));
                     }
-                    else if (card.cardType == Card.CardType.Field)
+                    else if (card.cardType == CardType.Field)
                     {
                         FieldSlot.ClearField();
                         FieldSlot.PlaceCard(card);
-                        card.PlayField();
                         card.gameObject.SetActive(false);
+                        OnPlayed?.Invoke(card.PlayField(), new(CardType.Field, target));
                     }
-                    else if (card.cardType == Card.CardType.Spell)
+                    else if (card.cardType == CardType.Spell)
                     {
-                        card.CastSpell(action.Target);
+
+                        card.CastSpell(target);
                         AddToGrave(card, who);
                         card.standardScale = Vector3.one;//Maybe?
+                        OnPlayed?.Invoke(card, new(CardType.Spell, target));
                     }
                     else throw new Exception("Unknown cardType");
                     break;
                 case PlayerAction.ActionType.Attack:
                     Minion Ownminion = minionSlots[who][action.Source].GetComponentInChildren<Minion>();//Opponents dont have minion slots so we cannot cast and do GetMinion
-                    if (action.Target < 2 * maxMinionSlots)
+                    if (action.Target < 2 * maxMinionSlots)//action.Target can remain as is cuz you cannot attack your own stuff
                     {
                         Minion Oppminion = minionSlots[who.Other()][action.Target - maxMinionSlots].GetComponentInChildren<Minion>();
                         Ownminion.AttackAction(Oppminion);
                     }
                     else
                     {
-                        Ownminion.AttackAction(HPCounters[who.Other()]);
+                        Ownminion.AttackAction(HPCounters[who.Other()].Face);
                     }
                     break;
                 default:
                     throw new NotImplementedException("TakeActionCase not implemented");
             }
+        }
+        int InvertIndex(int index)
+        {
+
+            if (index < maxMinionSlots) index += maxMinionSlots;
+            else if (index == 2 * maxMinionSlots) index++;
+            else if (index == 2 * maxMinionSlots + 1) index--;
+            else index -= maxMinionSlots;
+            
+            return index;
         }
         [ServerRpc(RequireOwnership = false)]
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
@@ -575,28 +609,26 @@ namespace CardGame
 
 
             //Cointoss anim
-            for (int i = 0; i < 3; i++)
-                if (OnTurn) DrawCard(P.P1);
-                else DrawCard(P.P2);
-            for (int i = 0; i < 4; i++)
-                if (!OnTurn) DrawCard(P.P1);
-                else DrawCard(P.P2);
+            for (int i = 0; i < 3; i++) DrawCard(PlayerOnTurn);
+            for (int i = 0; i < 4; i++) DrawCard(PlayerOnTurn.Other());
+            const int bodID = 1;
+            AddCardToHandByID(PlayerOnTurn.Other(), bodID);//Bod
             //Mulligan
             StartTurn();
         }
         public void ShuffleDeckRequest(P who)
         {
             int[] permutation = decks[who].Shuffle();//I shuffle mine and tell the other guy how I shuffled it.
-            ShuffleDeckServerRpc(who.Other(),permutation, new());
+            ShuffleDeckServerRpc(who.Other(), permutation, new());
         }
         [ServerRpc(RequireOwnership = false)]
         private void ShuffleDeckServerRpc(P who, int[] permutation, ServerRpcParams srp) => ShuffleDeckClientRpc(who, permutation, new()
+        {
+            Send = new()
             {
-                Send = new()
-                {
-                    TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
-                }
-            });
+                TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
+            }
+        });
 
         [ClientRpc(RequireOwnership = false)]
         private void ShuffleDeckClientRpc(P who, int[] permutation, ClientRpcParams crp)

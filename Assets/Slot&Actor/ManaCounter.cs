@@ -13,11 +13,11 @@ public class ManaCounter : MonoBehaviour
             m = value;
             for (int i = 0; i < m; i++)
             {
-                SpriteRenderers[i].color = Color.white;
+                SpriteRenderers[i].color = (i>= mm) ? ExtraManaColor: Color.white;
             }
             for (int i = m; i < SpriteRenderers.Length; i++)
             {
-                SpriteRenderers[i].color = DimColor;
+                SpriteRenderers[i].color = (i>=mm)?HiddenColor: DimColor;
             }
         }
     }
@@ -30,21 +30,22 @@ public class ManaCounter : MonoBehaviour
             mm = value;
             for (int i = 0; i < mm; i++)
             {
-                SpriteRenderers[i].gameObject.SetActive(true) ;
+                if(SpriteRenderers[i].color==HiddenColor) SpriteRenderers[i].color = DimColor;
             }
             for (int i = mm; i < SpriteRenderers.Length; i++)
             {
-                SpriteRenderers[i].gameObject.SetActive(false);
+                SpriteRenderers[i].color = HiddenColor;
             }
         }
     }
     readonly SpriteRenderer[] SpriteRenderers = new SpriteRenderer[10];
-    private Color DimColor;
+    private Color DimColor = new (0.5f, 0.5f, 0.5f);
+    private Color ExtraManaColor = new(0, 1, 0);
+    private Color HiddenColor = Color.clear;
     void Start()
     {
         for (int i = 0; i < SpriteRenderers.Length; i++) {
             SpriteRenderers[i] = transform.GetChild(i).GetComponent<SpriteRenderer>();
         }
-        DimColor = SpriteRenderers[0].color;
     }
 }

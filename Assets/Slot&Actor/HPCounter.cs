@@ -6,11 +6,12 @@ using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class HPCounter : MonoBehaviour
+public class HPCounter : CardSlot
 {
     [SerializeField] SpriteRenderer[] circles;
     [SerializeField] TextMeshProUGUI HPLabel;
     public int maxHP;
+    public Face Face { get => GetComponentInChildren<Face>(); }
     int h;
     public int Health
     {

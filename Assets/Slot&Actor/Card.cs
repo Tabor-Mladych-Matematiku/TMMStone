@@ -19,7 +19,15 @@ namespace CardGame
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
         public AudioSource audioSource;
-        public virtual GameManager.P Owner { get => transform.GetComponentInParent<CardSlot>().Owner; }
+        public GameManager.P backupOwner;//ugly as heck TODO proly make this better somehow
+        public virtual GameManager.P Owner
+        {
+            get
+            {
+                CardSlot slot = GetComponentInParent<CardSlot>();
+                return slot == null ? backupOwner : slot.Owner;
+            }
+        }
         public virtual void StartTurn(bool onTurn) => OnStartTurn?.Invoke(this, new(onTurn));
         public virtual void EndTurn(bool onTurn) => OnEndTurn?.Invoke(this, new(onTurn));
 
@@ -30,7 +38,7 @@ namespace CardGame
     }
 
 
-    
+
     public class Card : GameActor
     {
         public enum CardType
@@ -47,6 +55,7 @@ namespace CardGame
         bool hidden;
         public Vector3 standardScale;
         public int[] stats;
+        List<Type> scriptTypes = new();
         int SlotIndex { get => GetComponentInParent<CardSlot>().index; }
 
         [SerializeField] GameObject MinionPrefab;
@@ -66,11 +75,12 @@ namespace CardGame
         }
 
         public event EventHandler OnDiscardEvent;
-        public event EventHandler<CardPlayedEventArgs> OnPlayed;
+        public event EventHandler<CardPlayedEventArgs> OnSelfPlayed;
         public class CardPlayedEventArgs
         {
-            public CardPlayedEventArgs(int target = -1) => Target = target;
-            public int Target { get; private set; }
+            public CardPlayedEventArgs(CardType type,GameActor target) { Target = target; cardType = type; }
+            public GameActor Target { get; private set; }
+            public CardType cardType { get; private set; }
         }
         /// <summary>
         /// Scripts reasign this to modify what is valid target
@@ -89,7 +99,7 @@ namespace CardGame
         {
             standardScale = transform.localScale;
         }
-        public void Initialize(CardData.CardData data)
+        public Card Initialize(CardData.CardData data)
         {
             mana = data.cost;
             cardname = data.name;
@@ -118,21 +128,23 @@ namespace CardGame
                 GetComponent<SpriteRenderer>().sprite = face;
             }
             cardBack = Resources.Load<Sprite>("CardData/card-back");
-            
+
             if (data.scripts != null)
             {
-                Assembly asm = Assembly.LoadFile("C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll");
+                Assembly asm = Assembly.LoadFile("C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll");//TODO: FIx hardcoded path
+                foreach (var script in data.names)
+                {
+                    Type cardScript = asm.GetType(script);
+                    scriptTypes.Add(cardScript);
+                    Targetted = cardScript.IsSubclassOf(asm.GetType("TargetableCardScriptBase"));
+                    //Debug.Log("Type: " + cardScript);
+                    //if(Targetted) Debug.Log("Targetted");
+                    gameObject.AddComponent(cardScript);
 
-                foreach (var script in data.names) {
-                    
-                    
-                    System.Type testBehaviour = asm.GetType(script);
-                    Debug.Log("Type: "+testBehaviour);
-                    gameObject.AddComponent(testBehaviour);
-                    
                     //((CardScriptBase)cmp).Initialize(script); Figure out how to pass args (Eh. Wont work. CardScriptBase is in a different assembly which we cannot reference since it references us.)
                 }
             }
+            return this;
         }
 
         public void OnDiscard() => OnDiscardEvent?.Invoke(this, new());
@@ -187,34 +199,44 @@ namespace CardGame
             transform.localScale = standardScale;//we cleanup regardless just in case
         }
 
-        internal void PlayMinion(CardSlot slot, int target)
+        internal Minion PlayMinion(CardSlot slot, GameActor target)
         {
-            OnPlayed?.Invoke(this, new(target));
+            OnSelfPlayed?.Invoke(this, new(CardType.Minion,target));
             GameObject g = Instantiate(MinionPrefab, slot.transform);
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Minion m = g.GetComponent<Minion>();
             m.Battlecry(target);//(Battlecries get procked after occupying the slot but before getting affected) therefore probably before his INIT
             m.Initialize(this);
             m.audioSource.PlayOneShot(cardPlaced);//Cannot do it on card cuz that one gets disabled and cannot do sounds thus
+            foreach (Type script in scriptTypes)
+            {
+                m.gameObject.AddComponent(script);
+            }
+            return m;
         }
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="target">-1 if no target given</param>
-        internal void CastSpell(int target)
+        /// <param name="target">null if no target given</param>
+        internal void CastSpell(GameActor target)
         {
-            OnPlayed?.Invoke(this, new(target));
+            OnSelfPlayed?.Invoke(this, new(CardType.Spell, target));
             audioSource.PlayOneShot(cardPlaced);
         }
 
-        internal void PlayField()
+        internal Field PlayField()
         {
-            OnPlayed?.Invoke(this, new());
+            OnSelfPlayed?.Invoke(this, new(CardType.Field,null));
             GameObject g = Instantiate(FieldPrefab, GameManager.Instance.FieldSlot.transform);
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Field f = g.GetComponent<Field>();
             f.Initialize(this);
             f.audioSource.PlayOneShot(cardPlaced);
+            foreach (Type script in scriptTypes)
+            {
+                f.gameObject.AddComponent(script);
+            }
+            return f;
         }
     }
 }
