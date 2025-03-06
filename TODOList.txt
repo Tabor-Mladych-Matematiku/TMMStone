@@ -49,20 +49,17 @@ If the endturn/startturn effects kill the other player the caller kicks himself 
 
 We do not disconnect from the relay on loss/victory
 
-Test:
-Petr, Sportovní vedoucí - test how random works and figure out how to sync randomness.
-
 REQUIREMENTS:
 DONE:
 R1: PC and Android
 R2: Sound - Music volume, muting etc.
 R3: Running smoothly
-C10: Netcode
-A16 - cloud services - Lobby,Relay
 R5: Plugin - Netcode
 R6: EditorExt: TODO: cardMakyr,displayer
 R7: Using input system - I mean I imported it but its not like its useful
 R8: Using Universal rendering pipeline - ???
+C10: Netcode
+A16 - cloud services - Lobby,Relay
 
 UNSURE:
 R4: Adaptive screen - kinda

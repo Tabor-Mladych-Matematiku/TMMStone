@@ -174,6 +174,16 @@ public abstract class CardScriptBase : MonoBehaviour
         action(characters.ElementAt(RandomRange(0, characters.Count())));
     }
     /// <summary>
+    /// Do action for all characters on the senders side
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="action"></param>
+    protected void ToRandomFriendlyCharacterDo(object sender, Action<DamageableActor> action)
+    {
+        var characters = GameManager.Instance.GetAllCharactersOwnedBy(GetOwner(sender));
+        action(characters.ElementAt(RandomRange(0, characters.Count())));
+    }
+    /// <summary>
     /// Use with caution as this is casting into GameActor
     /// </summary>
     /// <param name="sender"></param>

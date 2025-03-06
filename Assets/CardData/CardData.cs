@@ -95,16 +95,6 @@ namespace CardData
                 if (value["cost"] is String) continue;//We'll deal with you later (These are the ? costs)
                 string cardname = (string)value["name"];
                 if (cardname.EndsWith(" (token)")) { cardname = cardname[..^" (token)".Length]; }//Truly the most elegant solution. SarcasmError: maximum sarcasm value exceeded
-                /*
-                if (Scriptpaths.ContainsKey(id))
-                {
-                    Debug.Log(id);
-                    foreach (var item in LoadNames(Scriptpaths[id]))
-                    {
-                        Debug.Log(item);
-                    }
-                }*/
-
                 CardData data = new()
                 {
                     name = (string)value["name"],
@@ -130,21 +120,9 @@ namespace CardData
                                 }*/
                 CardDatabase.Add(id, data);
             }
-
             return CardDatabase;
         }
-        static List<string> LoadNames(List<string> paths)
-        {
-            List<string> names = new();
-            foreach (string path in paths)
-            {
-                string name = SanitizeToClassName(Resources.Load(path).name);
-                //Debug.Log(name);
-                names.Add(name);
-            }
-
-            return names;
-        }
+        static List<string> LoadNames(List<string> paths)=> (from path in paths let resource = Resources.Load(path) where resource!=null select SanitizeToClassName(resource.name)).ToList();
 
         /// <summary>
         /// Sanitizes input into valid C# classname
