@@ -6,30 +6,9 @@ using System;
 
 public class Michalův_matematický_model : CardScriptBase
 {
-    //Minion events
-    //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
-    //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
-    //protected override void OnHealed(object sender, EventArgs e) { }
-    //protected override void OnDamaged(object sender, EventArgs e) { }
-    //protected override void OnTableActorEndTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnTableActorStartTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnTableActorEndOwnTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnDeath(object sender, EventArgs e) { }
-
-    //Card events
-    //protected override void OnDiscard(object sender, EventArgs e){}
-    //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}
-    //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
-    //protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) { }
-
-    //Other card events
-    //protected override void OnPlayed(object sender, Card.CardPlayedEventArgs e){}
     protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e) {
         Minion minion = gameObject.GetComponent<Minion>();
         if (minion == null || minion.Owner != spell.Owner) return;
         GameManager.Instance.decks[minion.Owner].AddRandom(spell);
     }
-    //protected override void OnMinionPlayed(Minion minion, Card.CardPlayedEventArgs e) { }
-    //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
 }

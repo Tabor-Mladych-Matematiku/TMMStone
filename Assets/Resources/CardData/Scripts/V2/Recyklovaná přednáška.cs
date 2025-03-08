@@ -6,31 +6,20 @@ using System;
 
 public class Recyklovaná_přednáška : CardScriptBase
 {
-    //Minion events
-    //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
-    //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
-    //protected override void OnHealed(object sender, EventArgs e) { }
-    //protected override void OnDamaged(object sender, EventArgs e) { }
-    //protected override void OnTableActorEndTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnTableActorStartTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnTableActorEndOwnTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnDeath(object sender, EventArgs e) { }
-
-    //Card events
-    //protected override void OnDiscard(object sender, EventArgs e){}
-    //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}
-    //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
-    protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) {//TODO: make grave less horrible
-        Grave grave = GameManager.Instance.graves[GetOwner(sender)];
-        Card card = grave[0];
-        grave.Remove(card);
-        GameManager.Instance.AddCardToHand(GetOwner(sender), card);
+    protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) {
+        GameManager.P owner = GetOwner(sender);
+        Grave grave = GameManager.Instance.graves[owner];
+        for (int i = grave.Count - 1; i >= 0; i--)
+        {
+            Card card = grave[i];
+            if(card.cardType == Card.CardType.Spell)
+            {
+                grave.RemoveAt(i);//Does nuffin' rn since the AddCardToHand takes it away anyway
+                GameManager.Instance.AddCardToHand(owner, card);
+                return;
+            }
+        }
+        
+        
     }
-
-    //Other card events
-    //protected override void OnPlayed(object sender, Card.CardPlayedEventArgs e){}
-    //protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e) { }
-    //protected override void OnMinionPlayed(Minion minion, Card.CardPlayedEventArgs e) { }
-    //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
 }

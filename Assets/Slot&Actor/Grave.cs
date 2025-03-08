@@ -51,6 +51,13 @@ namespace CardGame
             throw new System.NotImplementedException();
         }
 
+        public Card PopLast()
+        {
+            Card card = this[Count - 1];
+            Remove(card);
+            return card;
+        }
+
         public bool Remove(Card item)
         {
             return true;//throw new System.NotImplementedException();
@@ -58,7 +65,7 @@ namespace CardGame
 
         public void RemoveAt(int index)
         {
-            throw new System.NotImplementedException();
+            //throw new System.NotImplementedException();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

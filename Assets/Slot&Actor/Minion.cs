@@ -14,6 +14,7 @@ namespace CardGame
         protected Color defaultColor;
         [SerializeField] protected SpriteRenderer graphic;
         protected Card original;
+        public List<Func<Card, int>> manacostmod = new();
 
         public virtual void OnMouseEnter() { }
         public virtual void OnMouseExit() { }
@@ -169,7 +170,7 @@ namespace CardGame
             if (GameManager.Instance.cursor != null)
             {
                 //This is being targetted by spell
-                if (GameManager.Instance.cursor is Card h && h.cardType == Card.CardType.Spell && h.Targetted && h.IsTargetValid(this))// && transform.childCount == 0) Idk this was here but it makes little sense.
+                if (GameManager.Instance.cursor is Card h && h.cardType == Card.CardType.Spell && h.Targetted && h.IsTargetValid(this))
                 {
                     GameManager.Instance.highlightedActor = this;
                     HighlightRim.color = highlightColor;

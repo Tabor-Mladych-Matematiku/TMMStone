@@ -6,21 +6,7 @@ using System;
 
 public class Bod : CardScriptBase
 {
-    //Minion events
-    //protected override void OnAttack(object sender, Minion.TargetedEventEventArgs e) { }
-    //protected override void OnHealed(object sender, EventArgs e) { }
-    //protected override void OnDamaged(object sender, EventArgs e) { }
-    //protected override void OnMinionEndTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnMinionStartTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnDeath(object sender, EventArgs e) { }
-    //Card events
-    //protected override void OnDiscard(object sender, EventArgs e){}
-
-    //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}
-
-    //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
-
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e){
-        GameManager.Instance.ManaCounters[((Card)sender).Owner].Mana += 1;
+        GameManager.Instance.ManaCounters[GetOwner(sender)].Mana += 1;
     }
 }

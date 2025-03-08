@@ -5,6 +5,7 @@ using UnityEngine;
 using CardData;
 using System.Reflection;
 using System.IO;
+using UnityEngine.AddressableAssets;
 
 namespace CardGame
 {
@@ -55,12 +56,14 @@ namespace CardGame
         bool hidden;
         public Vector3 standardScale;
         public int[] stats;
-        List<Type> scriptTypes = new();
+        readonly List<Type> scriptTypes = new();
         int SlotIndex { get => GetComponentInParent<CardSlot>().index; }
 
-        [SerializeField] GameObject MinionPrefab;
-        [SerializeField] GameObject FieldPrefab;
-        [SerializeField] GameObject EffectPrefab;
+        [SerializeField] AssetReferenceGameObject MinionAddressable;
+        [SerializeField] AssetReferenceGameObject FieldAddressable;
+        [SerializeField] AssetReferenceGameObject EffectAddressable;
+        GameObject TableActorPrefab;
+        GameObject EffectPrefab;//A minion might cause an effect to happen so it is not as easy
 
         public AudioClip cardPlaced;
         public bool Targetted { get; private set; }
@@ -78,7 +81,7 @@ namespace CardGame
         public event EventHandler<CardPlayedEventArgs> OnSelfPlayed;
         public class CardPlayedEventArgs
         {
-            public CardPlayedEventArgs(CardType type,GameActor target) { Target = target; cardType = type; }
+            public CardPlayedEventArgs(CardType type, GameActor target) { Target = target; cardType = type; }
             public GameActor Target { get; private set; }
             public CardType cardType { get; private set; }
         }
@@ -108,6 +111,7 @@ namespace CardGame
                 case "Token":
                 case "Jednotka":
                     cardType = CardType.Minion;
+                    MinionAddressable.LoadAssetAsync().Completed += (handle) => TableActorPrefab = handle.Result;
                     stats = new int[2] { int.Parse(data.attack), int.Parse(data.health) };
                     break;
                 case "Spelltoken":
@@ -116,9 +120,13 @@ namespace CardGame
                     break;
                 case "Pole":
                     cardType = CardType.Field;
+                    FieldAddressable.LoadAssetAsync().Completed += (handle) => TableActorPrefab = handle.Result;
                     break;
                 default: throw new Exception("Unknown cardtype: " + data.type);
             }
+            EffectAddressable.LoadAssetAsync().Completed += (handle) => EffectPrefab = handle.Result;
+
+
             expansion = "Tokeny";
             if (CDJsonUtils.expansionMapping.ContainsKey(data.expansion)) expansion = CDJsonUtils.expansionMapping[data.expansion];
             Sprite sprite = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
@@ -132,8 +140,7 @@ namespace CardGame
             if (data.scripts != null)
             {
                 string assembly_path = AppDomain.CurrentDomain.BaseDirectory + "\\TMMstone_Data\\Managed\\CardScripts.dll";
-                Debug.Log(assembly_path);
-                if(Application.isEditor) assembly_path = "C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll";//TODO: FIx hardcoded path
+                if (Application.isEditor) assembly_path = "C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll";//TODO: FIx hardcoded path
                 Assembly asm = Assembly.LoadFile(assembly_path);
                 foreach (var script in data.names)
                 {
@@ -153,29 +160,24 @@ namespace CardGame
         public void OnDiscard() => OnDiscardEvent?.Invoke(this, new());
         private void OnMouseUp()
         {
-            if (GameManager.Instance.cursor == this)
+            if (GameManager.Instance.cursor != this) return;// I am not holding anything
+            if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//We have a targetSlot for placing things
             {
-                if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//TODO figure out targetted battlecries
-                {//We have source and target
-                    if (!Targetted)
-                        GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex);
-                    else
-                    {
-                        //HEre we need to make the secondary targetting system. (MAMA mia!)
-                        throw new NotImplementedException("We did not make minions with targetted battlecries yet");
-                        int target;
-                        GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex, target);
-                    }
-                }
-                else if (cardType == CardType.Spell && !Targetted) GameManager.Instance.OnUICastSpell(SlotIndex);
-                else if (cardType == CardType.Spell) GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);
-                else if (cardType == CardType.Field) GameManager.Instance.OnUIPlayField(SlotIndex);
+
+                if (!Targetted) GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex);
                 else
-                {//Reset
-                    transform.localPosition = new Vector3(0, 0, -1);
+                {
+                    //HEre we need to make the secondary targetting system. (MAMA mia!)
+                    throw new NotImplementedException("We did not make minions with targetted battlecries yet");//TODO figure out targetted battlecries
+                    int target;
+                    GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex, target);
                 }
-                GameManager.Instance.cursor = null;
             }
+            else if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Field)GameManager.Instance.OnUIPlayField(SlotIndex);//We have a slot to place field to
+            else if (cardType == CardType.Spell && !Targetted) GameManager.Instance.OnUICastSpell(SlotIndex);//Its not a targetted spell
+            else if (cardType == CardType.Spell && GameManager.Instance.highlightedActor != null) GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);//Its targeted and has a target
+            else transform.localPosition = new Vector3(0, 0, -1);//Reset
+            GameManager.Instance.cursor = null;//Clean cursor
         }
 
         public bool IsTargetValid(TableActor actor)
@@ -204,8 +206,8 @@ namespace CardGame
 
         internal Minion PlayMinion(CardSlot slot, GameActor target)
         {
-            OnSelfPlayed?.Invoke(this, new(CardType.Minion,target));
-            GameObject g = Instantiate(MinionPrefab, slot.transform);
+            OnSelfPlayed?.Invoke(this, new(CardType.Minion, target));
+            GameObject g = Instantiate(TableActorPrefab, slot.transform);
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Minion m = g.GetComponent<Minion>();
             m.Battlecry(target);//(Battlecries get procked after occupying the slot but before getting affected) therefore probably before his INIT
@@ -226,11 +228,23 @@ namespace CardGame
             OnSelfPlayed?.Invoke(this, new(CardType.Spell, target));
             audioSource.PlayOneShot(cardPlaced);
         }
+        public Effect PlaceEffect(CardSlot slot)
+        {
+            GameObject g = Instantiate(EffectPrefab, slot.transform);
+            g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(0, new(0, 0, 1)));
+            Effect e = g.GetComponent<Effect>();
+            e.Initialize(this);
+            foreach (Type script in scriptTypes)
+            {
+                e.gameObject.AddComponent(script);
+            }
+            return e;
+        }
 
         internal Field PlayField()
         {
-            OnSelfPlayed?.Invoke(this, new(CardType.Field,null));
-            GameObject g = Instantiate(FieldPrefab, GameManager.Instance.FieldSlot.transform);
+            OnSelfPlayed?.Invoke(this, new(CardType.Field, null));
+            GameObject g = Instantiate(TableActorPrefab, GameManager.Instance.FieldSlot.transform);
             g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Field f = g.GetComponent<Field>();
             f.Initialize(this);

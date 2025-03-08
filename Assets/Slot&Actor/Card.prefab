@@ -49,14 +49,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   expansion: 
   audioSource: {fileID: 0}
+  backupOwner: 0
   mana: 0
   cardname: 
   cardType: 0
   standardScale: {x: 0, y: 0, z: 0}
   stats: 
-  MinionPrefab: {fileID: 8100851684474109220, guid: 1b7af396b06820a42888db8c27a6b3e1, type: 3}
-  FieldPrefab: {fileID: 8100851684474109220, guid: da10f085209fe25458caa589ec0cffb5, type: 3}
-  EffectPrefab: {fileID: 8100851684474109220, guid: fe2058e04e4e5084693ea18fc8aa7611, type: 3}
+  MinionAddressable:
+    m_AssetGUID: 1b7af396b06820a42888db8c27a6b3e1
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  FieldAddressable:
+    m_AssetGUID: da10f085209fe25458caa589ec0cffb5
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  EffectAddressable:
+    m_AssetGUID: fe2058e04e4e5084693ea18fc8aa7611
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
   cardPlaced: {fileID: 8300000, guid: 9b2b4c1fd5e74994ea9835059fec01f5, type: 3}
 --- !u!212 &738436939582740320
 SpriteRenderer:

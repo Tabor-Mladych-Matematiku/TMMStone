@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 6233648e50141bf45ac789ba0598cce7
+  m_SerializeEntries:
+  - m_GUID: 1b7af396b06820a42888db8c27a6b3e1
+    m_Address: Assets/Slot&Actor/Minion.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c6f1e6fd59a82b40a99c7efa0dfd9d4
+    m_Address: Assets/Music/pirate-tavern-full-version-167990.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5aa1ee304e5a153428cf124c9ba9804e
+    m_Address: Assets/Music/the-tavern-194912.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 73a55fa9173cdb14b801155b95b75f2f
+    m_Address: Assets/Music/medieval-citytavern-ambient-235876.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 89b0f49abe8d020468972ad19d105dd6
+    m_Address: Assets/Slot&Actor/Card.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da10f085209fe25458caa589ec0cffb5
+    m_Address: Assets/Slot&Actor/Field.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ebd3468c94ffd0b4cba159a8d78f7fff
+    m_Address: Assets/Music/old-tavern-cinematic-atmosphere-fairytale-273871.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fe2058e04e4e5084693ea18fc8aa7611
+    m_Address: Assets/Slot&Actor/Effect.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1740b00bacd1fe441b39de3739611fb2, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 22d0b077594b9f045891a28631e84c70, type: 2}
+    - {fileID: 11400000, guid: 133f2d3267d2eef498c328e16ac8a8d5, type: 2}

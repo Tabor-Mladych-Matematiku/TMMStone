@@ -22,7 +22,9 @@ public abstract class TargetableCardScriptBase : CardScriptBase
 
 public abstract class CardScriptBase : MonoBehaviour
 {
-    protected int spelldamage = 0;
+    private int spelldamage = 0;
+    protected Func<Card, int> manacostmod = null;
+    protected virtual int SetSpellDamage() { return 0; }
     protected int RandomRange(int startInc,int endExc) => UnityEngine.Random.Range(startInc, endExc);
     protected virtual void StartTurnBinder(Card card)
     {
@@ -39,21 +41,21 @@ public abstract class CardScriptBase : MonoBehaviour
             card.OnDiscardEvent += OnDiscard;
             return;
         }
+        if(TryGetComponent(out TableActor tableactor))
+        {
+            tableactor.OnStartTurn += OnTableActorStartTurn;
+            tableactor.OnEndTurn += OnTableActorEndTurn;
+            if (manacostmod != null) tableactor.manacostmod.Add(manacostmod);
+            spelldamage= SetSpellDamage();
+        }
         if (TryGetComponent(out Minion minion))
         {
             minion.OnBeforeAttack += OnBeforeAttack;
             minion.OnAfterAttack += OnAfterAttack;
             minion.OnDeath += OnDeath;
-            minion.OnStartTurn += OnTableActorStartTurn;
-            minion.OnEndTurn += OnTableActorEndTurn;
             minion.OnHealed += OnHealed;
             minion.OnDamaged += OnDamaged;
             return;
-        }
-        if(TryGetComponent(out Field field))
-        {
-            field.OnStartTurn += OnTableActorStartTurn;
-            field.OnEndTurn += OnTableActorEndTurn;
         }
         //TODO: add all the other effects
     }
@@ -82,14 +84,14 @@ public abstract class CardScriptBase : MonoBehaviour
     /// <param name="sender"></param>
     /// <param name="e"></param>
     protected virtual void OnTableActorStartTurn(object sender, GameActor.TurnEventArgs e) {
-        if (GetOwner(sender) == GameManager.Instance.PlayerOnTurn)OnMinionStartOwnTurn(sender, e);
+        if (GetOwner(sender) == GameManager.Instance.PlayerOnTurn)OnTableActorStartOwnTurn(sender, e);
     }
     /// <summary>
     /// At the start of your turn
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    protected virtual void OnMinionStartOwnTurn(object sender, GameActor.TurnEventArgs e) {}
+    protected virtual void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e) {}
     protected virtual void OnDeath(object sender, EventArgs e) {}
     private void OnDestroy()
     {
@@ -198,13 +200,18 @@ public abstract class CardScriptBase : MonoBehaviour
         int spellDamage = 0;
         foreach (Minion m in GameManager.Instance.GetAllMinionsOwnedBy(owner))
         {
-            foreach (var script in m.GetComponents< CardScriptBase>())
+            foreach (CardScriptBase script in m.GetComponents<CardScriptBase>())
             {
                 spellDamage += script.spelldamage;
             }
 
         }
         return spellDamage;
+    }
+    protected void PlaceEffect(object sender)
+    {
+        CardSlot effectSlot = GameManager.Instance.GetEffectSlot(GetOwner(sender));
+        if (effectSlot != null) ((Card)sender).PlaceEffect(effectSlot);
     }
 
 }

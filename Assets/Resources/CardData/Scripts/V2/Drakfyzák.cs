@@ -6,10 +6,9 @@ using System;
 
 public class Drakfyzák : CardScriptBase
 {
-    
-    //TODO spelldamage
+
+    protected override int SetSpellDamage() => 1;
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) {
-        spelldamage = 1;
         DrawCard(true,sender);
     }
 }

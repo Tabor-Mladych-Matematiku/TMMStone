@@ -1,10 +1,8 @@
 TODO:
 	Priority:
-		Make at least one deck with the EditorExt
-		Fix the path to the assembly in the Card code
 		Figure out how the race conds are happening and add loading screens as necessary
-		Ask about the plugin
-		Do Adressables at the end
+		Do Adressables
+		OnMouseOver they show themselves Properly over whole screen.
 
 	-------Less Important:
 
@@ -12,11 +10,12 @@ TODO:
 		Will probably have to add a check to not highlight anything when we have something in the cursor.
 	Spells - Make it so that you can undo casting nontargetted spell. (Probably a box around your side of the screen or distance from original spot)
 
-	Export json from website
-	Import json in lobby selection
+	Export JSON from website
+	Import JSON in lobby selection
 		Display Deck Class in Lobby
 		Probably make a deck folder with JSONs
 		List them in Lobby selection and allow the selection of one.
+	Make more decks
 
 
 Things to polish:
@@ -24,7 +23,6 @@ Things to polish:
 		Loading screens and such - hide the network accesses.
 		"Your opponent left"
 	- Cards: 
-		OnMouseOver they show themselves Properly over whole screen.
 		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
 	- Prettier Menu
 	- EndGame (Its just a copy of the main menu which itself is garbage)
@@ -46,14 +44,13 @@ I think there are cases in which "highlighted slot" and "highlightedActor" may k
 Bugs:
 ServerOnTurn.OnValueChanged seems to happen sequentially first on the client who ended the turn and then on the other player.
 If the endturn/startturn effects kill the other player the caller kicks himself from the game and the ServerOnTurn.OnValueChanged does not get called on the opponent.
+Spelldamage nějak nefunguje
 
 We do not disconnect from the relay on loss/victory
 
 REQUIREMENTS:
 DONE:
-R1: PC and Android
 R2: Sound - Music volume, muting etc.
-R3: Running smoothly
 R5: Plugin - Netcode
 R6: EditorExt: TODO: cardMakyr,displayer
 R7: Using input system - I mean I imported it but its not like its useful
@@ -61,9 +58,11 @@ R8: Using Universal rendering pipeline - ???
 C10: Netcode
 A16 - cloud services - Lobby,Relay
 
-UNSURE:
+MAKE SURE THIS STAYS:
+R1: PC and Android
+R3: Running smoothly
 R4: Adaptive screen - kinda
 
 TODO:
-A2 - Adressables - Do once all other is done.
+A2 - Adressables
 

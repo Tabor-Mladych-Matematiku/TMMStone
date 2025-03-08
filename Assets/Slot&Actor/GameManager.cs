@@ -10,8 +10,10 @@ using UnityEngine.Purchasing;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using CardData;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using static CardGame.Card;
-using System.Security.Cryptography;
+using Unity.Mathematics;
 
 namespace CardGame
 {
@@ -142,14 +144,17 @@ namespace CardGame
         public Dictionary<P, ManaCounter> ManaCounters;
         public Dictionary<P, HPCounter> HPCounters;
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
+        IEnumerable<CardSlot> AllTableSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
+        IEnumerable<TableActor> AllTableActors { get => from CardSlot s in AllTableSlots let c = s.GetComponentInChildren<TableActor>() where c != null select c; }
         public IEnumerable<CardSlot> AllCharacterSlots { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]).Concat(new CardSlot[] { OwnHPCounter, OppHPCounter }) select s; }
         public IEnumerable<DamageableActor> AllCharacters { get => from CardSlot s in AllCharacterSlots let d = s.GetComponentInChildren<DamageableActor>() where d != null select d; }
         public IEnumerable<Minion> AllMinions { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]) where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; }
         public IEnumerable<Minion> GetAllMinionsOwnedBy(P owner) => from CardSlot s in minionSlots[owner] where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m;
         public IEnumerable<DamageableActor> GetAllCharactersOwnedBy(P owner) => from CardSlot s in minionSlots[owner].Concat(new[] { HPCounters[owner] }) where s.Occupied let m = s.GetComponentInChildren<DamageableActor>() where m != null select m;
         public Dictionary<int, CardData.CardData> CardDatabase;
-        public GameObject CardPrefab;
+        public AssetReferenceGameObject CardAddressable;
+        GameObject CardPrefab;
         public Button EndTurnBtn;
         public const int maxMinionSlots = 7;
         public const int maxEffSlots = 6;
@@ -309,7 +314,12 @@ namespace CardGame
             HPCounters[P.P1].Death += (_, _) => GameManager_PlayerDeath(P.P1);
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
-            CardDatabase = CDJsonUtils.LoadCardDatabase();
+            CardAddressable.LoadAssetAsync<GameObject>().Completed += (AsyncOperationHandle<GameObject> obj) =>
+            {
+                CardPrefab = obj.Result;
+                CardDatabase = CDJsonUtils.LoadCardDatabase();
+            };
+
             //Debug.Log(CardDatabase);
         }
 
@@ -432,7 +442,7 @@ namespace CardGame
             }
             else
             {
-                AddCardToHand(who, card,true);
+                AddCardToHand(who, card, true);
             }
 
         }
@@ -500,7 +510,7 @@ namespace CardGame
         /// <returns></returns>
         public bool IsCardPlayable(Card card)
         {
-            return card.mana <= ManaCounters[P.P1].Mana;
+            return GetManaCost(card) <= ManaCounters[P.P1].Mana;
             //TODO Any eligible targets etc.
         }
 
@@ -516,7 +526,7 @@ namespace CardGame
             {
                 case PlayerAction.ActionType.Play:
                     Card card = HandSlots[who][action.Source].PopCard();
-                    ManaCounters[who].Mana -= card.mana;//TODO: mana modifiers. probably do it on card.mana
+                    ManaCounters[who].Mana -= GetManaCost(card);
                     CardSlot targetSlot = null;
                     GameActor target = null;
                     int targetInex = action.Target;
@@ -569,6 +579,20 @@ namespace CardGame
                     throw new NotImplementedException("TakeActionCase not implemented");
             }
         }
+
+        private int GetManaCost(Card card)
+        {
+            int cost = card.mana;
+            foreach (var item in AllTableActors)
+            {
+                foreach (var item1 in item.manacostmod)
+                {
+                    cost += item1(card);
+                }
+            }
+            return math.max(cost,0);
+        }
+
         int InvertIndex(int index)
         {
 
@@ -641,6 +665,19 @@ namespace CardGame
         private void ShuffleDeckClientRpc(P who, int[] permutation, ClientRpcParams crp)
         {
             decks[who].Shuffle(permutation);
+        }
+
+        public CardSlot GetEffectSlot(P who)
+        {
+            CardSlot[] slots = EffSlots[who];
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (!slots[i].Occupied)
+                {
+                    return slots[i];
+                }
+            }
+            return null;
         }
     }
 }
