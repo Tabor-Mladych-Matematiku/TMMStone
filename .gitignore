@@ -77,3 +77,5 @@ crashlytics-build.properties
 /Assets/TextMesh Pro/Examples & Extras/
 
 /AndroidBuild/TMMstone_BurstDebugInformation_DoNotShip/tempburstlibs/armeabi-v7a
+/ServerData/
+/Assets/TextMesh Pro/Sprites/EmojiOne.png
