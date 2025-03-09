@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 6233648e50141bf45ac789ba0598cce7
   m_currentHash:
     serializedVersion: 2
-    Hash: 9dac1f8038ea5d969b7d861a080eab34
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
@@ -33,6 +33,7 @@ MonoBehaviour:
   m_ShaderBundleCustomNaming: 
   m_MonoScriptBundleNaming: 0
   m_CheckForContentUpdateRestrictionsOption: 0
+  m_BuildAndReleaseBinFileOption: 0
   m_MonoScriptBundleCustomNaming: 
   m_RemoteCatalogBuildPath:
     m_Id: 6c8e02add73dd7c4fa29b3fe7de9a086
@@ -60,13 +61,15 @@ MonoBehaviour:
       - m_Id: 36c5de058f5320748a94c478123d9938
         m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
       - m_Id: 6c8e02add73dd7c4fa29b3fe7de9a086
-        m_Value: ServerData/[BuildTarget]
+        m_Value: CCDBuildData/ManagedEnvironment/ManagedBucket/ManagedBadge
       - m_Id: 7c8c36a98cc9f604daff77513280281a
         m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
       - m_Id: 816ef23e801498546b997358740e4133
         m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
       - m_Id: 8afd9ab5320a0de44bbf8971dcc29f2c
-        m_Value: http://[PrivateIpAddress]:[HostingServicePort]
+        m_Value: https://fcdf224b-f28a-4acc-9f35-087b723cf741.client-api.unity3dusercontent.com/client_api/v1/environments/{CcdManager.EnvironmentName}/buckets/{CcdManager.BucketId}/release_by_badge/{CcdManager.Badge}/entry_by_path/content/?path=
+      - m_Id: bca14cf4af19cfe40a55d02e8928318b
+        m_Value: production
     m_ProfileEntryNames:
     - m_Id: 36c5de058f5320748a94c478123d9938
       m_Name: Local.LoadPath
@@ -82,6 +85,9 @@ MonoBehaviour:
       m_InlineUsage: 0
     - m_Id: 8afd9ab5320a0de44bbf8971dcc29f2c
       m_Name: Remote.LoadPath
+      m_InlineUsage: 0
+    - m_Id: bca14cf4af19cfe40a55d02e8928318b
+      m_Name: EnvironmentName
       m_InlineUsage: 0
     m_ProfileVersion: 1
   m_LabelTable:
@@ -107,3 +113,9 @@ MonoBehaviour:
     m_NextInstanceId: 0
     m_RegisteredServiceTypeRefs: []
     m_PingTimeoutInMilliseconds: 5000
+  m_CcdManagedData:
+    EnvironmentId: 
+    EnvironmentName: 
+    BucketId: 
+    Badge: 
+    State: 1

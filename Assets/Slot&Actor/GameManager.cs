@@ -409,8 +409,9 @@ namespace CardGame
         }
         public void StartTurn()
         {
-            foreach (GameActor actor in AllActors)//Might be reasonable to do it through events. but this should ensure consistency with the rules as in which order things happen
+            foreach (TableActor actor in AllTableActors)//Might be reasonable to do it through events. but this should ensure consistency with the rules as in which order things happen
             {
+                if (actor.transform.parent.GetComponentInChildren<Card>(true) == null) continue;//I don't like this. but it may hold for now. (Actor might be destroyed while in the loop and it shows by its card being removed when we get to him (he is still active for a bit))
                 actor.StartTurn(OnTurn);
             }
 

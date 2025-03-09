@@ -19,7 +19,7 @@ public class Kofola : TargetableCardScriptBase
     //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}
     //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
     protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e) {
-        ((Minion)e.Target).Buff(1, 1);
+        if(e.Target is Minion minion)minion.Buff(1, 1);
     }
 
     //Other card events

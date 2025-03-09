@@ -13,10 +13,10 @@ public class Plán_cesty_na_Bezděz : CardScriptBase
     //protected override void OnMinionEndTurn(object sender, GameActor.TurnEventArgs e) { }
     protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e)
     {
-            foreach (Minion minion in GameManager.Instance.AllMinions)
-            {
-                minion.Death();
-            }
+        foreach (Minion minion in GameManager.Instance.AllMinions)
+        {
+            minion.Death();
+        }
     }
     //protected override void OnDeath(object sender, EventArgs e) { }
 

@@ -61,7 +61,7 @@ namespace CardGame
         public Card GetCard() => transform.GetComponentInChildren<Card>();
         public Card PopCard()
         {
-            Card c = transform.GetComponentInChildren<Card>(true);
+            Card c = transform.GetComponentInChildren<Card>(includeInactive: true);
             c.backupOwner = Owner;
             c.transform.parent = null;
             return c;

@@ -9,7 +9,8 @@ TODO:
 	BattleCry - after placing a battlecry minion attach a fake cardlike thing to the cursor that will onclick either finish the op or cancel it.
 		Will probably have to add a check to not highlight anything when we have something in the cursor.
 	Spells - Make it so that you can undo casting nontargetted spell. (Probably a box around your side of the screen or distance from original spot)
-
+		Make specific targetting - "Can target minions only, enemy minions only etc."
+	Taunts
 	Export JSON from website
 	Import JSON in lobby selection
 		Display Deck Class in Lobby
@@ -25,18 +26,21 @@ Things to polish:
 	- Cards: 
 		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
 	- Prettier Menu
-	- EndGame (Its just a copy of the main menu which itself is garbage)
+	- Prettier EndGame (Its just a copy of the main menu which itself is garbage)
 	- LobbyUI:
-		Lobby musí mít jméno, nesmí v něm být cizí znaky
+		Lobby musí mít jméno, nesmí v něm být cizí znaky - Is this true???
 		Loading screeny - schovat Loadující se scénu
+		Join lobby via code. Quickjoin
 	- EditorExt:
 		Make a button to show the editor script in filesystem
 		Allow attaching a script to a card without creating a new one
 
 
 Notes:
-I think there are cases in which "highlighted slot" and "highlightedActor" may keep wrong data - fix?
-(They null themselves on leaving the mouse. But that may not be enough)
+	Highlighted:
+		I think there are cases in which "highlighted slot" and "highlightedActor" may keep wrong data - fix?
+		(They null themselves on leaving the mouse. But that may not be enough)
+
 	Random:
 		We pass seed around but we should be SUPER mindfull to use it only on things that happen on both sides.
 		Probably would be better to make some kind of Network random or something that we will pinky promise that it gets used only in the synched cases.
@@ -44,7 +48,7 @@ I think there are cases in which "highlighted slot" and "highlightedActor" may k
 Bugs:
 ServerOnTurn.OnValueChanged seems to happen sequentially first on the client who ended the turn and then on the other player.
 If the endturn/startturn effects kill the other player the caller kicks himself from the game and the ServerOnTurn.OnValueChanged does not get called on the opponent.
-Spelldamage nějak nefunguje
+Pokud si zabiješ algedraka vlastním kouzlem tak to nějak blbne - zkontrolovat co se stane s řetězením effektů a pofixovat to
 
 We do not disconnect from the relay on loss/victory
 
@@ -56,6 +60,7 @@ R6: EditorExt: TODO: cardMakyr,displayer
 R7: Using input system - I mean I imported it but its not like its useful
 R8: Using Universal rendering pipeline - ???
 C10: Netcode
+A2 - Adressables
 A16 - cloud services - Lobby,Relay
 
 MAKE SURE THIS STAYS:
@@ -64,5 +69,5 @@ R3: Running smoothly
 R4: Adaptive screen - kinda
 
 TODO:
-A2 - Adressables
+
 

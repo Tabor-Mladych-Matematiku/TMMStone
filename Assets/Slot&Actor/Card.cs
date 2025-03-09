@@ -138,10 +138,16 @@ namespace CardGame
             cardBack = Resources.Load<Sprite>("CardData/card-back");
 
             if (data.scripts != null)
-            {
-                string assembly_path = AppDomain.CurrentDomain.BaseDirectory + "\\TMMstone_Data\\Managed\\CardScripts.dll";
-                if (Application.isEditor) assembly_path = "C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll";//TODO: FIx hardcoded path
-                Assembly asm = Assembly.LoadFile(assembly_path);
+            {/*
+                string assemblyPath;
+#if UNITY_EDITOR
+                assemblyPath = "C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll"; // TODO: Fix hardcoded path
+#else
+                assemblyPath = Path.Combine(Application.persistentDataPath, "CardScripts.dll");
+#endif*/
+
+                //Assembly asm = Assembly.LoadFrom(assemblyPath);
+                Assembly asm = Assembly.Load("CardScripts");
                 foreach (var script in data.names)
                 {
                     Type cardScript = asm.GetType(script);
