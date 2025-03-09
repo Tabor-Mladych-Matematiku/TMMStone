@@ -1,15 +1,13 @@
 TODO:
 	Priority:
 		Figure out how the race conds are happening and add loading screens as necessary
-		Do Adressables
 		OnMouseOver they show themselves Properly over whole screen.
 
 	-------Less Important:
 
 	BattleCry - after placing a battlecry minion attach a fake cardlike thing to the cursor that will onclick either finish the op or cancel it.
 		Will probably have to add a check to not highlight anything when we have something in the cursor.
-	Spells - Make it so that you can undo casting nontargetted spell. (Probably a box around your side of the screen or distance from original spot)
-		Make specific targetting - "Can target minions only, enemy minions only etc."
+	Spells - Make specific targetting - "Can target minions only, enemy minions only etc."
 	Taunts
 	Export JSON from website
 	Import JSON in lobby selection

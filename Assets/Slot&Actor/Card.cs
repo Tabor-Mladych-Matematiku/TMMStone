@@ -6,6 +6,7 @@ using CardData;
 using System.Reflection;
 using System.IO;
 using UnityEngine.AddressableAssets;
+using UnityEngine.EventSystems;
 
 namespace CardGame
 {
@@ -51,6 +52,7 @@ namespace CardGame
         public int mana;
         public string cardname;
         public CardType cardType;
+        SpriteRenderer sr;
         Sprite face;
         Sprite cardBack;
         bool hidden;
@@ -63,17 +65,16 @@ namespace CardGame
         [SerializeField] AssetReferenceGameObject FieldAddressable;
         [SerializeField] AssetReferenceGameObject EffectAddressable;
         GameObject TableActorPrefab;
-        GameObject EffectPrefab;//A minion might cause an effect to happen so it is not as easy
+        GameObject EffectPrefab;//A minion might cause an effect to happen so it is better to have it separate than all in TableActorPrefab
 
         public AudioClip cardPlaced;
-        public bool Targetted { get; private set; }
+        public bool Targetted { get; private set; } = false;
         public bool Hidden
         {
             get => hidden; set
             {
                 hidden = value;
-                if (hidden) GetComponent<SpriteRenderer>().sprite = cardBack;
-                else GetComponent<SpriteRenderer>().sprite = face;
+                sr.sprite = (hidden) ? cardBack : face;
             }
         }
 
@@ -88,19 +89,28 @@ namespace CardGame
         /// <summary>
         /// Scripts reasign this to modify what is valid target
         /// </summary>
-        public Func<bool> TargetValidator = () => true;
+        public Func<bool> TargetValidator = () => true;//TODO: make this a list of functions
 
         internal override void Awake()
         {
             base.Awake();
-            face = GetComponent<SpriteRenderer>().sprite;
+            sr = GetComponent<SpriteRenderer>();
+            face = sr.sprite;//placeholder
             standardScale = transform.localScale;
-            Targetted = false;//TODO: load from cardScripts.
         }
         // Start is called before the first frame update
         private void Start()
         {
             standardScale = transform.localScale;
+        }
+        private void Update()
+        {
+            if (GameManager.Instance.cursor != this) return;
+            if (!SafeZone.InSafeZone && !Targetted && cardType==CardType.Spell)
+            {
+                sr.color = new(0.5f, 1, 0.5f, 1);
+            }
+            else sr.color = Color.white;
         }
         public Card Initialize(CardData.CardData data)
         {
@@ -133,26 +143,18 @@ namespace CardGame
             if (sprite != null)
             {
                 face = sprite;
-                GetComponent<SpriteRenderer>().sprite = face;
+                sr.sprite = face;
             }
             cardBack = Resources.Load<Sprite>("CardData/card-back");
 
             if (data.scripts != null)
-            {/*
-                string assemblyPath;
-#if UNITY_EDITOR
-                assemblyPath = "C:/Users/zemek/Desktop/CODE/Unity/TMMStone/Build/TMMstone_Data/Managed/CardScripts.dll"; // TODO: Fix hardcoded path
-#else
-                assemblyPath = Path.Combine(Application.persistentDataPath, "CardScripts.dll");
-#endif*/
-
-                //Assembly asm = Assembly.LoadFrom(assemblyPath);
-                Assembly asm = Assembly.Load("CardScripts");
+            {
+                Assembly asm = Assembly.Load("CardScripts"); 
                 foreach (var script in data.names)
                 {
                     Type cardScript = asm.GetType(script);
                     scriptTypes.Add(cardScript);
-                    Targetted = cardScript.IsSubclassOf(asm.GetType("TargetableCardScriptBase"));
+                    Targetted = cardScript.IsSubclassOf(asm.GetType("TargetableCardScriptBase"));//This could be probably done through the CardScriptBase, but this'll do
                     //Debug.Log("Type: " + cardScript);
                     //if(Targetted) Debug.Log("Targetted");
                     gameObject.AddComponent(cardScript);
@@ -166,7 +168,15 @@ namespace CardGame
         public void OnDiscard() => OnDiscardEvent?.Invoke(this, new());
         private void OnMouseUp()
         {
-            if (GameManager.Instance.cursor != this) return;// I am not holding anything
+
+            if (GameManager.Instance.cursor != this) return;// I am not holding this card.
+            sr.color = Color.white;
+            if (SafeZone.InSafeZone)
+            {
+                GameManager.Instance.cursor = null;
+                transform.localPosition = new Vector3(0, 0, -1);
+                return;
+            }
             if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//We have a targetSlot for placing things
             {
 
@@ -174,12 +184,12 @@ namespace CardGame
                 else
                 {
                     //HEre we need to make the secondary targetting system. (MAMA mia!)
-                    throw new NotImplementedException("We did not make minions with targetted battlecries yet");//TODO figure out targetted battlecries
-                    int target;
+                    int target = 0;
                     GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex, target);
+                    throw new NotImplementedException("We did not make minions with targetted battlecries yet");//TODO figure out targetted battlecries
                 }
             }
-            else if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Field)GameManager.Instance.OnUIPlayField(SlotIndex);//We have a slot to place field to
+            else if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Field) GameManager.Instance.OnUIPlayField(SlotIndex);//We have a slot to place field to
             else if (cardType == CardType.Spell && !Targetted) GameManager.Instance.OnUICastSpell(SlotIndex);//Its not a targetted spell
             else if (cardType == CardType.Spell && GameManager.Instance.highlightedActor != null) GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);//Its targeted and has a target
             else transform.localPosition = new Vector3(0, 0, -1);//Reset

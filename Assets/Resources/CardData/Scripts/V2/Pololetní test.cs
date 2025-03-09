@@ -21,7 +21,7 @@ public class Pololetní_test : CardScriptBase
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) {
         foreach (Minion minion in GameManager.Instance.GetAllMinionsOwnedBy(GetOwner(sender).Other()))
         {
-            minion.Damage(4);
+            DealSpellDamage(minion, 4,sender);
         }
     }
 

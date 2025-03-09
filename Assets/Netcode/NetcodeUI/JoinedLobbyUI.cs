@@ -50,6 +50,14 @@ public class JoinedLobbyUI : MonoBehaviour
             else {
                 PrivacyToggle.enabled = true;
                 StartGameButton.gameObject.SetActive(true);
+                if(e.lobby.Players.Count < 2)
+                {
+                    StartGameButton.interactable = false;
+                }
+                else
+                {
+                    StartGameButton.interactable = true;
+                }
             }
 
             LobbyName.text = e.lobby.Name;

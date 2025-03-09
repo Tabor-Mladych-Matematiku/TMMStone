@@ -20,7 +20,7 @@ public class Finanční_podvod : CardScriptBase
     //protected override void OnTableActorEndOwnTurn(object sender, GameActor.TurnEventArgs e) { }
     protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs arg)
     {
-        ((Effect)sender).Destroy();
+        if(sender is Effect e) e.Destroy();
     }
     //protected override void OnDeath(object sender, EventArgs e) { }
 
@@ -28,7 +28,6 @@ public class Finanční_podvod : CardScriptBase
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
         PlaceEffect(sender);
-
     }
     //protected override void OnDiscard(object sender, EventArgs e){}
     //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}

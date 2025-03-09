@@ -411,8 +411,8 @@ namespace CardGame
         {
             foreach (TableActor actor in AllTableActors)//Might be reasonable to do it through events. but this should ensure consistency with the rules as in which order things happen
             {
-                if (actor.transform.parent.GetComponentInChildren<Card>(true) == null) continue;//I don't like this. but it may hold for now. (Actor might be destroyed while in the loop and it shows by its card being removed when we get to him (he is still active for a bit))
-                actor.StartTurn(OnTurn);
+                if (actor.transform.parent.GetComponentInChildren<Card>(true) == null && actor is not Effect) continue;//I don't like this. but it may hold for now. (Actor might be destroyed while in the loop and it shows by its card being removed when we get to him (he is still active for a bit))
+                actor.StartTurn(OnTurn);//TODO: destruction of things should be proably queued and done after the effect has ended
             }
 
             TurnCount++;
