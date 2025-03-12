@@ -247,6 +247,7 @@ namespace CardGame
             }
         }
         public P PlayerOnTurn { get => OnTurn ? P.P1 : P.P2; }
+        public GameObject LoadingScreen;
 
         private void Awake()
         {
@@ -325,8 +326,8 @@ namespace CardGame
 
         private void GameManager_PlayerDeath(P who)
         {
-            //TODO: You win screen
             MatchResults.result = who == P.P1 ? "You lose!" : "You win!";
+            NetworkManager.Shutdown();
             SceneManager.LoadScene("ResultsScene");
             SceneManager.UnloadSceneAsync(1);//To reset it maybe?
         }
@@ -637,6 +638,7 @@ namespace CardGame
             //StartGame stuff
             if (!IsServer) UnityEngine.Random.InitState(seed);
             else UnityEngine.Random.InitState(this.seed);
+            LoadingScreen.SetActive(false);
             //Animations (Who against who)
 
 

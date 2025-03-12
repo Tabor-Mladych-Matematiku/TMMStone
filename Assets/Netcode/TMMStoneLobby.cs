@@ -11,6 +11,8 @@ public class TMMStoneLobby : MonoBehaviour
 {
     public static TMMStoneLobby Instance { get; private set; }
 
+    public GameObject loadingScreen;
+
     public event EventHandler<LobbyUpdateEventArgs> OnLobbyUpdated;
     public class LobbyUpdateEventArgs
     {
@@ -47,7 +49,8 @@ public class TMMStoneLobby : MonoBehaviour
             Debug.Log("Signed in!");
             ListLobbies();
         };
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        if(!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        else ListLobbies();
     }
     private void Awake()
     {
@@ -96,6 +99,7 @@ public class TMMStoneLobby : MonoBehaviour
                 }
                 else if (JoinedLobby.Data[KEY_START_GAME].Value != "0")
                 {
+                    loadingScreen.SetActive(true);
                     if (!IsLobbyHost())
                     {
                         TMMStoneRelay.Instance.JoinRelay(JoinedLobby.Data[KEY_START_GAME].Value);
@@ -260,6 +264,7 @@ public class TMMStoneLobby : MonoBehaviour
             if (JoinedLobby.Players.Count == JoinedLobby.MaxPlayers) { 
                 try
                 {
+                    loadingScreen.SetActive(true);
                     string relaycode = await TMMStoneRelay.Instance.CreateRelay();
                     Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(JoinedLobby.Id, new()
                     {
@@ -278,7 +283,7 @@ public class TMMStoneLobby : MonoBehaviour
             }
             else
             {
-                Debug.Log("Not Enough players to start a game");//TODO: report in UI
+                Debug.Log("Not Enough players to start a game");//Should not happen the button should be unpressable
             }
         }
     }

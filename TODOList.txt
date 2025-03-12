@@ -1,6 +1,5 @@
 TODO:
 	Priority:
-		Figure out how the race conds are happening and add loading screens as necessary
 		OnMouseOver they show themselves Properly over whole screen.
 
 	-------Less Important:
@@ -14,7 +13,7 @@ TODO:
 		Display Deck Class in Lobby
 		Probably make a deck folder with JSONs
 		List them in Lobby selection and allow the selection of one.
-	Make more decks
+	Do the rest of the cards
 
 
 Things to polish:
@@ -23,11 +22,14 @@ Things to polish:
 		"Your opponent left"
 	- Cards: 
 		Make em move nicely - sortoff follow mouse in a cool way not instant snap.
+		Card movement animations in general.
+		Change picking a minion into like an arrow that points and then the minion attacks and stuff like that.
+		Highlight which cards are playable and which minions can attack.
 	- Prettier Menu
 	- Prettier EndGame (Its just a copy of the main menu which itself is garbage)
 	- LobbyUI:
 		Lobby musí mít jméno, nesmí v něm být cizí znaky - Is this true???
-		Loading screeny - schovat Loadující se scénu
+		Loading screeny - Prokukujou životy - UnityUI je cursed
 		Join lobby via code. Quickjoin
 	- EditorExt:
 		Make a button to show the editor script in filesystem
@@ -44,11 +46,10 @@ Notes:
 		Probably would be better to make some kind of Network random or something that we will pinky promise that it gets used only in the synched cases.
 
 Bugs:
+Sometimes the relay does not join. Why?
 ServerOnTurn.OnValueChanged seems to happen sequentially first on the client who ended the turn and then on the other player.
 If the endturn/startturn effects kill the other player the caller kicks himself from the game and the ServerOnTurn.OnValueChanged does not get called on the opponent.
 Pokud si zabiješ algedraka vlastním kouzlem tak to nějak blbne - zkontrolovat co se stane s řetězením effektů a pofixovat to
-
-We do not disconnect from the relay on loss/victory
 
 REQUIREMENTS:
 DONE:
