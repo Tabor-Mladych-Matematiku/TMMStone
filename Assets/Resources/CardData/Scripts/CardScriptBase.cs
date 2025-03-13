@@ -50,6 +50,7 @@ public abstract class CardScriptBase : MonoBehaviour
         }
         if (TryGetComponent(out Minion minion))
         {
+            minion.OnSummoned += OnBattleCry;
             minion.OnBeforeAttack += OnBeforeAttack;
             minion.OnAfterAttack += OnAfterAttack;
             minion.OnDeath += OnDeath;
@@ -60,6 +61,12 @@ public abstract class CardScriptBase : MonoBehaviour
         //TODO: add all the other effects
     }
     //Minion events
+    /// <summary>
+    /// Called after the minion entered on the board
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    protected virtual void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnHealed(object sender, EventArgs e) { }
@@ -156,7 +163,7 @@ public abstract class CardScriptBase : MonoBehaviour
         action(owner.Other());
     }
     /// <summary>
-    /// Do action for all characters opposing the sender
+    /// 
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="action"></param>
@@ -166,7 +173,7 @@ public abstract class CardScriptBase : MonoBehaviour
         action(characters.ElementAt(RandomRange(0, characters.Count())));
     }
     /// <summary>
-    /// Do action for all minions opposing the sender
+    /// 
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="action"></param>
@@ -176,7 +183,7 @@ public abstract class CardScriptBase : MonoBehaviour
         action(characters.ElementAt(RandomRange(0, characters.Count())));
     }
     /// <summary>
-    /// Do action for all characters on the senders side
+    /// 
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="action"></param>
@@ -185,6 +192,19 @@ public abstract class CardScriptBase : MonoBehaviour
         var characters = GameManager.Instance.GetAllCharactersOwnedBy(GetOwner(sender));
         action(characters.ElementAt(RandomRange(0, characters.Count())));
     }
+    /// <summary>
+    /// Gets a random minion. Needs sender for network synchronisation
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <returns></returns>
+    protected Minion GetRandomMinion(object sender)
+    {
+        GameManager.P owner = GetOwner(sender);
+        var minions = GameManager.Instance.GetAllMinionsOwnedBy(owner).Concat(GameManager.Instance.GetAllMinionsOwnedBy(owner.Other()));
+        return minions.ElementAt(RandomRange(0, minions.Count()));
+    }
+
+
     /// <summary>
     /// Use with caution as this is casting into GameActor
     /// </summary>

@@ -2689,7 +2689,7 @@
    "239": {
       "name": "Uran",
       "rarity": "Common",
-      "type": "Token",
+      "type": "Spelltoken",
       "cost": 0,
       "tag": "",
       "Class": "Fyzik",

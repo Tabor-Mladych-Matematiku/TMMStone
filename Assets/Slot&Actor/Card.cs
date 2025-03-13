@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using CardData;
 using System.Reflection;
-using System.IO;
 using UnityEngine.AddressableAssets;
-using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace CardGame
 {
@@ -52,7 +51,7 @@ namespace CardGame
         public int mana;
         public string cardname;
         public CardType cardType;
-        SpriteRenderer sr;
+        Image sr;
         Sprite face;
         Sprite cardBack;
         bool hidden;
@@ -94,7 +93,7 @@ namespace CardGame
         internal override void Awake()
         {
             base.Awake();
-            sr = GetComponent<SpriteRenderer>();
+            sr = GetComponent<Image>();
             face = sr.sprite;//placeholder
             standardScale = transform.localScale;
         }
@@ -174,7 +173,7 @@ namespace CardGame
             if (SafeZone.InSafeZone)
             {
                 GameManager.Instance.cursor = null;
-                transform.localPosition = new Vector3(0, 0, -1);
+                transform.localPosition = Vector3.zero;
                 return;
             }
             if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//We have a targetSlot for placing things
@@ -192,7 +191,7 @@ namespace CardGame
             else if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Field) GameManager.Instance.OnUIPlayField(SlotIndex);//We have a slot to place field to
             else if (cardType == CardType.Spell && !Targetted) GameManager.Instance.OnUICastSpell(SlotIndex);//Its not a targetted spell
             else if (cardType == CardType.Spell && GameManager.Instance.highlightedActor != null) GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);//Its targeted and has a target
-            else transform.localPosition = new Vector3(0, 0, -1);//Reset
+            else transform.localPosition = Vector3.zero;//Reset
             GameManager.Instance.cursor = null;//Clean cursor
         }
 
@@ -213,26 +212,36 @@ namespace CardGame
         {
             if (Hidden || GameManager.Instance.cursor != null) return;
             transform.localScale = standardScale * 1.2f;
-            //TODO better highlight for reading
+            HighlightCard();
+        }
+        public void HighlightCard()
+        {
+            GameManager.Instance.CardHighlighter.texture = face.texture;
+            GameManager.Instance.CardHighlighter.gameObject.SetActive(true);
         }
         public void OnMouseExit()
         {
             transform.localScale = standardScale;//we cleanup regardless just in case
+            DeHighlightCard();
+        }
+        public void DeHighlightCard()
+        {
+            GameManager.Instance.CardHighlighter.gameObject.SetActive(false);
         }
 
         internal Minion PlayMinion(CardSlot slot, GameActor target)
         {
             OnSelfPlayed?.Invoke(this, new(CardType.Minion, target));
             GameObject g = Instantiate(TableActorPrefab, slot.transform);
-            g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
+            g.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Minion m = g.GetComponent<Minion>();
-            m.Battlecry(target);//(Battlecries get procked after occupying the slot but before getting affected) therefore probably before his INIT
             m.Initialize(this);
             m.audioSource.PlayOneShot(cardPlaced);//Cannot do it on card cuz that one gets disabled and cannot do sounds thus
             foreach (Type script in scriptTypes)
             {
                 m.gameObject.AddComponent(script);
             }
+            m.Summoned(target);
             return m;
         }
         /// <summary>
@@ -247,7 +256,7 @@ namespace CardGame
         public Effect PlaceEffect(CardSlot slot)
         {
             GameObject g = Instantiate(EffectPrefab, slot.transform);
-            g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(0, new(0, 0, 1)));
+            g.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.AngleAxis(0, new(0, 0, 1)));
             Effect e = g.GetComponent<Effect>();
             e.Initialize(this);
             foreach (Type script in scriptTypes)
@@ -261,7 +270,7 @@ namespace CardGame
         {
             OnSelfPlayed?.Invoke(this, new(CardType.Field, null));
             GameObject g = Instantiate(TableActorPrefab, GameManager.Instance.FieldSlot.transform);
-            g.transform.SetLocalPositionAndRotation(new(0, 0, -1.1f), Quaternion.AngleAxis(-90, new(0, 0, 1)));
+            g.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Field f = g.GetComponent<Field>();
             f.Initialize(this);
             f.audioSource.PlayOneShot(cardPlaced);

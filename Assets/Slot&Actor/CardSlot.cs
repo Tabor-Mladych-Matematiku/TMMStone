@@ -56,14 +56,14 @@ namespace CardGame
         public void PlaceCard(Card c)
         {
             if (Occupied) throw new CardSlotException("Already occupied");
-            c.transform.parent = transform;
+            c.transform.SetParent(transform);
         }
         public Card GetCard() => transform.GetComponentInChildren<Card>();
         public Card PopCard()
         {
             Card c = transform.GetComponentInChildren<Card>(includeInactive: true);
             c.backupOwner = Owner;
-            c.transform.parent = null;
+            c.transform.SetParent(null);
             return c;
         }
         public Minion GetMinion() => transform.GetComponentInChildren<Minion>();

@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HPCounter : CardSlot
 {
-    [SerializeField] SpriteRenderer[] circles;
+    [SerializeField] Image[] circles;
     [SerializeField] TextMeshProUGUI HPLabel;
     public int maxHP;
     public Face Face { get => GetComponentInChildren<Face>(); }

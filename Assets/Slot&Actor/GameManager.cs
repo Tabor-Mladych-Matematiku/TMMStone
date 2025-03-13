@@ -248,6 +248,7 @@ namespace CardGame
         }
         public P PlayerOnTurn { get => OnTurn ? P.P1 : P.P2; }
         public GameObject LoadingScreen;
+        public RawImage CardHighlighter;
 
         private void Awake()
         {
@@ -337,7 +338,7 @@ namespace CardGame
             if (cursor != null)
             {
                 Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                cursor.transform.position = new(mousepos.x, mousepos.y, -1);
+                cursor.transform.position = new(mousepos.x, mousepos.y);
             }
         }
 
@@ -383,7 +384,6 @@ namespace CardGame
 
         private void ClientDisconnected(ulong id)
         {
-            if (DEBUG) Application.Quit();
             //TODO: "Yer opponent left!"
             GameManager_PlayerDeath((P)id);//This might work
         }
@@ -461,7 +461,7 @@ namespace CardGame
                 {
                     HandSlots[who][i].PlaceCard(c);
                     c.Hidden = who != P.P1;
-                    c.transform.localPosition = new Vector3(0, 0, -1);
+                    c.transform.localPosition = Vector3.zero;
                     c.standardScale = c.transform.localScale;
                     break;
                 }
@@ -493,7 +493,7 @@ namespace CardGame
         public void AddToGrave(Card c, P who)
         {
             graves[who].Add(c);
-            c.transform.localPosition -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
+            //c.transform.localPosition -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
         }
         public void OnUIPlayMinion(int cardindex, int minionSlotIndex, int target = -1) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target, minionSlotIndex));
         public void OnUIMinionAttack(int minionSlotIndex, int actorSlotTarget) => OnUITakeAction(PlayerAction.AttackAction(minionSlotIndex, actorSlotTarget));

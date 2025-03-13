@@ -22,8 +22,8 @@ namespace CardGame
         public void Add(Card c)
         {
             deck.Add(c);
-            c.transform.parent = transform;
-            c.transform.localPosition = new Vector3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1), -1);
+            c.transform.SetParent(transform);
+            c.transform.localPosition = new Vector3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1));
             c.Hidden = true;
             CardCounter.text = deck.Count.ToString();
         }
@@ -32,7 +32,7 @@ namespace CardGame
             if (deck.Count == 0) return null;
             Card c = deck.First();
             deck.RemoveAt(0);
-            c.transform.parent = null;
+            c.transform.SetParent(null);
             CardCounter.text = deck.Count.ToString();
             return c;
         }
@@ -47,7 +47,7 @@ namespace CardGame
         public void Insert(int index, Card item)
         {
             deck.Insert(index, item);
-            item.transform.parent = transform;
+            item.transform.SetParent(transform);
             CardCounter.text = deck.Count.ToString();
         }
         /// <summary>

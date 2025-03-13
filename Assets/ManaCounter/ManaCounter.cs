@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ManaCounter : MonoBehaviour
 {
@@ -11,13 +12,14 @@ public class ManaCounter : MonoBehaviour
         set
         {
             m = value;
-            for (int i = 0; i < m; i++)
+
+            for (int i = 0; i < Mathf.Min(m,10); i++)
             {
-                SpriteRenderers[i].color = (i>= mm) ? ExtraManaColor: Color.white;
+                ManaCrystalImage[i].color = (i>= mm) ? ExtraManaColor: Color.white;
             }
-            for (int i = m; i < SpriteRenderers.Length; i++)
+            for (int i = Mathf.Min(m, 10); i < ManaCrystalImage.Length; i++)
             {
-                SpriteRenderers[i].color = (i>=mm)?HiddenColor: DimColor;
+                ManaCrystalImage[i].color = (i>=mm)?HiddenColor: DimColor;
             }
         }
     }
@@ -30,22 +32,22 @@ public class ManaCounter : MonoBehaviour
             mm = value;
             for (int i = 0; i < mm; i++)
             {
-                if(SpriteRenderers[i].color==HiddenColor) SpriteRenderers[i].color = DimColor;
+                if(ManaCrystalImage[i].color==HiddenColor) ManaCrystalImage[i].color = DimColor;
             }
-            for (int i = mm; i < SpriteRenderers.Length; i++)
+            for (int i = mm; i < ManaCrystalImage.Length; i++)
             {
-                SpriteRenderers[i].color = HiddenColor;
+                ManaCrystalImage[i].color = HiddenColor;
             }
         }
     }
-    readonly SpriteRenderer[] SpriteRenderers = new SpriteRenderer[10];
+    readonly Image[] ManaCrystalImage = new Image[10];
     private Color DimColor = new (0.5f, 0.5f, 0.5f);
     private Color ExtraManaColor = new(0, 1, 0);
     private Color HiddenColor = Color.clear;
     void Start()
     {
-        for (int i = 0; i < SpriteRenderers.Length; i++) {
-            SpriteRenderers[i] = transform.GetChild(i).GetComponent<SpriteRenderer>();
+        for (int i = 0; i < ManaCrystalImage.Length; i++) {
+            ManaCrystalImage[i] = transform.GetChild(i).GetComponent<Image>();
         }
     }
 }

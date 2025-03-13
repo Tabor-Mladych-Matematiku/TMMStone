@@ -1,6 +1,6 @@
 TODO:
 	Priority:
-		OnMouseOver they show themselves Properly over whole screen.
+		Test on Android again and ask Pelc if its good
 
 	-------Less Important:
 
@@ -25,6 +25,8 @@ Things to polish:
 		Card movement animations in general.
 		Change picking a minion into like an arrow that points and then the minion attacks and stuff like that.
 		Highlight which cards are playable and which minions can attack.
+		Replay what opponent did
+		Stats text is should only extend horizontaly
 	- Prettier Menu
 	- Prettier EndGame (Its just a copy of the main menu which itself is garbage)
 	- LobbyUI:

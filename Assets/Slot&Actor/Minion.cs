@@ -1,23 +1,34 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace CardGame
 {
     public abstract class TableActor : GameActor
     {
-        [SerializeField] protected SpriteRenderer HighlightRim;
+        [SerializeField] protected Image HighlightRim;
         protected Color highlightColor;
         protected Color attkColor;
         protected Color defaultColor;
-        [SerializeField] protected SpriteRenderer graphic;
+        [SerializeField] protected Image graphic;
         protected Card original;
         public List<Func<Card, int>> manacostmod = new();
 
-        public virtual void OnMouseEnter() { }
-        public virtual void OnMouseExit() { }
+        public virtual void OnMouseEnter() {
+            if (GameManager.Instance.cursor == null)
+            {
+                original.HighlightCard();
+            }
+        }
+        public virtual void OnMouseExit() {
+            original.DeHighlightCard();
+            HighlightRim.color = defaultColor;
+            GameManager.Instance.highlightedActor = null;
+        }
         public virtual void Initialize(Card c)
         {
             original = c;
@@ -47,12 +58,12 @@ namespace CardGame
     {
         private int h = 0;
         private int a = 0;
-        [SerializeField] TextMesh AttackLabel;
-        [SerializeField] TextMesh HealthLabel;
+        [SerializeField] TextMeshProUGUI AttackLabel;
+        [SerializeField] TextMeshProUGUI HealthLabel;
 
         [SerializeField] AudioClip attackSound;
 
-        public event EventHandler<TargetedEventEventArgs> OnBattleCry;
+        public event EventHandler<TargetedEventEventArgs> OnSummoned;
         public event EventHandler<TargetedEventEventArgs> OnBeforeAttack;
         public event EventHandler<TargetedEventEventArgs> OnAfterAttack;
         public event EventHandler OnDeath;
@@ -134,6 +145,10 @@ namespace CardGame
         }
 
         public bool CanAttack { get; private set; }
+        public void Charge()
+        {
+            CanAttack = true;
+        }
 
 
         public override void Initialize(Card c)
@@ -161,12 +176,13 @@ namespace CardGame
             {
                 GameManager.Instance.OnUIMinionAttack(GetComponentInParent<CardSlot>().index, GameManager.Instance.HighlightedActorIndex);
             }
-            transform.localPosition = new Vector3(0, 0, -1);
+            transform.localPosition = Vector3.zero;
             GameManager.Instance.cursor = null;
 
         }
         public override void OnMouseEnter()
         {
+            base.OnMouseEnter();
             if (GameManager.Instance.cursor != null)
             {
                 //This is being targetted by spell
@@ -190,16 +206,6 @@ namespace CardGame
         public bool IsTargetValid(TableActor target)
         {
             return true; //TODO taunt and such
-        }
-
-        public override void OnMouseExit()
-        {
-            HighlightRim.color = defaultColor;
-            GameManager.Instance.highlightedActor = null;
-        }
-        internal void Battlecry(GameActor target)
-        {
-            OnBattleCry?.Invoke(this, new() { target = target });
         }
         public bool CanAwake()
         {
@@ -233,6 +239,16 @@ namespace CardGame
             face.Damage(Attack);
             audioSource.PlayOneShot(attackSound);
             OnAfterAttack?.Invoke(this, new() { target = face });
+        }
+
+        public bool Alive()
+        {
+            return Health > 0;
+        }
+
+        internal void Summoned(GameActor target)
+        {
+            OnSummoned?.Invoke(this, new() { target = target });
         }
     }
 }

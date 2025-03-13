@@ -13,8 +13,8 @@ namespace CardGame
 
         public void Add(Card item)
         {
-            item.transform.parent = transform;
-            item.transform.localPosition = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), item.transform.localPosition.z);
+            item.transform.SetParent ( transform);
+            item.transform.localPosition = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1),0);
             item.standardScale = transform.localScale;
             item.Hidden = false;
         }
