@@ -1,25 +1,27 @@
-Might require retrying when loading the UNityProject properly.
-Threw an error during package import but after retrying it worked.
+Might require couple of retrys when loading the UnityProject properly.
+Threw a couple of errors during package import but after retrying it worked.
 
 To test this:
 Build&Run it and also launch it in Playmode (The game needs two instances)
 
-You MUST pick TWO distinct names that are not empty before Authentication (Yes yes I will add relevent checks later)
+You MUST pick TWO distinct names before Authentication (You can run build with empty name and Play with empty name because in Play mode it automatically adds random number to the default anonymous name)
 
-Creating lobby might be fine without name.
+Creating lobby is fine without name.
 
 (lobby has to be public - can be set after creating it)
-Game can be started ONLY once both players are in lobby (Nothing will break but there is no visual indication only debug message. that you need 2 players)
+Game can be started ONLY once both players are in lobby (Otherwise start button is gray)
 
-Game can: take turns (End turn button)
-Place minions when on turn on your Jednotka slots.
+Game can:
+take turns (End turn button)
+Play cards: Each card has a cost on top right corner. In the middle bottom of the screen is your manacounter - starts at 0 and each turn adds one up to the maximum of 10. Mana gets refilled each round and does not carry over.
+If a card is a minion it can be placed on a Jednotka slot
+After one turn each minion can attack once (drag&drop on an enemy target)
+If card is spell it might require target or just be dropped somewhere on the board to take effect (Green highlight should aid visually when card can be played) 
+If a card is Field (Pole) it can be dropped to the middle slot.
 
-Note: not all cards are minions - therefore not every card can be played.
+There are two decks one is a valid deck built some time ago for the physical version of the game and is fully functional.
+THe other deck is the same but has some extra experimental cards. Most of them work at least partially, but not every card.
 
-I shipped the game without card art because thats like MASSIVE file which
-A) should not be on git
-B) I ought not share willy nilly.
-I am eyeing the Adressables requirement and will see if I can use it for the release.
+All rules can be found on our website - link on itch.
 
-And of course after reviewing it after deadline I found out that the default card face gets nullified by accident.
-Master has it fixed. Its like one line of code - without it you cannot really test placing the cards.
+Sometimes gets stuck in loading if that happens just retry. (Did not figure out what causes it)
