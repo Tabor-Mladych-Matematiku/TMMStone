@@ -143,6 +143,9 @@ namespace CardGame
         public ManaCounter OppManaCounter;
         public Dictionary<P, ManaCounter> ManaCounters;
         public Dictionary<P, HPCounter> HPCounters;
+
+        public AIPlayerBase AIPlayer;
+
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<CardSlot> AllTableSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]); }
         IEnumerable<GameActor> AllActors { get => from CardSlot s in AllSlots let c = s.GetComponentInChildren<GameActor>() where c != null select c; }//Will fail on null exception if you forget to assign Field slot.
@@ -159,7 +162,8 @@ namespace CardGame
         public const int maxMinionSlots = 7;
         public const int maxEffSlots = 6;
         public const int maxHandSlots = 10;
-        public const bool DEBUG = false;
+        public const bool DEBUG = true;
+        public bool online;
 
         public int seed { get; private set; }
 
@@ -341,12 +345,47 @@ namespace CardGame
                 cursor.transform.position = new(mousepos.x, mousepos.y);
             }
         }
+        public void OnOfflineStart()
+        {
+            online = false;
+            seed = (int)DateTime.Now.Ticks;
+            UnityEngine.Random.InitState(seed);
+            bool start = UnityEngine.Random.Range(0, 2) == 0;
+            if(DEBUG) start = false;
+            ServerOnTurn.Value = start;//UnityEngine.Random.Range(0, 2) == 0;
+            int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text));
+            LoadDeck(decks[P.P1], OwnDeckList);
+            int[] OppDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/OppDeck").text));
+            LoadDeck(decks[P.P2], OppDeckList);
+            HPCounters[P.P1].maxHP = MaxHealths[P.P1];
+            HPCounters[P.P2].maxHP = MaxHealths[P.P2];
+            HPCounters[P.P1].Health = MaxHealths[P.P1];
+            HPCounters[P.P2].Health = MaxHealths[P.P2];
+            LoadingScreen.SetActive(false);
+            for (int i = 0; i < 3; i++) DrawCard(P.P1);
+            for (int i = 0; i < 4; i++) DrawCard(P.P2);
+            const int bodID = 1;
+            AddCardToHandByID(P.P2, bodID);//Bod
+
+            EndTurnBtn.onClick.AddListener(ToggleTurnOffline);
+            ServerOnTurn.OnValueChanged += (prev, n) =>
+            {
+                if (prev == n) return;//Should not happen but to make sure.
+                EndTurn();
+                StartTurn();
+                if(n!= start) AIPlayer.OnTurnStart();
+            };
+            StartTurn();
+        }
+
 
         public override void OnNetworkSpawn()//TODO: this is probably what we can replace with the offline play.
         {
+            online = true;
+            Console.WriteLine("NetworkSpawn");
             if (IsServer)
             {
-                if (UnityEngine.Random.Range(0, 2) == 0) ServerOnTurn.Value = false;
+                ServerOnTurn.Value = UnityEngine.Random.Range(0, 2) == 0;//TODO: this uses unities random. which is not synced. but it should be fine for now.
                 Debug.Log("Host starts?: " + OnTurn);
                 seed = (int)DateTime.Now.Ticks;
             }
@@ -384,6 +423,7 @@ namespace CardGame
 
         private void ClientDisconnected(ulong id)
         {
+            Console.WriteLine("ClientDisconnected: " + id);
             //TODO: "Yer opponent left!"
             GameManager_PlayerDeath((P)id);//This might work
         }
@@ -502,7 +542,7 @@ namespace CardGame
         public void OnUITakeAction(PlayerAction action)
         {
             TakeAction(P.P1, action);//Play it out
-            TakeActionServerRpc(action, new());//Send to opponent
+            if(online)TakeActionServerRpc(action, new());//Send to opponent
         }
 
         /// <summary>
@@ -605,6 +645,12 @@ namespace CardGame
 
             return index;
         }
+
+        public void ToggleTurnOffline()
+        {
+            ServerOnTurn.Value = !ServerOnTurn.Value;
+        }
+
         [ServerRpc(RequireOwnership = false)]
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
         {

@@ -1,0 +1,19 @@
+{
+    "name": "AIPlayer",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c5c641ae0849dbf4fa594dd512ca0e55",
+        "GUID:79b25dc763df0bf4ebce9f8ebf3e7341",
+        "GUID:3ada64de755d7b4469311eb67596dc20",
+        "GUID:1491147abca9d7d4bb7105af628b223e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

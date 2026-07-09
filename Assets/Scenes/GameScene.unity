@@ -9669,7 +9669,31 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1437797835}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 147432687}
+        m_TargetAssemblyTypeName: LobbyUI, TMMNetcode
+        m_MethodName: Hide
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1441397462}
+        m_TargetAssemblyTypeName: CardGame.GameManager, TMMGameActors
+        m_MethodName: OnOfflineStart
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1437797835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9757,12 +9781,14 @@ MonoBehaviour:
   OppCardCounter: {fileID: 69089862}
   OwnManaCounter: {fileID: 1850351568}
   OppManaCounter: {fileID: 854101415}
+  AIPlayer: {fileID: -8528609025352723614, guid: b18f9358542a6a242b7ddd79b0ce217e, type: 3}
   CardAddressable:
     m_AssetGUID: 89b0f49abe8d020468972ad19d105dd6
     m_SubObjectName: 
     m_SubObjectType: 
     m_EditorAssetChanged: 0
   EndTurnBtn: {fileID: 1787200019}
+  online: 0
   TurnCount: 0
   ServerOnTurn:
     m_InternalValue: 1
