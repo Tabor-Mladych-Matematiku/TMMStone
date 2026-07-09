@@ -23,7 +23,6 @@ public class JoinedLobbyUI : MonoBehaviour
     void Start()
     {
         LeaveLobbyButton.onClick.AddListener(OnLeaveClick);
-        StartGameButton.onClick.AddListener(OnStartClick);
 
         TMMStoneLobby.Instance.OnLobbyUpdated += UpdateLobbyData;
         Hide();
@@ -74,12 +73,6 @@ public class JoinedLobbyUI : MonoBehaviour
     private void OnLeaveClick()
     {
         TMMStoneLobby.Instance.LeaveLobby();
-        Hide();
-    }
-
-    private void OnStartClick()
-    {
-        TMMStoneLobby.Instance.StartGame();
         Hide();
     }
     public void JoinButtonClicked(string id)
