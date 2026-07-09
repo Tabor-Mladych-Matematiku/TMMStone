@@ -18,13 +18,15 @@ namespace CardGame
         protected Card original;
         public List<Func<Card, int>> manacostmod = new();
 
-        public virtual void OnMouseEnter() {
+        public virtual void OnMouseEnter()
+        {
             if (GameManager.Instance.cursor == null)
             {
                 original.HighlightCard();
             }
         }
-        public virtual void OnMouseExit() {
+        public virtual void OnMouseExit()
+        {
             original.DeHighlightCard();
             HighlightRim.color = defaultColor;
             GameManager.Instance.highlightedActor = null;
@@ -97,19 +99,31 @@ namespace CardGame
             }
         }
         //On Silence and such
-        public void ResetHealth()
+        public void ResetMaxHealth()
         {
             MaxHealth = baseHealth;
         }
         public override void Heal(int ammount)
         {
-            Health = math.min(Health + ammount, MaxHealth);
-            OnHealed?.Invoke(this, new());
+            if (ammount <0) throw new ArgumentException("Ammount must be greater or equal to 0");
+            try
+            {
+                checked
+                {
+                    Health = math.min(Health + ammount, MaxHealth);
+                }
+            }
+            catch (OverflowException)
+            {
+                Health = MaxHealth;
+            }
+            if (ammount > 0) OnHealed?.Invoke(this, new());
         }
         public override void Damage(int ammount)
         {
-            Health -= ammount;
-            OnDamaged?.Invoke(this, new());
+            if (ammount < 0) throw new ArgumentException("Ammount must be greater or equal to 0");
+            Health = checked(Health - ammount);
+            if (ammount > 0) OnDamaged?.Invoke(this, new());
         }
         internal override void Awake()
         {
