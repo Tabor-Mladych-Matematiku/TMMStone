@@ -342,7 +342,7 @@ namespace CardGame
             }
         }
 
-        public override void OnNetworkSpawn()
+        public override void OnNetworkSpawn()//TODO: this is probably what we can replace with the offline play.
         {
             if (IsServer)
             {
@@ -613,7 +613,7 @@ namespace CardGame
             else if (!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
         }
         [ClientRpc(RequireOwnership = false)]
-        private void TakeActionClientRpc(PlayerAction action, ClientRpcParams crp) => TakeAction(P.P2, action);//This runs only on opponent.
+        private void TakeActionClientRpc(PlayerAction action, ClientRpcParams _) => TakeAction(P.P2, action);//This runs only on opponent.
         [ServerRpc(RequireOwnership = false)]
         private void TakeActionServerRpc(PlayerAction action, ServerRpcParams srp) => TakeActionClientRpc(action, new()
         {
@@ -632,7 +632,7 @@ namespace CardGame
             }
         });
         [ClientRpc(RequireOwnership = false)]
-        private void AnnounceDeckClientRpc(int[] deck, int seed, ClientRpcParams crp)//This runs only on opponent.
+        private void AnnounceDeckClientRpc(int[] deck, int seed, ClientRpcParams _)//This runs only on opponent.
         {
             LoadDeck(decks[P.P2], deck);
             //StartGame stuff
