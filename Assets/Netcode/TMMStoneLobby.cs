@@ -43,14 +43,38 @@ public class TMMStoneLobby : MonoBehaviour
     {
         InitializationOptions opts = new();
         opts.SetProfile(PlayerName);
-        await UnityServices.InitializeAsync();
-        AuthenticationService.Instance.SignedIn += () =>
+        SignInOptions signInOptions = new()//Currently unused but might be useful for later
         {
-            Debug.Log("Signed in!");
-            ListLobbies();
+            CreateAccount = true
         };
-        if(!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        else ListLobbies();
+        UnityServices.Initialized += async () =>
+        {
+            Debug.Log("Unity Services Initialized");
+            bool anonymousAttempt = false;
+            AuthenticationService.Instance.SignedIn += () =>
+            {
+                Debug.Log("Signed in!");
+                ListLobbies();
+            };
+            AuthenticationService.Instance.SignInFailed += async (err) =>
+            {
+                Debug.Log("Sign in failed: " + err);
+                if (anonymousAttempt) return;
+                anonymousAttempt = true;
+                //TODO: this here does not work - It still things we are signing in even tho it failed
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                Debug.Log("Signed in anonymously!");
+            };
+            //await AuthenticationService.Instance.SignInWithUnityAsync("TODO or something");//This will be done later if we wanna
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        };
+        await UnityServices.InitializeAsync(opts).ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Failed to initialize Unity Services: " + task.Exception);
+            }
+        });
     }
     private void Awake()
     {
@@ -261,7 +285,8 @@ public class TMMStoneLobby : MonoBehaviour
     {
         if (IsLobbyHost())
         {
-            if (JoinedLobby.Players.Count == JoinedLobby.MaxPlayers) { 
+            if (JoinedLobby.Players.Count == JoinedLobby.MaxPlayers)
+            {
                 try
                 {
                     loadingScreen.SetActive(true);
