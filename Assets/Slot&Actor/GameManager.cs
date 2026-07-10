@@ -65,6 +65,14 @@ namespace CardGame
     {
         public static string result;
     }
+    public struct PlayerData
+    {
+        public int hp;
+        public int maxhp;
+        public int mana;
+        public List<Card> hand;
+
+    }
 
     public class GameManager : NetworkBehaviour
     {
@@ -144,7 +152,47 @@ namespace CardGame
         public Dictionary<P, ManaCounter> ManaCounters;
         public Dictionary<P, HPCounter> HPCounters;
 
+        #region AI
         public AIPlayerBase AIPlayer;
+
+        public int GetNextFreeMinionSlot(P player)
+        {
+            for (int i = 0; i < minionSlots[player].Length; i++)
+            {
+                CardSlot slot = minionSlots[player][i];
+                if (!slot.Occupied) return i;
+            }
+            return -1;
+        }
+        public int GetRandomFreeMinionSlot(P player)
+        {
+            List<int> freeSlots = new();
+            for (int i = 0; i < minionSlots[player].Length; i++)
+            {
+                CardSlot slot = minionSlots[player][i];
+                if (!slot.Occupied) freeSlots.Add(i);
+            }
+            return (freeSlots.Count > 0) ? freeSlots[UnityEngine.Random.Range(0, freeSlots.Count)] : -1;
+        }
+
+
+        public PlayerData GetPlayerData(P player) => new()
+        {
+            hp = HPCounters[player].Health,
+            maxhp = HPCounters[player].maxHP,
+            mana = ManaCounters[player].Mana,
+            hand = HandSlots[player].Select(s => s.GetComponentInChildren<Card>()).ToList()
+        };
+
+        public void OnAIPlayMinion(int cardindex, int minionSlotIndex, int target = -1) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, target, minionSlotIndex));
+        public void OnAIMinionAttack(int minionSlotIndex, int actorSlotTarget) => OnAITakeAction(PlayerAction.AttackAction(minionSlotIndex, actorSlotTarget));
+        public void OnAICastSpell(int cardindex, int target = -1) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, target));
+        public void OnAIPlayField(int cardindex) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, -1));
+        public void OnAITakeAction(PlayerAction action)
+        {
+            TakeAction(P.P2, action);//Play it out
+        }
+        #endregion AI
 
         IEnumerable<CardSlot> AllSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]).Concat(HandSlots[P.P1]).Concat(HandSlots[P.P2]); }
         IEnumerable<CardSlot> AllTableSlots { get => new CardSlot[] { FieldSlot }.Concat(minionSlots[P.P1]).Concat(minionSlots[P.P2]).Concat(EffSlots[P.P1]).Concat(EffSlots[P.P2]); }
@@ -351,7 +399,7 @@ namespace CardGame
             seed = (int)DateTime.Now.Ticks;
             UnityEngine.Random.InitState(seed);
             bool start = UnityEngine.Random.Range(0, 2) == 0;
-            if(DEBUG) start = false;
+            if (DEBUG) start = false;
             ServerOnTurn.Value = start;//UnityEngine.Random.Range(0, 2) == 0;
             int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text));
             LoadDeck(decks[P.P1], OwnDeckList);
@@ -373,7 +421,7 @@ namespace CardGame
                 if (prev == n) return;//Should not happen but to make sure.
                 EndTurn();
                 StartTurn();
-                if(n!= start) AIPlayer.OnTurnStart();
+                if (n != start) AIPlayer.OnTurnStart();
             };
             StartTurn();
         }
@@ -542,7 +590,7 @@ namespace CardGame
         public void OnUITakeAction(PlayerAction action)
         {
             TakeAction(P.P1, action);//Play it out
-            if(online)TakeActionServerRpc(action, new());//Send to opponent
+            if (online) TakeActionServerRpc(action, new());//Send to opponent
         }
 
         /// <summary>
@@ -632,7 +680,7 @@ namespace CardGame
                     cost += item1(card);
                 }
             }
-            return math.max(cost,0);
+            return math.max(cost, 0);
         }
 
         int InvertIndex(int index)

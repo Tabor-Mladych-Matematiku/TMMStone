@@ -9,9 +9,4 @@ public class AIPlayerBase : MonoBehaviour
     {
         Debug.Log("AIPlayerBase.OnTurnStart");
     }
-
-    void Start()
-    {
-        
-    }
 }
