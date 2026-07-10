@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
 using System;
+using System.Linq;
 
 public class Recyklovaná_přednáška : CardScriptBase
 {
@@ -10,7 +11,8 @@ public class Recyklovaná_přednáška : CardScriptBase
     {
         GameManager.P owner = GetOwner(sender);
         Grave grave = GameManager.Instance.graves[owner];
-        for (int i = 0; i < grave.Count; i++)
+        GameManager.Instance.AddCardToHand(owner, grave.Where(card => card.cardType == Card.CardType.Spell).Last());
+        /*for (int i = grave.Count-1; i >=0 ; i--)
         {
             Card card = grave[i];
             if (card.cardType == Card.CardType.Spell)
@@ -19,7 +21,7 @@ public class Recyklovaná_přednáška : CardScriptBase
                 GameManager.Instance.AddCardToHand(owner, card);
                 return;
             }
-        }
+        }*/
 
 
     }
