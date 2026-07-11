@@ -381,7 +381,7 @@ namespace CardGame
         {
             MatchResults.result = who == P.P1 ? "You lose!" : "You win!";
             NetworkManager.Shutdown();
-            SceneManager.LoadScene("ResultsScene");
+            Addressables.LoadSceneAsync("Assets/Scenes/ResultsScene.unity", LoadSceneMode.Single);
             SceneManager.UnloadSceneAsync(1);//To reset it maybe?
         }
 
