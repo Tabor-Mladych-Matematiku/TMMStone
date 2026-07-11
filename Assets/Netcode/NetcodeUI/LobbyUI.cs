@@ -5,6 +5,7 @@ using System.Text;
 using TMPro;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LobbyUI : MonoBehaviour
@@ -120,4 +121,9 @@ public class LobbyUI : MonoBehaviour
         // Return sanitized string (e.g., "MyClassName123")
         return sanitized.ToString();
     }
+    public void DeckBuilder()
+    {
+        SceneManager.LoadScene("DeckBuilder");
+    }
+
 }

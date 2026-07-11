@@ -1,19 +1,20 @@
+using CardData;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TMPro;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Purchasing;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using CardData;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 using static CardGame.Card;
-using Unity.Mathematics;
 
 namespace CardGame
 {
@@ -324,6 +325,7 @@ namespace CardGame
         }
         private void Start()
         {
+            RefreshDropdown();
             for (int i = 0; i < maxMinionSlots; i++)
             {
                 minionSlots[P.P1][i] = OwnMin.GetChild(i).GetComponent<MinionSlot>();
@@ -393,6 +395,8 @@ namespace CardGame
                 cursor.transform.position = new(mousepos.x, mousepos.y);
             }
         }
+        public string OwnDeckData;
+        public string AIDeckData;
         public void OnOfflineStart()
         {
             online = false;
@@ -401,9 +405,21 @@ namespace CardGame
             bool start = UnityEngine.Random.Range(0, 2) == 0;
             if (DEBUG) start = false;
             ServerOnTurn.Value = start;//UnityEngine.Random.Range(0, 2) == 0;
-            int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text));
+
+            int[] OwnDeckList;
+            int[] OppDeckList;
+            LoadSelectedDecksData();
+            if (OwnDeckData == null || AIDeckData == null)//This uses decks from Assets and is Debug only
+            {//TODO: probably remove this and use the json from PlayerData
+                OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/MyDeck").text));
+                OppDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/OppDeck").text));
+            }
+            else
+            {
+                OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(OwnDeckData));
+                OppDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(AIDeckData));
+            }
             LoadDeck(decks[P.P1], OwnDeckList);
-            int[] OppDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/OppDeck").text));
             LoadDeck(decks[P.P2], OppDeckList);
             HPCounters[P.P1].maxHP = MaxHealths[P.P1];
             HPCounters[P.P2].maxHP = MaxHealths[P.P2];
@@ -427,6 +443,7 @@ namespace CardGame
         }
 
 
+
         public override void OnNetworkSpawn()//TODO: this is probably what we can replace with the offline play.
         {
             online = true;
@@ -447,10 +464,18 @@ namespace CardGame
             };
             NetworkManager.OnClientDisconnectCallback += (id) => ClientDisconnected(id);
             //Load decks
-            string debugstringchoice = "MyDeck";
-            if (IsServer) debugstringchoice = "OppDeck";
-            int[] OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/" + debugstringchoice).text));//TODO import from json in PlayerData
-
+            LoadSelectedDecksData();
+            int[] OwnDeckList = null;
+            if (OwnDeckData == null)//This uses decks from Assets and is Debug only
+            {
+                string debugstringchoice = "MyDeck";
+                if (IsServer) debugstringchoice = "OppDeck";
+                OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(Resources.Load<TextAsset>("CardData/" + debugstringchoice).text));//TODO import from json in PlayerData
+            }
+            else//This should be set from LobbyUI
+            {
+                OwnDeckList = GetCardIDs((List<object>)MiniJson.JsonDecode(OwnDeckData));
+            }
             if (!DEBUG) OwnDeckList.Shuffle();
             LoadDeck(decks[P.P1], OwnDeckList);
 
@@ -733,15 +758,15 @@ namespace CardGame
             if (!IsServer) UnityEngine.Random.InitState(seed);
             else UnityEngine.Random.InitState(this.seed);
             LoadingScreen.SetActive(false);
-            //Animations (Who against who)
+            //TODO: Animations (Who against who)
 
 
-            //Cointoss anim
+            //TODO: Cointoss anim
             for (int i = 0; i < 3; i++) DrawCard(PlayerOnTurn);
             for (int i = 0; i < 4; i++) DrawCard(PlayerOnTurn.Other());
             const int bodID = 1;
             AddCardToHandByID(PlayerOnTurn.Other(), bodID);//Bod
-            //Mulligan
+            //TODO: Mulligan
             StartTurn();
         }
         public void ShuffleDeckRequest(P who)
@@ -775,6 +800,50 @@ namespace CardGame
                 }
             }
             return null;
+        }
+        [SerializeField] private TMP_Dropdown OwnDeckDropdown;
+        [SerializeField] private TMP_Dropdown OppDeckDropdown;
+
+        private readonly List<string> savePaths = new();
+        public void RefreshDropdown()
+        {
+            string saveFolder = Path.Combine(Application.persistentDataPath, "Decks");
+
+            if (!Directory.Exists(saveFolder))
+                Directory.CreateDirectory(saveFolder);
+
+            OwnDeckDropdown.ClearOptions();
+            OppDeckDropdown.ClearOptions();
+            savePaths.Clear();
+
+            string[] files = Directory.GetFiles(saveFolder, "*.json");
+
+            List<string> optionNames = new();
+
+            foreach (string file in files)
+            {
+                savePaths.Add(file);
+                optionNames.Add(Path.GetFileNameWithoutExtension(file));
+            }
+
+            if (optionNames.Count == 0)
+            {
+                optionNames.Add("<No Saves>");
+            }
+
+            OwnDeckDropdown.AddOptions(optionNames);
+            OppDeckDropdown.AddOptions(optionNames);
+        }
+        public void LoadSelectedDecksData()
+        {
+            if (savePaths.Count == 0)
+            {
+                Debug.Log("No save selected.");
+                return;
+            }
+
+            OwnDeckData = File.ReadAllText(savePaths[OwnDeckDropdown.value]);
+            AIDeckData = File.ReadAllText(savePaths[OppDeckDropdown.value]);
         }
     }
 }
