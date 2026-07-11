@@ -5,15 +5,15 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 [System.Serializable]
-public class AssetReferemceAudioClip : AssetReferenceT<AudioClip>
+public class AssetReferenceAudioClip : AssetReferenceT<AudioClip>
 {
-    public AssetReferemceAudioClip(string guid) : base(guid)
+    public AssetReferenceAudioClip(string guid) : base(guid)
     {
     }
 }
 public class MusicPlayer : MonoBehaviour
 {
-    [SerializeField] AssetReferemceAudioClip[] musicTrackAddressables;
+    [SerializeField] AssetReferenceAudioClip[] musicTrackAddressables;
     AudioClip[] musicTracks;
     private AudioSource player;
     int musicIndex = 0;
