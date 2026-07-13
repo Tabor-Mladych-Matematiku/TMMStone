@@ -12,7 +12,7 @@ public class AIPlayerEager : AIPlayerBase
         for (int i = 0; i < ownPlayerData.hand.Count; i++)
         {
             Card card = ownPlayerData.hand[i];
-            if (card&&card.mana <= ownPlayerData.mana)
+            if (card&&GameManager.Instance.IsCardPlayable(card))
             {
                 Debug.Log("card mana:" + card.mana + " Player mana: " + ownPlayerData.mana);
                 switch (card.cardType)

@@ -202,7 +202,9 @@ namespace CardGame
         public IEnumerable<CardSlot> AllCharacterSlots { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]).Concat(new CardSlot[] { OwnHPCounter, OppHPCounter }) select s; }
         public IEnumerable<DamageableActor> AllCharacters { get => from CardSlot s in AllCharacterSlots let d = s.GetComponentInChildren<DamageableActor>() where d != null select d; }
         public IEnumerable<Minion> AllMinions { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]) where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; }
+        public IEnumerable<Effect> AllEffects { get => from CardSlot s in EffSlots[P.P1].Concat(EffSlots[P.P2]) where s.Occupied let e = s.GetComponentInChildren<Effect>() where e!=null select e; }
         public IEnumerable<Minion> GetAllMinionsOwnedBy(P owner) => from CardSlot s in minionSlots[owner] where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m;
+        public IEnumerable<Effect> GetAllEffectsOwnedBy(P owner) => from CardSlot s in EffSlots[owner] where s.Occupied let e = s.GetComponentInChildren<Effect>() where e != null select e;
         public IEnumerable<DamageableActor> GetAllCharactersOwnedBy(P owner) => from CardSlot s in minionSlots[owner].Concat(new[] { HPCounters[owner] }) where s.Occupied let m = s.GetComponentInChildren<DamageableActor>() where m != null select m;
         public Dictionary<int, CardData.CardData> CardDatabase;
         public AssetReferenceGameObject CardAddressable;
@@ -216,7 +218,12 @@ namespace CardGame
 
         public int seed { get; private set; }
 
-        public event EventHandler<CardPlayedEventArgs> OnPlayed;//Maybe split it but idk
+        public event EventHandler<CardPlayedEventArgs> OnPlayed;//TODO: OnPlayed should trigger first. Now, at least with minions, it happens last after all the OnSummon effects
+        public event EventHandler OnSummoned;//Whenever minion is summoned
+        public void InvokeSummoned(Minion minion)
+        {
+            OnSummoned?.Invoke(minion, new());
+        }
 
         public Dictionary<P, int> MaxHealths = new() {
             {P.P1,30 },
@@ -789,7 +796,7 @@ namespace CardGame
             decks[who].Shuffle(permutation);
         }
 
-        public CardSlot GetEffectSlot(P who)
+        public CardSlot GetFreeEffectSlot(P who)
         {
             CardSlot[] slots = EffSlots[who];
             for (int i = 0; i < slots.Length; i++)

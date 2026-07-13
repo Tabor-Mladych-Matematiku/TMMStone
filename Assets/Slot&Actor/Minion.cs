@@ -36,6 +36,8 @@ namespace CardGame
             original = c;
             Sprite sprite = Resources.Load<Sprite>("CardPlainImages/" + c.expansion + "/" + c.cardname);
             if (sprite != null) graphic.sprite = sprite;
+            expansion = c.expansion;
+            cardTag = c.cardTag;
         }
     }
     public abstract class DamageableActor : TableActor
@@ -65,7 +67,7 @@ namespace CardGame
 
         [SerializeField] AudioClip attackSound;
 
-        public event EventHandler<TargetedEventEventArgs> OnSummoned;
+        public event EventHandler<TargetedEventEventArgs> OnSelfSummoned;
         public event EventHandler<TargetedEventEventArgs> OnBeforeAttack;
         public event EventHandler<TargetedEventEventArgs> OnAfterAttack;
         public event EventHandler OnDeath;
@@ -236,7 +238,7 @@ namespace CardGame
             if (GameManager.Instance.PlayerOnTurn == Owner && CanAwake()) CanAttack = true;//Cannot use onTurn cuz we also need to know if the minion is owned by the player who is on turn
         }
 
-        internal void AttackAction(Minion oppminion)
+        public void AttackAction(Minion oppminion)
         {
             OnBeforeAttack?.Invoke(this, new() { target = oppminion });
             CanAttack = false;//TODO windfury shit.
@@ -246,7 +248,7 @@ namespace CardGame
             OnAfterAttack?.Invoke(this, new() { target = oppminion });
             //TODO visuals
         }
-        internal void AttackAction(Face face)
+        public void AttackAction(Face face)
         {
             OnBeforeAttack?.Invoke(this, new() { target = face });
             CanAttack = false;//TODO windfury shit.
@@ -262,7 +264,7 @@ namespace CardGame
 
         internal void Summoned(GameActor target)
         {
-            OnSummoned?.Invoke(this, new() { target = target });
+            OnSelfSummoned?.Invoke(this, new() { target = target });
         }
     }
 }

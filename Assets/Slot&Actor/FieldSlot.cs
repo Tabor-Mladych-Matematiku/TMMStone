@@ -1,5 +1,6 @@
 using System.Collections;
-using System.Collections.Generic; 
+using System.Collections.Generic;
+using UnityEngine;
 namespace CardGame
 {
     public class FieldSlot : PlacableSlot
@@ -12,6 +13,7 @@ namespace CardGame
             Field field = GetField();
             if (field != null)
             {
+                field.transform.SetParent(null);
                 Destroy(field.gameObject);
                 GameManager.Instance.AddToGrave(PopCard(), Owner);
             }

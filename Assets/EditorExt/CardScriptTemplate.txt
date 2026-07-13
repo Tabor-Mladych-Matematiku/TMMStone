@@ -29,4 +29,7 @@ public class #NAME# : CardScriptBase
     //protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e) { }
     //protected override void OnMinionPlayed(Minion minion, Card.CardPlayedEventArgs e) { }
     //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
+
+    //States
+    //protected override Tuple<int, Card.CardType[]> ManaCostMod</*On what this effect sits*/>()=> new(0, new[] {  });
 }

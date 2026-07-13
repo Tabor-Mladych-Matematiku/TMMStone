@@ -6,10 +6,9 @@ using System;
 
 public class Matemágův_učeň : CardScriptBase
 {
-    private void Awake()
-    {
-        manacostmod = (card) => card.cardType == Card.CardType.Spell && card.Owner == gameObject.GetComponent<Minion>().Owner ? -1 : 0;
-    }
+    protected override Dictionary<Type, ManaModsModifier> ManaCostMods => CreateManaCostModDict(
+        (typeof(Minion), -1, new[] { Card.CardType.Spell })
+        );
     //Minion events
     //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }

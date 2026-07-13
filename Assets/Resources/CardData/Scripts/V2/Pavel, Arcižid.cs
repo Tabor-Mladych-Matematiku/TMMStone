@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
 using System;
+using System.Linq;
 
-public class Finanční_podvod : CardScriptBase
+public class Pavel__Arcižid : CardScriptBase
 {
+
     protected override Dictionary<Type, ManaModsModifier> ManaCostMods => CreateManaCostModDict(
-        (typeof(Effect), -1, new[] { Card.CardType.Spell })
+        (typeof(Effect), 5, new[] { Card.CardType.Spell })
         );
     //Minion events
     //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
@@ -17,16 +19,16 @@ public class Finanční_podvod : CardScriptBase
     //protected override void OnTableActorEndTurn(object sender, GameActor.TurnEventArgs e) { }
     //protected override void OnTableActorStartTurn(object sender, GameActor.TurnEventArgs e) { }
     //protected override void OnTableActorEndOwnTurn(object sender, GameActor.TurnEventArgs e) { }
-    protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs arg)
+    protected override void OnTableActorEndOwnTurn(object sender, GameActor.TurnEventArgs arg)
     {
-        if(sender is Effect e) e.Destroy();
+        if (sender is Effect e) e.Destroy();
     }
     //protected override void OnDeath(object sender, EventArgs e) { }
 
     //Card events
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
-        PlaceEffect(sender,GetOwner(sender));
+        PlaceEffect(sender, GetOwner(sender).Other());
     }
     //protected override void OnDiscard(object sender, EventArgs e){}
     //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}

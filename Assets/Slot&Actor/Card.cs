@@ -19,6 +19,7 @@ namespace CardGame
         public event EventHandler<TurnEventArgs> OnStartTurn;
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
+        public string cardTag;
         public AudioSource audioSource;
         public GameManager.P backupOwner;//ugly as heck TODO proly make this better somehow
         public virtual GameManager.P Owner
@@ -53,7 +54,7 @@ namespace CardGame
         public CardType cardType;
         Image sr;
         Sprite face;
-        Sprite cardBack;
+        public Sprite cardBack {  get; private set; }
         bool hidden;
         public Vector3 standardScale;
         public int[] stats;
@@ -115,6 +116,7 @@ namespace CardGame
         {
             mana = data.cost;
             cardname = data.name;
+            cardTag = data.tag;
             switch (data.type)
             {
                 case "Token":
@@ -241,9 +243,13 @@ namespace CardGame
             {
                 m.gameObject.AddComponent(script);
             }
-            m.Summoned(target);
+            ;
+            m.Summoned(target);//Selfsummon
+            GameManager.Instance.InvokeSummoned(m);//TODO: probably do the InvokeSummoned on one place
             return m;
         }
+
+
         /// <summary>
         /// 
         /// </summary>
