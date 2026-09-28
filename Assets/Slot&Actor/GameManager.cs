@@ -229,6 +229,7 @@ namespace CardGame
         public Dictionary<int, CardData.CardData> CardDatabase;
         public AssetReferenceGameObject CardAddressable;
         GameObject CardPrefab;
+        private AsyncOperationHandle<GameObject> cardPrefabHandle;
         public Button EndTurnBtn;
         public const int maxMinionSlots = 7;
         public const int maxEffSlots = 6;
@@ -398,7 +399,8 @@ namespace CardGame
             HPCounters[P.P1].Death += (_, _) => GameManager_PlayerDeath(P.P1);
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
-            CardPrefab = CardAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
+            cardPrefabHandle = Addressables.LoadAssetAsync<GameObject>(CardAddressable.RuntimeKey);
+            CardPrefab = cardPrefabHandle.WaitForCompletion();
             CardDatabase = CDJsonUtils.LoadCardDatabase();
 
             //Debug.Log(CardDatabase);
@@ -913,6 +915,15 @@ namespace CardGame
 
             CardSlot target = validTargets[UnityEngine.Random.Range(0, validTargets.Count)];
             return EncodeCharacterTarget(player, target);
+        }
+
+        public override void OnDestroy()
+        {
+            if (cardPrefabHandle.IsValid()) Addressables.Release(cardPrefabHandle);
+            Card.ReleaseSharedAssets();
+
+            if (Instance == this) Instance = null;
+            base.OnDestroy();
         }
     }
 }
