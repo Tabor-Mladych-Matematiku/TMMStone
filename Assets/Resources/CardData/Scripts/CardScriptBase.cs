@@ -249,8 +249,10 @@ public abstract class CardScriptBase : MonoBehaviour
     protected Minion GetRandomMinion(object sender)
     {
         GameManager.P owner = GetOwner(sender);
-        var minions = GameManager.Instance.GetAllMinionsOwnedBy(owner).Concat(GameManager.Instance.GetAllMinionsOwnedBy(owner.Other()));
-        return minions.ElementAt(RandomRange(0, minions.Count()));
+        Minion[] minions = GameManager.Instance.GetAllMinionsOwnedBy(owner)
+            .Concat(GameManager.Instance.GetAllMinionsOwnedBy(owner.Other()))
+            .ToArray();
+        return minions.Length == 0 ? null : minions[RandomRange(0, minions.Length)];
     }
 
 
