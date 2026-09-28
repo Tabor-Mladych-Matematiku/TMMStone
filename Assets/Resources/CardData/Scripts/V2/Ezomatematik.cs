@@ -13,11 +13,12 @@ public class Ezomatematik : CardScriptBase
     //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
 
     //protected override void OnBattleCry(){}
-    protected override void OnCardPlayed(object sender, Card.CardPlayedEventArgs e)
+    protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e)
     {
-        if (sender is Card card &&
-            card.cardType == Card.CardType.Spell &&
-            !gameObject.TryGetComponent(out Minion minion)
-            ) GameManager.Instance.HPCounters[minion.Owner].Heal(2);
+        if (spell.Owner == GameManager.Instance.PlayerOnTurn&&
+            gameObject.TryGetComponent(out Minion minion))
+        {
+            GameManager.Instance.HPCounters[minion.Owner].Heal(2);
+        }
     }
 }
