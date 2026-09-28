@@ -710,8 +710,10 @@ namespace CardGame
             switch (action.Actiontype)
             {
                 case PlayerAction.ActionType.Play:
-                    Card card = HandSlots[who][action.Source].PopCard();
+                    CardSlot handSlot = HandSlots[who][action.Source];
+                    Card card = handSlot.GetCard();
                     ManaCounters[who].Mana -= GetManaCost(card);
+                    handSlot.PopCard();
                     CardSlot targetSlot = null;
                     GameActor target = null;
                     if (action.CharacterTarget.HasTarget)
@@ -764,7 +766,7 @@ namespace CardGame
         private int GetManaCost(Card card)
         {
             int cost = card.mana;
-            foreach (var item in AllTableActors)
+            foreach (var item in AllActors)
             {
                 foreach (var manamod in item.manacostmod)
                 {

@@ -16,7 +16,6 @@ namespace CardGame
         protected Color defaultColor;
         [SerializeField] protected Image graphic;
         protected Card original;
-        public List<Func<Card, int>> manacostmod = new();
 
         public virtual void OnMouseEnter()
         {

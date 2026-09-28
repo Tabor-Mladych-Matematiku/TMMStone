@@ -23,6 +23,7 @@ namespace CardGame
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
         public string cardTag;
+        public List<Func<Card, int>> manacostmod = new();
         public AudioSource audioSource;
         public GameManager.P backupOwner;//ugly as heck TODO proly make this better somehow
         public virtual GameManager.P Owner

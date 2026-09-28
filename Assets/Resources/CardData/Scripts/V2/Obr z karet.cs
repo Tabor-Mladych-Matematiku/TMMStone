@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
 using System;
+using System.Linq;
 
-public class #NAME# : #BASE_CLASS#
+public class Obr_z_karet : CardScriptBase
 {
-#TARGETED_SECTION#
+
 
     //Minion events
     //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
@@ -33,6 +34,5 @@ public class #NAME# : #BASE_CLASS#
     //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
 
     //States
-    //protected override Func<Card, int> ManaCostModifier => (card) => 0;
-
+    protected override Func<Card, int> ManaCostModifier => (card) => -GameManager.Instance.AllMinions.Count();
 }

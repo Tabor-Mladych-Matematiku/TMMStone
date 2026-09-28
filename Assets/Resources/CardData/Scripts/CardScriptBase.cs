@@ -27,7 +27,11 @@ public abstract class CardScriptBase : MonoBehaviour
 {
     //TODO: stop implemented methods from being virtual. Add separete nonvirtual ones that run virtual ones at the end
     private int spelldamage = 0;
-    //protected Func<Card, int> manacostmod { get; private set; }
+    /// <summary>
+    /// Returns an additive modifier for this card's mana cost. This does not set
+    /// the final cost; the returned value is added to the card's base mana cost.
+    /// </summary>
+    protected virtual Func<Card, int> ManaCostModifier => null;
     public delegate Func<Card, int> ManaModsModifier(GameObject gameObject);
     protected virtual Dictionary<Type, ManaModsModifier> ManaCostMods =>new();
     protected static Dictionary<Type, ManaModsModifier> CreateManaCostModDict(
@@ -60,6 +64,9 @@ public abstract class CardScriptBase : MonoBehaviour
         
         if (TryGetComponent(out Card card))
         {
+            Func<Card, int> manaCostModifier = ManaCostModifier;
+            if (manaCostModifier != null)
+                card.manacostmod.Add(candidate => candidate == card ? manaCostModifier(candidate) : 0);
             StartTurnBinder(card);
             card.OnStartTurn += OnStartTurn;
             card.OnEndTurn += OnEndTurn;
