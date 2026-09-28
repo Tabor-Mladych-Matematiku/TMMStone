@@ -22,6 +22,8 @@ public class Kofola : TargetableCardScriptBase
         if(e.Target is Minion minion)minion.Buff(1, 1);
     }
 
+    protected override bool TargetValidate(TableActor target)=>target is Minion;
+
     //Other card events
     //protected override void OnPlayed(object sender, Card.CardPlayedEventArgs e){}
 }

@@ -24,6 +24,8 @@ public class Náhlá_lobotomie : TargetableCardScriptBase
         DealSpellDamage((DamageableActor)e.Target, 6,sender);
     }
 
+    protected override bool TargetValidate(TableActor target)=>target is DamageableActor;
+
     //Other card events
     //protected override void OnPlayed(object sender, Card.CardPlayedEventArgs e){}
     //protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e) { }

@@ -27,6 +27,8 @@ public class Velké_kladivo : TargetableCardScriptBase
         if (e.Target is Minion minion) minion.Buff(3,0);
     }
 
+    protected override bool TargetValidate(TableActor target)=>target is Minion;
+
     //Other card events
     //protected override void OnPlayed(object sender, Card.CardPlayedEventArgs e){}
     //protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e) { }

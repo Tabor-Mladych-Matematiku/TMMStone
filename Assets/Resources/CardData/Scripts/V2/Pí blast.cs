@@ -11,4 +11,6 @@ public class Pí_blast : TargetableCardScriptBase
         DealSpellDamage(target, 3,sender);
         target.Frozen = true;
     }
+
+    protected override bool TargetValidate(TableActor target)=>target is DamageableActor;
 }

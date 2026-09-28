@@ -14,11 +14,14 @@ public abstract class TargetableCardScriptBase : CardScriptBase
     sealed protected override void StartTurnBinder(Card card)
     {
         card.OnSelfPlayed += OnSelfPlayed;//OnSelfPlayed is called when the card is played from hand and triggers before OnPlayed
+        card.TargetValidator = (target) => TargetValidate(target);
     }
     protected virtual void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
     {
 
     }
+    protected abstract bool TargetValidate(TableActor target);
+
 }
 public abstract class CardScriptBase : MonoBehaviour
 {

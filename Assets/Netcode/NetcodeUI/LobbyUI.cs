@@ -123,7 +123,7 @@ public class LobbyUI : MonoBehaviour
     }
     public void DeckBuilder()
     {
-        SceneManager.LoadScene("DeckBuilder");
+        SceneManager.LoadScene("DeckBuilderScene");
     }
 
 }

@@ -6,6 +6,7 @@ using CardData;
 using System.Reflection;
 using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
+using TMPro;
 
 namespace CardGame
 {
@@ -60,6 +61,9 @@ namespace CardGame
         public int[] stats;
         readonly List<Type> scriptTypes = new();
         int SlotIndex { get => GetComponentInParent<CardSlot>().index; }
+        int battlecrySlotIndex;
+        int battlecryCardIndex;
+        public bool IsChoosingBattlecryTarget { get; private set; }
 
         [SerializeField] AssetReferenceGameObject MinionAddressable;
         [SerializeField] AssetReferenceGameObject FieldAddressable;
@@ -89,7 +93,7 @@ namespace CardGame
         /// <summary>
         /// Scripts reasign this to modify what is valid target
         /// </summary>
-        public Func<bool> TargetValidator = () => true;//TODO: make this a list of functions
+        public Func<TableActor,bool> TargetValidator = (_) => true;//TODO: make this a list of functions
 
         internal override void Awake()
         {
@@ -171,6 +175,7 @@ namespace CardGame
         {
 
             if (GameManager.Instance.cursor != this) return;// I am not holding this card.
+            if (IsChoosingBattlecryTarget) return;
             sr.color = Color.white;
             if (SafeZone.InSafeZone)
             {
@@ -184,10 +189,8 @@ namespace CardGame
                 if (!Targetted) GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex);
                 else
                 {
-                    //HEre we need to make the secondary targetting system. (MAMA mia!)
-                    int target = 0;
-                    GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex, target);
-                    throw new NotImplementedException("We did not make minions with targetted battlecries yet");//TODO figure out targetted battlecries
+                    BeginBattlecryTargeting();
+                    return;
                 }
             }
             else if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Field) GameManager.Instance.OnUIPlayField(SlotIndex);//We have a slot to place field to
@@ -200,15 +203,53 @@ namespace CardGame
         public bool IsTargetValid(TableActor actor)
         {
             if (actor == null) return false;
-            return TargetValidator();
+            return TargetValidator(actor);
         }
 
         public void OnMouseDown()
         {
+            if (IsChoosingBattlecryTarget)
+            {
+                CancelBattlecryTargeting();
+                return;
+            }
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
             if (!GameManager.Instance.IsCardPlayable(this)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
             GetComponent<AudioSource>().Play();
+        }
+
+        private void BeginBattlecryTargeting()
+        {
+            battlecryCardIndex = SlotIndex;
+            battlecrySlotIndex = GameManager.Instance.HighlightedSlotIndex;
+            IsChoosingBattlecryTarget = true;
+            GameManager.Instance.highlightedSlot = null;
+
+            Vector3 targetPosition = Camera.main.ViewportToWorldPoint(new Vector3(0.9f, 0.5f));
+            transform.position = new Vector3(targetPosition.x, targetPosition.y, transform.position.z);
+        }
+
+        public void ChooseBattlecryTarget(TableActor target)
+        {
+            if (!IsChoosingBattlecryTarget || !IsTargetValid(target)) return;
+
+            GameManager.Instance.highlightedActor = target;
+            int targetIndex = GameManager.Instance.HighlightedActorIndex;
+            if (targetIndex < 0) return;
+
+            IsChoosingBattlecryTarget = false;
+            GameManager.Instance.cursor = null;
+            GameManager.Instance.highlightedActor = null;
+            GameManager.Instance.OnUIPlayMinion(battlecryCardIndex, battlecrySlotIndex, targetIndex);
+        }
+
+        private void CancelBattlecryTargeting()
+        {
+            IsChoosingBattlecryTarget = false;
+            GameManager.Instance.cursor = null;
+            GameManager.Instance.highlightedActor = null;
+            transform.localPosition = Vector3.zero;
         }
         public void OnMouseEnter()
         {

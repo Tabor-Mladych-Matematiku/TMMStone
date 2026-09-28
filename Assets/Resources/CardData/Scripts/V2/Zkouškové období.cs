@@ -11,4 +11,6 @@ public class Zkouškové_období : TargetableCardScriptBase
     {
         DealSpellDamage((DamageableActor)e.Target, 10, sender);
     }
+
+    protected override bool TargetValidate(TableActor target)=>target is DamageableActor;
 }

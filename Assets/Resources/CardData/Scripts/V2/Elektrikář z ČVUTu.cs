@@ -4,8 +4,21 @@ using UnityEngine;
 using CardGame;
 using System;
 
-public class Kladivo_z_houby : TargetableCardScriptBase
+public class Elektrikář_z_ČVUTu : TargetableCardScriptBase
 {
+    protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
+    {
+        Minion target = (Minion)e.Target;
+        (target.Health, target.Attack) = (target.Attack, target.Health);
+    }
+
+    protected override bool TargetValidate(TableActor target)=>target is Minion;
+
+    //Targetable card events
+    //protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e) { }
+    //protected override bool TargetValidate(TableActor target)=>target is Minion;
+    //protected override bool TargetValidate(TableActor target)=>true;
+
     //Minion events
     //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
@@ -22,12 +35,7 @@ public class Kladivo_z_houby : TargetableCardScriptBase
     //protected override void OnDiscard(object sender, EventArgs e){}
     //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}
     //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
-    protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e) {
-        DealSpellDamage((DamageableActor)e.Target, 3, sender);
-        DrawCard(true, sender);
-    }
-
-    protected override bool TargetValidate(TableActor target)=>target is DamageableActor;
+    //protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) { }
 
     //Other card events
     //protected override void OnPlayed(object sender, Card.CardPlayedEventArgs e){}
@@ -36,5 +44,5 @@ public class Kladivo_z_houby : TargetableCardScriptBase
     //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
 
     //States
-    //protected override Tuple<int, Card.CardType[]> ManaCostMod()=> new(0, new[] {  });
+    //protected override Tuple<int, Card.CardType[]> ManaCostMod</*On what this effect sits*/>()=> new(0, new[] {  });
 }

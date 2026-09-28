@@ -396,7 +396,7 @@ namespace CardGame
 
         private void Update()
         {
-            if (cursor != null)
+            if (cursor != null && !(cursor is Card card && card.IsChoosingBattlecryTarget))
             {
                 Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 cursor.transform.position = new(mousepos.x, mousepos.y);
@@ -851,6 +851,14 @@ namespace CardGame
 
             OwnDeckData = File.ReadAllText(savePaths[OwnDeckDropdown.value]);
             AIDeckData = File.ReadAllText(savePaths[OppDeckDropdown.value]);
+        }
+
+        public int GetRandomTargetForCard(Card card)
+        {
+            var validTargets = from DamageableActor c in AllCharacters
+                               where c != null && card.IsTargetValid(c)
+                               select c.GetComponentInParent<CardSlot>();
+            return validTargets.Any() ? validTargets.ElementAt(UnityEngine.Random.Range(0, validTargets.Count())).index : -1;
         }
     }
 }

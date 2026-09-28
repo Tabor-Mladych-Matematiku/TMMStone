@@ -6,6 +6,11 @@ using System;
 
 public class #NAME# : CardScriptBase
 {
+    //Targetable card events
+    //protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e) { }
+    //protected override bool TargetValidate(TableActor target)=>target is Minion;
+    //protected override bool TargetValidate(TableActor target)=>true;
+
     //Minion events
     //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }

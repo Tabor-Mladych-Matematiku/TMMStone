@@ -31,6 +31,11 @@ namespace CardGame
             HighlightRim.color = defaultColor;
             GameManager.Instance.highlightedActor = null;
         }
+        public virtual void OnMouseDown()
+        {
+            if (GameManager.Instance.cursor is Card card && card.IsChoosingBattlecryTarget)
+                card.ChooseBattlecryTarget(this);
+        }
         public virtual void Initialize(Card c)
         {
             original = c;
@@ -93,7 +98,7 @@ namespace CardGame
         public int Health
         {
             get => h;
-            private set
+            set
             {
                 h = value;
                 HealthLabel.text = h.ToString();
@@ -178,8 +183,13 @@ namespace CardGame
             CanAttack = false;
         }
 
-        public void OnMouseDown()
+        public override void OnMouseDown()
         {
+            if (GameManager.Instance.cursor is Card card && card.IsChoosingBattlecryTarget)
+            {
+                card.ChooseBattlecryTarget(this);
+                return;
+            }
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<CardSlot>().Owner == GameManager.P.P2 || Attack == 0) return;//We must be on turn and we must be owner
             if (!CanAttack) return;//"That minion cannot attack yet!"
             GameManager.Instance.cursor = this;
@@ -201,8 +211,8 @@ namespace CardGame
             base.OnMouseEnter();
             if (GameManager.Instance.cursor != null)
             {
-                //This is being targetted by spell
-                if (GameManager.Instance.cursor is Card h && h.cardType == Card.CardType.Spell && h.Targetted && h.IsTargetValid(this))
+                //This is being targetted by a card
+                if (GameManager.Instance.cursor is Card h && h.Targetted && h.IsTargetValid(this))
                 {
                     GameManager.Instance.highlightedActor = this;
                     HighlightRim.color = highlightColor;

@@ -27,8 +27,8 @@ namespace CardGame
         {
             if (GameManager.Instance.cursor == null) return;
 
-            //This is being targetted by spell
-            if (GameManager.Instance.cursor is Card h && h.cardType == Card.CardType.Spell && h.Targetted && h.IsTargetValid(this))
+            //This is being targetted by a card
+            if (GameManager.Instance.cursor is Card h && h.Targetted && h.IsTargetValid(this))
             {
                 GameManager.Instance.highlightedActor = this;
                 HighlightRim.color = highlightColor;

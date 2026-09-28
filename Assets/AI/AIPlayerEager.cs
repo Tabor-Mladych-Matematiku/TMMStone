@@ -12,7 +12,7 @@ public class AIPlayerEager : AIPlayerBase
         for (int i = 0; i < ownPlayerData.hand.Count; i++)
         {
             Card card = ownPlayerData.hand[i];
-            if (card&&GameManager.Instance.IsCardPlayable(card))
+            if (card && GameManager.Instance.IsCardPlayable(card))
             {
                 Debug.Log("card mana:" + card.mana + " Player mana: " + ownPlayerData.mana);
                 switch (card.cardType)
@@ -24,13 +24,21 @@ public class AIPlayerEager : AIPlayerBase
                             Debug.Log("No free minion slot available.");
                             break;
                         }
-                        Debug.Log("AIPlayerEager playing minion: " + card.cardname);
-
-                        GameManager.Instance.OnAIPlayMinion(i, freeIndex);
+                        if (card.Targetted)
+                        {
+                            Debug.Log("AIPlayerEager playing targeted minion: " + card.cardname);
+                            GameManager.Instance.OnAIPlayMinion(i, freeIndex, GameManager.Instance.GetRandomTargetForCard(card));
+                        }
+                        else
+                        {
+                            Debug.Log("AIPlayerEager playing minion: " + card.cardname);
+                            GameManager.Instance.OnAIPlayMinion(i, freeIndex);
+                        }
                         i = 0;
                         break;
                     case Card.CardType.Spell:
-                        if (!card.Targetted) { 
+                        if (!card.Targetted)
+                        {
                             Debug.Log("AIPlayerEager playing untargeted spell: " + card.cardname);
                             GameManager.Instance.OnAICastSpell(i);
                             i = 0;
@@ -48,7 +56,7 @@ public class AIPlayerEager : AIPlayerBase
                         break;
                 }
             }
-            if(i==0)ownPlayerData = GameManager.Instance.GetPlayerData(GameManager.Instance.PlayerOnTurn);//Reset if something happened to the hand or mana. It will reset extra time, but at least we stop it from reloading after every card.
+            if (i == 0) ownPlayerData = GameManager.Instance.GetPlayerData(GameManager.Instance.PlayerOnTurn);//Reset if something happened to the hand or mana. It will reset extra time, but at least we stop it from reloading after every card.
         }
 
         Debug.Log("Ending turn.");
