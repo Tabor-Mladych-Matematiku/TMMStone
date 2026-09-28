@@ -9,30 +9,26 @@ using UnityEngine.UI;
 
 public class DeckBuilderDeck : MonoBehaviour
 {
+    private const string DefaultDeckName = "Unnamed deck";
     [SerializeField]Button deckButton;
     [SerializeField] CardInDeckUI listing;
     [SerializeField] TMP_InputField deckNameInput;
 
-    List<int> cards = new();
-    List<CardInDeckUI> cardButtons = new();
-    string deckName = null;
+    readonly List<int> cards = new();
+    readonly List<CardInDeckUI> cardButtons = new();
+    string deckName = DefaultDeckName;
     private void Start()
     {
         deckButton.enabled = false;
         deckNameInput.onEndEdit.AddListener((string value) => {
             Debug.Log("Pervol black magic");
-            deckName = CDJsonUtils.SanitizeToClassName(value);//Todo: Maybe do this better
-            if (string.IsNullOrEmpty(deckName))
+            deckName = string.IsNullOrWhiteSpace(value)
+                ? DefaultDeckName
+                : CDJsonUtils.SanitizeToClassName(value);
+            if (cards.Count == 30)
             {
-                deckButton.enabled = false;
-            }
-            else
-            {
-                if (cards.Count == 30)
-                {
-                    Debug.Log("Pervol black magic elektrickÈ boogaloo");
-                    deckButton.enabled = true;
-                }
+                Debug.Log("Pervol black magic elektrick√© boogaloo");
+                deckButton.enabled = true;
             }
         });
     }
@@ -61,7 +57,7 @@ public class DeckBuilderDeck : MonoBehaviour
         deckButton.GetComponentInChildren<TextMeshProUGUI>().text = "Save Deck (" + cards.Count + "/30)";
     }
     public void RemoveCard(int cardID) {
-        int index = cards.IndexOf(cardID);//PraseËina
+        int index = cards.IndexOf(cardID);//Praseƒçina
         cardButtons.RemoveAt(index);
         cards.RemoveAt(index);
         if (cards.Count < 30)
@@ -76,7 +72,7 @@ public class DeckBuilderDeck : MonoBehaviour
 
         if (!Directory.Exists(saveFolder))
             Directory.CreateDirectory(saveFolder);
-        string savePath = Path.Combine(saveFolder, deckName+".json");
+        string savePath = GetUniqueSavePath(saveFolder, deckName);
         Debug.Log("Saving deck to: " + savePath);
         File.WriteAllText(savePath, MiniJson.JsonEncode(cards));
 
@@ -87,9 +83,22 @@ public class DeckBuilderDeck : MonoBehaviour
         cards.Clear();
         cardButtons.Clear();
         deckButton.enabled = false;
-        deckName = null;
+        deckName = DefaultDeckName;
+        deckNameInput.text = string.Empty;
         deckButton.GetComponentInChildren<TextMeshProUGUI>().text = "Save Deck (" + cards.Count + "/30)";
     }
 
+    private static string GetUniqueSavePath(string saveFolder, string requestedName)
+    {
+        string savePath = Path.Combine(saveFolder, requestedName + ".json");
+        int suffix = 1;
 
+        while (File.Exists(savePath))
+        {
+            savePath = Path.Combine(saveFolder, $"{requestedName} ({suffix}).json");
+            suffix++;
+        }
+
+        return savePath;
+    }
 }
