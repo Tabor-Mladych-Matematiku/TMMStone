@@ -235,6 +235,7 @@ namespace CardGame
         public const int maxHandSlots = 10;
         public const bool DEBUG = true;
         public bool online;
+        private bool gameEnding;
 
         public int seed { get; private set; }
 
@@ -397,21 +398,30 @@ namespace CardGame
             HPCounters[P.P1].Death += (_, _) => GameManager_PlayerDeath(P.P1);
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
-            CardAddressable.LoadAssetAsync<GameObject>().Completed += (AsyncOperationHandle<GameObject> obj) =>
-            {
-                CardPrefab = obj.Result;
-                CardDatabase = CDJsonUtils.LoadCardDatabase();
-            };
+            CardPrefab = CardAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
+            CardDatabase = CDJsonUtils.LoadCardDatabase();
 
             //Debug.Log(CardDatabase);
         }
 
         private void GameManager_PlayerDeath(P who)
         {
-            MatchResults.result = who == P.P1 ? "You lose!" : "You win!";
-            NetworkManager.Shutdown();
+            EndGame(who == P.P1 ? "You lose!" : "You win!");
+        }
+
+        private void EndGame(string result)
+        {
+            if (gameEnding) return;
+            gameEnding = true;
+            MatchResults.result = result;
+
+            if (NetworkManager != null)
+            {
+                NetworkManager.OnClientDisconnectCallback -= ClientDisconnected;
+                NetworkManager.Shutdown();
+            }
+
             Addressables.LoadSceneAsync("Assets/Scenes/ResultsScene.unity", LoadSceneMode.Single);
-            SceneManager.UnloadSceneAsync(1);//To reset it maybe?
         }
 
         private void Update()
@@ -489,7 +499,7 @@ namespace CardGame
                 EndTurn();
                 StartTurn();
             };
-            NetworkManager.OnClientDisconnectCallback += (id) => ClientDisconnected(id);
+            NetworkManager.OnClientDisconnectCallback += ClientDisconnected;
             //Load decks
             LoadSelectedDecksData();
             int[] OwnDeckList = null;
@@ -524,8 +534,15 @@ namespace CardGame
         private void ClientDisconnected(ulong id)
         {
             Console.WriteLine("ClientDisconnected: " + id);
-            //TODO: "Yer opponent left!"
-            GameManager_PlayerDeath((P)id);//This might work
+            EndGame("Opponent disconnected.");
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (NetworkManager != null)
+                NetworkManager.OnClientDisconnectCallback -= ClientDisconnected;
+
+            base.OnNetworkDespawn();
         }
 
         private void OnOpponentConnected(int[] OwnDeckList, int seed = 0) => AnnounceDeckServerRpc(OwnDeckList, seed, new());//loads own deck and sends it to the other.
