@@ -56,8 +56,9 @@ namespace CardGame
         /// <param name="index"></param>
         public void RemoveAt(int index)
         {
+            Card card = deck[index];
             deck.RemoveAt(index);
-            Destroy(deck.ElementAt(index).gameObject);
+            Destroy(card.gameObject);
             CardCounter.text = deck.Count.ToString();
         }
         /// <summary>
