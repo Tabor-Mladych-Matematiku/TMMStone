@@ -11,7 +11,7 @@
 ## Gameplay and cards
 
 - [x] Add BattleCry target selection and cancellation.
-- [ ] Define and enforce specific target constraints for every targeted spell, such as friendly minions, enemy minions, or any character.
+- [x] Define and enforce specific target constraints for every targeted spell, such as friendly minions, enemy minions, or any character.
 - [ ] Implement Taunt.
 - [ ] Finish implementing the remaining cards.
 
@@ -46,8 +46,9 @@
 
 ## Editor tooling
 
-- [ ] Add a button that reveals a card's editor script in the filesystem.
-- [ ] Allow an existing script to be attached to a card without creating a new one.
+- [x] Add a button that reveals a card's editor script in the filesystem.
+- [x] Allow `Blank.cs` or any existing Resources script to be attached to a card without creating a new one.
+- [x] Support generating normal and targeted card scripts from one shared template.
 - [ ] Finish the EditorExt card maker and card displayer.
 
 ## Testing

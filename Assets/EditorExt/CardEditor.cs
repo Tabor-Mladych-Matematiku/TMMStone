@@ -29,6 +29,8 @@ namespace CardEditor
         }
         public void CreateGUI()
         {
+            rootVisualElement.Clear();
+            nameToId.Clear();
             string[] jsonGUIDs = AssetDatabase.FindAssets($"{"cardScriptsPaths"} t:TextAsset", new[] { "Assets/Resources/CardData/Scripts" });
             if (jsonGUIDs.Length != 1)
             {
@@ -50,47 +52,7 @@ namespace CardEditor
             choices = cardList.choices;
             cardList.RegisterValueChangedCallback((item) =>
             {
-                box.Clear();
-                string name = item.newValue;
-                int id = nameToId[name];
-                CardData.CardData data = CardDatabase[id];
-                //box.Add(new Label(name + "    " + data.cost));
-                box.Add(new Image()
-                {
-                    image = Resources.Load<Texture2D>("CardData/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + name)//;sprite =  Resources.Load<Sprite>("CardData/" + data.expansion + "/" + name)
-                });
-                //box.Add(new Label(data.type));
-                //MonoScript script = GetScript(name); 
-                if (data.scripts.Count == 0)
-                {
-                    box.Add(new Label("Does not have script"));
-                    Button button = new()//can't use the consturctor action cuz it won't let me use button
-                    {
-                        text = "Add Script"
-                    };
-                    button.clicked += () =>
-                    {
-                        button.SetEnabled(false);
-                        var endNameEditHandler = CreateInstance<EndNameEditHandler>();
-                        endNameEditHandler.Init(/*button,*/ id);
-                        ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, endNameEditHandler, "Assets/Resources/CardData/Scripts/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + name + ".cs", null, null);
-
-
-
-                    };
-
-
-                    box.Add(button);
-                }
-                else
-                {
-                    box.Add(new Label("Has script"));
-                    foreach (MonoScript script in LoadScripts(data.scripts))
-                    {
-                        box.Add(new Label("Script name: " + script.name));
-                        box.Add(new Label(script.text));
-                    }
-                }
+                ShowCard(box, item.newValue);
             });
             root.Add(cardList);
             Toggle t = new("Show unfinished only");
@@ -119,25 +81,146 @@ namespace CardEditor
             //Has an option to create/assing script
             //Scripts should end up in some special assembly.
         }
+
+        private void ShowCard(Box box, string name)
+        {
+            box.Clear();
+            int id = nameToId[name];
+            CardData.CardData data = CardDatabase[id];
+            box.Add(new Image()
+            {
+                image = Resources.Load<Texture2D>("CardData/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + name)
+            });
+
+            if (data.scripts.Count == 0)
+            {
+                box.Add(new Label("Does not have a script"));
+            }
+            else
+            {
+                box.Add(new Label("Attached scripts"));
+                foreach (MonoScript script in LoadScripts(data.scripts))
+                {
+                    box.Add(new Label("Script name: " + script.name));
+                    Button revealScriptButton = new(() =>
+                    {
+                        string assetPath = AssetDatabase.GetAssetPath(script);
+                        EditorUtility.RevealInFinder(Path.GetFullPath(assetPath));
+                    })
+                    {
+                        text = "Reveal in File Explorer"
+                    };
+                    box.Add(revealScriptButton);
+                    box.Add(new Label(script.text));
+                }
+            }
+
+            Button addScriptButton = new(() => StartCreatingScript(id, data, name, false))
+            {
+                text = "Add Script"
+            };
+            box.Add(addScriptButton);
+
+            Button addTargetedScriptButton = new(() => StartCreatingScript(id, data, name, true))
+            {
+                text = "Add Targeted Script"
+            };
+            box.Add(addTargetedScriptButton);
+
+            Button attachBlankButton = new(() =>
+            {
+                if (AttachResourcePath(id, "CardData/Scripts/Blank")) ShowCard(box, name);
+            })
+            {
+                text = "Attach Blank.cs"
+            };
+            box.Add(attachBlankButton);
+
+            ObjectField scriptField = new("Existing script")
+            {
+                objectType = typeof(MonoScript),
+                allowSceneObjects = false
+            };
+            box.Add(scriptField);
+
+            Button attachExistingButton = new(() =>
+            {
+                MonoScript script = scriptField.value as MonoScript;
+                if (script == null)
+                {
+                    Debug.LogError("Select a script to attach first.");
+                    return;
+                }
+
+                string assetPath = AssetDatabase.GetAssetPath(script).Replace('\\', '/');
+                const string resourcesPrefix = "Assets/Resources/";
+                if (!assetPath.StartsWith(resourcesPrefix, StringComparison.Ordinal) || !assetPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                {
+                    Debug.LogError("Attached card scripts must be C# files inside Assets/Resources.");
+                    return;
+                }
+
+                string resourcePath = assetPath[resourcesPrefix.Length..^3];
+                if (AttachResourcePath(id, resourcePath)) ShowCard(box, name);
+            })
+            {
+                text = "Attach Selected Script"
+            };
+            box.Add(attachExistingButton);
+        }
+
+        private static void StartCreatingScript(int id, CardData.CardData data, string name, bool targeted)
+        {
+            var endNameEditHandler = CreateInstance<EndNameEditHandler>();
+            endNameEditHandler.Init(id, targeted);
+            string path = "Assets/Resources/CardData/Scripts/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + name + ".cs";
+            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, endNameEditHandler, path, null, null);
+        }
+
+        private static bool AttachResourcePath(int id, string resourcePath)
+        {
+            if (!CDJsonUtils.Scriptpaths.TryGetValue(id, out List<string> paths))
+            {
+                paths = new List<string>();
+                CDJsonUtils.Scriptpaths.Add(id, paths);
+            }
+
+            if (paths.Contains(resourcePath))
+            {
+                Debug.LogWarning($"Card {id} already has script {resourcePath} attached.");
+                return false;
+            }
+
+            paths.Add(resourcePath);
+            List<string> displayedPaths = CardDatabase[id].scripts;
+            if (!ReferenceEquals(paths, displayedPaths) && !displayedPaths.Contains(resourcePath))
+                displayedPaths.Add(resourcePath);
+
+            SaveScriptPaths();
+            return true;
+        }
+
+        private static void SaveScriptPaths()
+        {
+            string json = MiniJson.JsonEncode(CDJsonUtils.Scriptpaths);
+            File.WriteAllText(AssetDatabase.GUIDToAssetPath(jsonGUID), json);
+            AssetDatabase.ImportAsset(AssetDatabase.GUIDToAssetPath(jsonGUID));
+        }
+
         class EndNameEditHandler : UnityEditor.ProjectWindowCallback.EndNameEditAction
         {
-            //Button button;
             int id;
-            public void Init(/*Button button,*/ int id)
+            bool targeted;
+            public void Init(int id, bool targeted)
             {
-                //this.button = button;
                 this.id = id;
+                this.targeted = targeted;
             }
             public override void Action(int instanceId, string pathName, string resourceFile)
             {
-                //button.SetEnabled(true);
-                string[] templateGUIDs = AssetDatabase.FindAssets($"{"CardScriptTemplate"} t:TextAsset", new[] { "Assets/EditorExt" });
-                if (templateGUIDs.Length != 1)
-                {
-                    Debug.LogError($"Did not find template at \"Assets/EditorExt/CardScriptTemplate.txt\" {templateGUIDs.Length} GUIDs found");
-                    return;
-                }
-                string templateContent = File.ReadAllText(AssetDatabase.GUIDToAssetPath(templateGUIDs[0]));
+                const string templatePath = "Assets/EditorExt/CardScriptTemplate.txt";
+                const string targetedAddonPath = "Assets/EditorExt/TargettedCardScriptTemplateAddon.txt";
+                string templateContent = File.ReadAllText(templatePath);
                 if (templateContent.Length == 0)
                 {
                     Debug.LogError("Empty template recieved");
@@ -145,20 +228,15 @@ namespace CardEditor
                 }
                 var classname = CDJsonUtils.SanitizeToClassName(Path.GetFileNameWithoutExtension(pathName));
                 templateContent = templateContent.Replace("#NAME#", classname);
+                templateContent = templateContent.Replace("#BASE_CLASS#", targeted ? "TargetableCardScriptBase" : "CardScriptBase");
+                string targetedSection = targeted ? File.ReadAllText(targetedAddonPath).TrimEnd() : string.Empty;
+                templateContent = templateContent.Replace("#TARGETED_SECTION#", targetedSection);
                 File.WriteAllText(pathName, templateContent);
                 AssetDatabase.ImportAsset(pathName);
                 MonoScript newScript = AssetDatabase.LoadAssetAtPath<MonoScript>(pathName);
                 string Resourcepath = pathName.Replace("Assets/Resources/", "");
                 Resourcepath = Resourcepath.Replace(".cs", "");
-                CDJsonUtils.Scriptpaths.Add(id, new() { Resourcepath });
-
-                string json = MiniJson.JsonEncode(CDJsonUtils.Scriptpaths);
-                //Debug.Log("Encoding: " + json);
-                File.WriteAllText(AssetDatabase.GUIDToAssetPath(jsonGUID), json);
-
-                CardDatabase[id].scripts.Add(Resourcepath);//This is only so that I don't need to reload the whole database after every change
-
-                //TODO: add to script JSON
+                AttachResourcePath(id, Resourcepath);
                 ProjectWindowUtil.ShowCreatedAsset(newScript);
             }
             

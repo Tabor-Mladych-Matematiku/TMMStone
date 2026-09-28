@@ -1,0 +1,3 @@
+    //Targeted card events
+    //protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e) { }
+    protected override bool TargetValidate(TableActor target) => true;
