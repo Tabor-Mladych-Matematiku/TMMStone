@@ -77,6 +77,8 @@ namespace CardGame
 
     public class GameManager : NetworkBehaviour
     {
+        private static WaitForSecondsRealtime _waitForSecondsRealtime0_5 = new WaitForSecondsRealtime(0.5f);
+
         /// <summary>
         /// A character target encoded from the acting player's point of view.
         /// The value remains an int on the wire, but this type prevents board-global
@@ -416,6 +418,16 @@ namespace CardGame
             if (gameEnding) return;
             gameEnding = true;
             MatchResults.result = result;
+            EndTurnBtn.interactable = false;
+            ClearHighlights();
+            StartCoroutine(FinishGame());
+        }
+
+        private IEnumerator FinishGame()
+        {
+            // Let the action or turn change that caused lethal damage reach the
+            // other peer before shutting down the transport.
+            if (online) yield return _waitForSecondsRealtime0_5;
 
             if (NetworkManager != null)
             {
