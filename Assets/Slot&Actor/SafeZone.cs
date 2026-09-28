@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+[RequireComponent(typeof(PolygonCollider2D))]
 public class SafeZone : MonoBehaviour
 {
     static PolygonCollider2D polygonCollider;

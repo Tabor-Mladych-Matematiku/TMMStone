@@ -10,6 +10,7 @@ using TMPro;
 
 namespace CardGame
 {
+    [RequireComponent(typeof(AudioSource))]
     public abstract class GameActor : MonoBehaviour
     {
         public class TurnEventArgs
@@ -39,10 +40,11 @@ namespace CardGame
             audioSource = GetComponent<AudioSource>();
         }
     }
+[RequireComponent(typeof(AudioSource))]
 
 
 
-    [RequireComponent(typeof(AudioSource))]
+    [RequireComponent(typeof(Image))]
     public class Card : GameActor
     {
         public enum CardType

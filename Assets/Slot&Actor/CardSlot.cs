@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 namespace CardGame
 {
+    [RequireComponent(typeof(Image))]
     public abstract class PlacableSlot : CardSlot
     {
         public abstract bool IsCardPlacable(Card c);

@@ -11,6 +11,7 @@ public class AssetReferenceAudioClip : AssetReferenceT<AudioClip>
     {
     }
 }
+[RequireComponent(typeof(AudioSource))]
 public class MusicPlayer : MonoBehaviour
 {
     [SerializeField] AssetReferenceAudioClip[] musicTrackAddressables;
