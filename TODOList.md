@@ -1,64 +1,63 @@
 # TODO
 
-- Test on Android
+## Bugs
 
-## Less Important
+- [ ] Verify Relay joining after adding bounded retries and host/client startup checks.
+- [ ] Make turn changes resolve consistently on both peers instead of `ServerOnTurn.OnValueChanged` running at observably different times.
+- [ ] Verify that end-of-turn and start-of-turn lethal effects finish the match correctly for both players after delayed network shutdown was added.
+- [x] Stop a dead Algedrak from reacting to the owner's spell that killed it.
+- [x] Prevent `highlightedSlot` and `highlightedActor` from retaining or clearing stale targets incorrectly.
 
-- BattleCry - Enbetter UI
-- Spells - Make specific targetting - "Can target minions only, enemy minions only etc."
-- Taunts
-- Export JSON from website
-- Import JSON in lobby selection
-  - Display Deck Class in Lobby
-  - Probably make a deck folder with JSONs
-  - List them in Lobby selection and allow the selection of one.
-- Do the rest of the cards
+## Gameplay and cards
 
-# Things to polish
+- [x] Add BattleCry target selection and cancellation.
+- [ ] Define and enforce specific target constraints for every targeted spell, such as friendly minions, enemy minions, or any character.
+- [ ] Implement Taunt.
+- [ ] Finish implementing the remaining cards.
 
-- Network:
-  - Loading screens and such - hide the network accesses.
-  - "Your opponent left"
-- Cards:
-  - Make em move nicely - sortoff follow mouse in a cool way not instant snap.
-  - Card movement animations in general.
-  - Change picking a minion into like an arrow that points and then the minion attacks and stuff like that.
-  - Highlight which cards are playable and which minions can attack.
-  - Replay what opponent did
-  - Stats text is should only extend horizontaly
-- Prettier Menu
-- Prettier EndGame (Its just a copy of the main menu which itself is garbage)
-- LobbyUI:
-  - Lobby musí mít jméno, nesmí v něm být cizí znaky - Is this true???
-  - Loading screeny - Prokukujou životy - UnityUI je cursed
-  - Join lobby via code. Quickjoin
-- EditorExt:
-  - Make a button to show the editor script in filesystem
-  - Allow attaching a script to a card without creating a new one
+## Decks and card data
 
-# Notes
+- [ ] Export card JSON from the website in a format the game can consume.
+- [ ] Support selecting imported deck JSON in the lobby.
+  - [x] Store deck JSON files in a dedicated folder.
+  - [x] Discover and list the available decks.
+  - [x] Allow each player to select a local deck before starting.
+  - [ ] Display the selected deck's class in the lobby.
 
-## Highlighted
+## Networking and lobby
 
-- I think there are cases in which "highlighted slot" and "highlightedActor" may keep wrong data - fix?
-- (They null themselves on leaving the mouse. But that may not be enough)
+- [ ] Add lobby UI controls for the existing join-by-code service method.
+- [ ] Add a lobby UI control for the existing Quick Join service method.
+- [ ] Decide and enforce lobby-name validation rules, including whether foreign characters are allowed.
 
-## Random
+## UI and graphics
 
-- We pass seed around but we should be SUPER mindfull to use it only on things that happen on both sides.
-- Probably would be better to make some kind of Network random or something that we will pinky promise that it gets used only in the synched cases.
+- [ ] Hide network operations behind appropriate loading screens and transitions.
+- [ ] Prevent health values from showing through loading screens.
+- [ ] Make dragged cards follow the pointer smoothly instead of snapping directly to it.
+- [ ] Add card movement animations.
+- [ ] Replace direct minion dragging during attacks with a targeting arrow or similar interaction.
+- [ ] Clearly indicate playable cards and minions that can attack.
+- [ ] Show the opponent's actions instead of applying them without visible playback.
+- [ ] Keep card stat text constrained horizontally.
+- [ ] Improve the main menu presentation.
+- [ ] Create a dedicated end-game presentation instead of reusing the main menu layout.
+- [ ] Verify and improve adaptive layouts across supported screen sizes.
 
-# Bugs
+## Editor tooling
 
-- Sometimes the relay does not join. Why?
-- ServerOnTurn.OnValueChanged seems to happen sequentially first on the client who ended the turn and then on the other player.
-- If the endturn/startturn effects kill the other player the caller kicks himself from the game and the ServerOnTurn.OnValueChanged does not get called on the opponent.
-- Pokud si zabiješ algedraka vlastním kouzlem tak to nějak blbne - zkontrolovat co se stane s řetězením effektů a pofixovat to
+- [ ] Add a button that reveals a card's editor script in the filesystem.
+- [ ] Allow an existing script to be attached to a card without creating a new one.
+- [ ] Finish the EditorExt card maker and card displayer.
 
-# EditorExt
+## Testing
 
-- TODO: cardMakyr,displayer
+- [ ] Test the current build on Android.
 
-# Adaptive screen
+## Notes
 
-- kinda
+### Random synchronization
+
+The shared seed must only be consumed by operations that run identically on both game instances. Random calls made by UI, presentation, or other local-only behavior will cause the game states to diverge.
+
+A dedicated network-aware random service would make this rule explicit and provide one controlled place for synchronized random operations.
