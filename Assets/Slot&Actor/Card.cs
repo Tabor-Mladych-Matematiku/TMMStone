@@ -5,6 +5,7 @@ using UnityEngine;
 using CardData;
 using System.Reflection;
 using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using TMPro;
 
@@ -73,6 +74,9 @@ namespace CardGame
         [SerializeField] AssetReferenceGameObject EffectAddressable;
         GameObject TableActorPrefab;
         GameObject EffectPrefab;//A minion might cause an effect to happen so it is better to have it separate than all in TableActorPrefab
+        private static AsyncOperationHandle<GameObject> minionPrefabHandle;
+        private static AsyncOperationHandle<GameObject> fieldPrefabHandle;
+        private static AsyncOperationHandle<GameObject> effectPrefabHandle;
 
         public AudioClip cardPlaced;
         public bool Targetted { get; private set; } = false;
@@ -129,7 +133,7 @@ namespace CardGame
                 case "Token":
                 case "Jednotka":
                     cardType = CardType.Minion;
-                    TableActorPrefab = MinionAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
+                    TableActorPrefab = LoadSharedAsset(ref minionPrefabHandle, MinionAddressable);
                     stats = new int[2] { int.Parse(data.attack), int.Parse(data.health) };
                     break;
                 case "Spelltoken":
@@ -138,11 +142,11 @@ namespace CardGame
                     break;
                 case "Pole":
                     cardType = CardType.Field;
-                    TableActorPrefab = FieldAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
+                    TableActorPrefab = LoadSharedAsset(ref fieldPrefabHandle, FieldAddressable);
                     break;
                 default: throw new Exception("Unknown cardtype: " + data.type);
             }
-            EffectPrefab = EffectAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
+            EffectPrefab = LoadSharedAsset(ref effectPrefabHandle, EffectAddressable);
 
 
             expansion = "Tokeny";
@@ -171,6 +175,29 @@ namespace CardGame
                 }
             }
             return this;
+        }
+
+        private static GameObject LoadSharedAsset(
+            ref AsyncOperationHandle<GameObject> handle,
+            AssetReferenceGameObject reference)
+        {
+            if (!handle.IsValid())
+                handle = Addressables.LoadAssetAsync<GameObject>(reference.RuntimeKey);
+
+            return handle.WaitForCompletion();
+        }
+
+        public static void ReleaseSharedAssets()
+        {
+            ReleaseSharedAsset(ref minionPrefabHandle);
+            ReleaseSharedAsset(ref fieldPrefabHandle);
+            ReleaseSharedAsset(ref effectPrefabHandle);
+        }
+
+        private static void ReleaseSharedAsset(ref AsyncOperationHandle<GameObject> handle)
+        {
+            if (handle.IsValid()) Addressables.Release(handle);
+            handle = default;
         }
 
         public void OnDiscard() => OnDiscardEvent?.Invoke(this, new());
