@@ -129,7 +129,7 @@ namespace CardGame
                 case "Token":
                 case "Jednotka":
                     cardType = CardType.Minion;
-                    MinionAddressable.LoadAssetAsync().Completed += (handle) => TableActorPrefab = handle.Result;
+                    TableActorPrefab = MinionAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
                     stats = new int[2] { int.Parse(data.attack), int.Parse(data.health) };
                     break;
                 case "Spelltoken":
@@ -138,11 +138,11 @@ namespace CardGame
                     break;
                 case "Pole":
                     cardType = CardType.Field;
-                    FieldAddressable.LoadAssetAsync().Completed += (handle) => TableActorPrefab = handle.Result;
+                    TableActorPrefab = FieldAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
                     break;
                 default: throw new Exception("Unknown cardtype: " + data.type);
             }
-            EffectAddressable.LoadAssetAsync().Completed += (handle) => EffectPrefab = handle.Result;
+            EffectPrefab = EffectAddressable.LoadAssetAsync<GameObject>().WaitForCompletion();
 
 
             expansion = "Tokeny";
