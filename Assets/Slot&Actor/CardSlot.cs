@@ -70,11 +70,19 @@ namespace CardGame
         public Minion GetMinion() => transform.GetComponentInChildren<Minion>();
         public void RemoveMinion()
         {
-            Destroy(GetMinion().gameObject);
-            Card card = PopCard();
-            card.gameObject.SetActive(true);
-            GameManager.Instance.AddToGrave(card, Owner);
+            RemoveActor();
             minionDestroyPlayer.Play();
+        }
+        public void RemoveActor()
+        {
+            TableActor actor = transform.GetComponentInChildren<TableActor>();
+            if (actor!=null){
+                actor.transform.SetParent(null);
+                Destroy(actor.gameObject);
+                Card card = PopCard();
+                card.gameObject.SetActive(true);
+                GameManager.Instance.AddToGrave(card, card.Owner);
+            }
         }
         public class CardSlotException : Exception
         {

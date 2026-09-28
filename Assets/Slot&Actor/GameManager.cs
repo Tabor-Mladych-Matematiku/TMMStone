@@ -223,9 +223,9 @@ namespace CardGame
         IEnumerable<TableActor> AllTableActors { get => from CardSlot s in AllTableSlots let c = s.GetComponentInChildren<TableActor>() where c != null select c; }
         public IEnumerable<CardSlot> AllCharacterSlots { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]).Concat(new CardSlot[] { OwnHPCounter, OppHPCounter }) select s; }
         public IEnumerable<DamageableActor> AllCharacters { get => from CardSlot s in AllCharacterSlots let d = s.GetComponentInChildren<DamageableActor>() where d != null select d; }
-        public IEnumerable<Minion> AllMinions { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]) where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m; }
+        public IEnumerable<Minion> AllMinions { get => from CardSlot s in minionSlots[P.P1].Concat(minionSlots[P.P2]) where s.Occupied let m = s.GetMinion() where m != null select m; }
         public IEnumerable<Effect> AllEffects { get => from CardSlot s in EffSlots[P.P1].Concat(EffSlots[P.P2]) where s.Occupied let e = s.GetComponentInChildren<Effect>() where e!=null select e; }
-        public IEnumerable<Minion> GetAllMinionsOwnedBy(P owner) => from CardSlot s in minionSlots[owner] where s.Occupied let m = s.GetComponentInChildren<Minion>() where m != null select m;
+        public IEnumerable<Minion> GetAllMinionsOwnedBy(P owner) => from CardSlot s in minionSlots[owner] where s.Occupied let m = s.GetMinion() where m != null select m;
         public IEnumerable<Effect> GetAllEffectsOwnedBy(P owner) => from CardSlot s in EffSlots[owner] where s.Occupied let e = s.GetComponentInChildren<Effect>() where e != null select e;
         public IEnumerable<DamageableActor> GetAllCharactersOwnedBy(P owner) => from CardSlot s in minionSlots[owner].Concat(new[] { HPCounters[owner] }) where s.Occupied let m = s.GetComponentInChildren<DamageableActor>() where m != null select m;
         public Dictionary<int, CardData.CardData> CardDatabase;
@@ -309,7 +309,7 @@ namespace CardGame
                     if (slot != -1) return slot;
                     for (int i = 0; i < maxMinionSlots; i++)
                     {
-                        if (minionSlots[P.P2][i].GetComponentInChildren<Minion>() == m) { slot = maxMinionSlots + i; break; }
+                        if (minionSlots[P.P2][i].GetMinion() == m) { slot = maxMinionSlots + i; break; }
                     }
                 }
                 else if (highlightedActor is Face f)
@@ -729,6 +729,7 @@ namespace CardGame
                     else if (card.cardType == CardType.Field)
                     {
                         FieldSlot.ClearField();
+                        FieldSlot.Initialize(who, FieldSlot.index);
                         FieldSlot.PlaceCard(card);
                         card.gameObject.SetActive(false);
                         OnPlayed?.Invoke(card.PlayField(), new(CardType.Field, target));
@@ -744,10 +745,10 @@ namespace CardGame
                     else throw new Exception("Unknown cardType");
                     break;
                 case PlayerAction.ActionType.Attack:
-                    Minion Ownminion = minionSlots[who][action.Source].GetComponentInChildren<Minion>();//Opponents dont have minion slots so we cannot cast and do GetMinion
+                    Minion Ownminion = minionSlots[who][action.Source].GetMinion();//Opponents dont have minion slots so we cannot cast and do GetMinion
                     if (action.Target < 2 * maxMinionSlots)//action.Target can remain as is cuz you cannot attack your own stuff
                     {
-                        Minion Oppminion = minionSlots[who.Other()][action.Target - maxMinionSlots].GetComponentInChildren<Minion>();
+                        Minion Oppminion = minionSlots[who.Other()][action.Target - maxMinionSlots].GetMinion();
                         Ownminion.AttackAction(Oppminion);
                     }
                     else
