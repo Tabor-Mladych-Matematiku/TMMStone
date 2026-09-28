@@ -79,7 +79,7 @@ public abstract class CardScriptBase : MonoBehaviour
             minion.OnSelfSummoned += OnSelfSummoned;
             minion.OnBeforeAttack += OnBeforeAttack;
             minion.OnAfterAttack += OnAfterAttack;
-            minion.OnDeath += OnDeath;
+            minion.OnDeath += HandleDeath;
             minion.OnHealed += OnHealed;
             minion.OnDamaged += OnDamaged;
             return;
@@ -139,13 +139,23 @@ public abstract class CardScriptBase : MonoBehaviour
     /// <param name="e"></param>
     protected virtual void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e) { }
     protected virtual void OnDeath(object sender, EventArgs e) { }
+    private void HandleDeath(object sender, EventArgs e)
+    {
+        OnDeath(sender, e);
+        UnsubscribeFromGameManager();
+    }
+
     private void OnDestroy()
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnPlayed -= OnPlayed;//Cleanup
-            GameManager.Instance.OnSummoned -= _OnMinionSummoned;
-        }
+        UnsubscribeFromGameManager();
+    }
+
+    private void UnsubscribeFromGameManager()
+    {
+        if (GameManager.Instance == null) return;
+
+        GameManager.Instance.OnPlayed -= OnPlayed;//Cleanup
+        GameManager.Instance.OnSummoned -= _OnMinionSummoned;
     }
     //Card events
     protected virtual void OnDiscard(object sender, EventArgs e) { }
