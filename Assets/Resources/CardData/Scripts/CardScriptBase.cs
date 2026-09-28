@@ -141,8 +141,11 @@ public abstract class CardScriptBase : MonoBehaviour
     protected virtual void OnDeath(object sender, EventArgs e) { }
     private void OnDestroy()
     {
-        GameManager.Instance.OnPlayed -= OnPlayed;//Cleanup
-        GameManager.Instance.OnSummoned -= _OnMinionSummoned;
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPlayed -= OnPlayed;//Cleanup
+            GameManager.Instance.OnSummoned -= _OnMinionSummoned;
+        }
     }
     //Card events
     protected virtual void OnDiscard(object sender, EventArgs e) { }
