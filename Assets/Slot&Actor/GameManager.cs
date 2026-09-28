@@ -766,9 +766,9 @@ namespace CardGame
             int cost = card.mana;
             foreach (var item in AllTableActors)
             {
-                foreach (var item1 in item.manacostmod)
+                foreach (var manamod in item.manacostmod)
                 {
-                    cost += item1(card);
+                    cost += manamod(card);
                 }
             }
             return math.max(cost, 0);
