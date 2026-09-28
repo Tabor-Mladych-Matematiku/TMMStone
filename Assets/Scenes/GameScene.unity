@@ -1976,6 +1976,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   expansion: 
+  cardTag: 
   audioSource: {fileID: 2144741997}
   backupOwner: 0
   HighlightRim: {fileID: 2144741998}
@@ -2258,6 +2259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   expansion: 
+  cardTag: 
   audioSource: {fileID: 1419218651}
   backupOwner: 1
   HighlightRim: {fileID: 1419218652}
@@ -11691,8 +11693,8 @@ MonoBehaviour:
   CardHighlighter: {fileID: 83361368}
   OwnDeckData: 
   AIDeckData: 
-  OwnDeckDropdown: {fileID: 0}
-  OppDeckDropdown: {fileID: 0}
+  OwnDeckDropdown: {fileID: 1086562212}
+  OppDeckDropdown: {fileID: 921404722}
 --- !u!4 &1441397463
 Transform:
   m_ObjectHideFlags: 0
