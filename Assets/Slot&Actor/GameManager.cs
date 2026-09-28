@@ -204,7 +204,7 @@ namespace CardGame
             hp = HPCounters[player].Health,
             maxhp = HPCounters[player].maxHP,
             mana = ManaCounters[player].Mana,
-            hand = HandSlots[player].Select(s => s.GetComponentInChildren<Card>()).ToList()
+            hand = HandSlots[player].Select(s => s.GetCard()).ToList()
         };
 
         public void OnAIPlayMinion(int cardindex, int minionSlotIndex, CharacterTargetIndex target) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, target.Value, minionSlotIndex));
