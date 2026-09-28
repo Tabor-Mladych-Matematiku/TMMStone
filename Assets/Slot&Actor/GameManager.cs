@@ -673,7 +673,10 @@ namespace CardGame
 
         public bool IsCardPlayable(Card card, P player)
             =>GetManaCost(card) <= ManaCounters[player].Mana
-               && !(card.Targetted && !GetRandomTargetForCard(card, player).HasTarget);
+               && (!card.Targetted || ValidTargetExists(card));
+
+        public bool ValidTargetExists(Card card)
+            => AllCharacters.Any(character => character != null && card.IsTargetValid(character));
 
         
 
