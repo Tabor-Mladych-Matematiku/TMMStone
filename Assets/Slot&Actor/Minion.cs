@@ -29,7 +29,8 @@ namespace CardGame
         {
             original.DeHighlightCard();
             HighlightRim.color = defaultColor;
-            GameManager.Instance.highlightedActor = null;
+            if (GameManager.Instance.highlightedActor == this)
+                GameManager.Instance.highlightedActor = null;
         }
         public virtual void OnMouseDown()
         {
@@ -204,6 +205,7 @@ namespace CardGame
             }
             transform.localPosition = Vector3.zero;
             GameManager.Instance.cursor = null;
+            GameManager.Instance.ClearHighlights();
 
         }
         public override void OnMouseEnter()

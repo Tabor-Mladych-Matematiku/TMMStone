@@ -210,6 +210,7 @@ namespace CardGame
             if (SafeZone.InSafeZone)
             {
                 GameManager.Instance.cursor = null;
+                GameManager.Instance.ClearHighlights();
                 transform.localPosition = Vector3.zero;
                 return;
             }
@@ -228,6 +229,7 @@ namespace CardGame
             else if (cardType == CardType.Spell && GameManager.Instance.highlightedActor != null) GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);//Its targeted and has a target
             else transform.localPosition = Vector3.zero;//Reset
             GameManager.Instance.cursor = null;//Clean cursor
+            GameManager.Instance.ClearHighlights();
         }
 
         public bool IsTargetValid(TableActor actor)
@@ -278,7 +280,7 @@ namespace CardGame
         {
             IsChoosingBattlecryTarget = false;
             GameManager.Instance.cursor = null;
-            GameManager.Instance.highlightedActor = null;
+            GameManager.Instance.ClearHighlights();
             transform.localPosition = Vector3.zero;
         }
         public void OnMouseEnter()

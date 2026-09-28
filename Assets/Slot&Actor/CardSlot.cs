@@ -33,7 +33,8 @@ namespace CardGame
         {
             if (Owner != GameManager.P.P1) return;
             HighlightBox.color = new(0, 0, 0, 0);
-            GameManager.Instance.highlightedSlot = null;
+            if (GameManager.Instance.highlightedSlot == transform)
+                GameManager.Instance.highlightedSlot = null;
         }
     }
 

@@ -44,7 +44,8 @@ namespace CardGame
         public override void OnMouseExit()
         {
             HighlightRim.color = defaultColor;
-            GameManager.Instance.highlightedActor = null;
+            if (GameManager.Instance.highlightedActor == this)
+                GameManager.Instance.highlightedActor = null;
         }
 
         public override void Damage(int ammount)

@@ -426,6 +426,12 @@ namespace CardGame
             Addressables.LoadSceneAsync("Assets/Scenes/ResultsScene.unity", LoadSceneMode.Single);
         }
 
+        public void ClearHighlights()
+        {
+            highlightedSlot = null;
+            highlightedActor = null;
+        }
+
         private void Update()
         {
             if (cursor != null && !(cursor is Card card && card.IsChoosingBattlecryTarget))
@@ -662,6 +668,7 @@ namespace CardGame
         {
             TakeAction(P.P1, action);//Play it out
             if (online) TakeActionServerRpc(action, new());//Send to opponent
+            ClearHighlights();
         }
 
         /// <summary>
