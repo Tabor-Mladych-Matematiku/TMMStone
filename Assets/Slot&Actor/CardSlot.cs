@@ -40,7 +40,6 @@ namespace CardGame
     public class CardSlot : MonoBehaviour
     {
         public bool Occupied { get => transform.childCount != 0; }
-        public Vector3 Position { get => Position; }
         public GameManager.P Owner { get; set; }
         AudioSource minionDestroyPlayer;
         public int index;
