@@ -1,11 +1,9 @@
 TODO:
-	Priority:
-		Test on Android again and ask Pelc if its good
+		Test on Android
 
 	-------Less Important:
 
-	BattleCry - after placing a battlecry minion attach a fake cardlike thing to the cursor that will onclick either finish the op or cancel it.
-		Will probably have to add a check to not highlight anything when we have something in the cursor.
+	BattleCry - Enbetter UI
 	Spells - Make specific targetting - "Can target minions only, enemy minions only etc."
 	Taunts
 	Export JSON from website
@@ -53,22 +51,10 @@ ServerOnTurn.OnValueChanged seems to happen sequentially first on the client who
 If the endturn/startturn effects kill the other player the caller kicks himself from the game and the ServerOnTurn.OnValueChanged does not get called on the opponent.
 Pokud si zabiješ algedraka vlastním kouzlem tak to nějak blbne - zkontrolovat co se stane s řetězením effektů a pofixovat to
 
-REQUIREMENTS:
-DONE:
-R2: Sound - Music volume, muting etc.
-R5: Plugin - Netcode
-R6: EditorExt: TODO: cardMakyr,displayer
-R7: Using input system - I mean I imported it but its not like its useful
-R8: Using Universal rendering pipeline - ???
-C10: Netcode
-A2 - Adressables
-A16 - cloud services - Lobby,Relay
 
-MAKE SURE THIS STAYS:
-R1: PC and Android
-R3: Running smoothly
-R4: Adaptive screen - kinda
+EditorExt: TODO: cardMakyr,displayer
 
-TODO:
+Adaptive screen - kinda
+
 
 
