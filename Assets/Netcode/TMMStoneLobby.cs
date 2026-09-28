@@ -291,6 +291,12 @@ public class TMMStoneLobby : MonoBehaviour
                 {
                     loadingScreen.SetActive(true);
                     string relaycode = await TMMStoneRelay.Instance.CreateRelay();
+                    if (string.IsNullOrEmpty(relaycode))
+                    {
+                        loadingScreen.SetActive(false);
+                        Debug.LogError("Could not create or start the Relay host.");
+                        return;
+                    }
                     Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(JoinedLobby.Id, new()
                     {
                         Data = new() {
