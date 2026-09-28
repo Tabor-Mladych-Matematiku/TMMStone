@@ -12,7 +12,7 @@ public class AIPlayerEager : AIPlayerBase
         for (int i = 0; i < ownPlayerData.hand.Count; i++)
         {
             Card card = ownPlayerData.hand[i];
-            if (card && GameManager.Instance.IsCardPlayable(card))
+            if (card && GameManager.Instance.IsCardPlayable(card, GameManager.Instance.PlayerOnTurn))
             {
                 Debug.Log("card mana:" + card.mana + " Player mana: " + ownPlayerData.mana);
                 switch (card.cardType)
@@ -26,13 +26,20 @@ public class AIPlayerEager : AIPlayerBase
                         }
                         if (card.Targetted)
                         {
-                            Debug.Log("AIPlayerEager playing targeted minion: " + card.cardname);
-                            GameManager.Instance.OnAIPlayMinion(i, freeIndex, GameManager.Instance.GetRandomTargetForCard(card));
+                            GameManager.CharacterTargetIndex target = GameManager.Instance.GetRandomTargetForCard(card, GameManager.Instance.PlayerOnTurn);
+                            if (!target.HasTarget)
+                            {
+                                Debug.LogWarning("AIPlayerEager found no valid target for: " + card.cardname);
+                                break;
+                            }
+
+                            Debug.Log("AIPlayerEager playing targeted minion: " + card.cardname + " on target: " + target);
+                            GameManager.Instance.OnAIPlayMinion(i, freeIndex, target);
                         }
                         else
                         {
                             Debug.Log("AIPlayerEager playing minion: " + card.cardname);
-                            GameManager.Instance.OnAIPlayMinion(i, freeIndex);
+                            GameManager.Instance.OnAIPlayMinion(i, freeIndex, GameManager.CharacterTargetIndex.None);
                         }
                         i = 0;
                         break;

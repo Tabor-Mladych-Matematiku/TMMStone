@@ -77,6 +77,25 @@ namespace CardGame
 
     public class GameManager : NetworkBehaviour
     {
+        /// <summary>
+        /// A character target encoded from the acting player's point of view.
+        /// The value remains an int on the wire, but this type prevents board-global
+        /// slot indices from being accidentally passed where a player-relative target is expected.
+        /// </summary>
+        public readonly struct CharacterTargetIndex
+        {
+            public const int NoTargetValue = -1;
+
+            public int Value { get; }
+            public bool HasTarget => Value != NoTargetValue;
+
+            private CharacterTargetIndex(int value) => Value = value;
+
+            public static CharacterTargetIndex None => new(NoTargetValue);
+            public static CharacterTargetIndex FromPlayerPerspective(int value) => new(value);
+            public override string ToString() => HasTarget ? Value.ToString() : "None";
+        }
+
         public struct PlayerAction : INetworkSerializable
         {
             public enum ActionType
@@ -91,7 +110,8 @@ namespace CardGame
             private int slot;
             public int Slot { readonly get => slot; private set => slot = value; }
             private int target;
-            public int Target { readonly get => target; private set => target = value; }//Used for targetting various things
+            public int Target { readonly get => target; private set => target = value; }//Serialized as an int for multiplayer.
+            public readonly CharacterTargetIndex CharacterTarget => CharacterTargetIndex.FromPlayerPerspective(target);
             public static PlayerAction PlayCardAction(int card, int target, int slot = -1) => new()
             {
                 Source = card,
@@ -185,7 +205,7 @@ namespace CardGame
             hand = HandSlots[player].Select(s => s.GetComponentInChildren<Card>()).ToList()
         };
 
-        public void OnAIPlayMinion(int cardindex, int minionSlotIndex, int target = -1) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, target, minionSlotIndex));
+        public void OnAIPlayMinion(int cardindex, int minionSlotIndex, CharacterTargetIndex target) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, target.Value, minionSlotIndex));
         public void OnAIMinionAttack(int minionSlotIndex, int actorSlotTarget) => OnAITakeAction(PlayerAction.AttackAction(minionSlotIndex, actorSlotTarget));
         public void OnAICastSpell(int cardindex, int target = -1) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, target));
         public void OnAIPlayField(int cardindex) => OnAITakeAction(PlayerAction.PlayCardAction(cardindex, -1));
@@ -626,15 +646,17 @@ namespace CardGame
         }
 
         /// <summary>
-        /// Mainly for UI purposes
+        /// Check whether card can be played. If the player playing it has enough mana and whether there is at least one target if targetable
         /// </summary>
-        /// <param name="card"></param>
+        /// <param name="card">Which card</param>
+        /// <param name="player">By whom</param>
         /// <returns></returns>
-        public bool IsCardPlayable(Card card)
-        {
-            return GetManaCost(card) <= ManaCounters[P.P1].Mana;
-            //TODO Any eligible targets etc.
-        }
+
+        public bool IsCardPlayable(Card card, P player)
+            =>GetManaCost(card) <= ManaCounters[player].Mana
+               && !(card.Targetted && !GetRandomTargetForCard(card, player).HasTarget);
+
+        
 
 
         /// <summary>
@@ -651,14 +673,9 @@ namespace CardGame
                     ManaCounters[who].Mana -= GetManaCost(card);
                     CardSlot targetSlot = null;
                     GameActor target = null;
-                    int targetInex = action.Target;
-                    //Debug.Log(targetInex);
-                    if (targetInex != -1)
+                    if (action.CharacterTarget.HasTarget)
                     {
-                        if (who == P.P2) targetInex = InvertIndex(targetInex);//Must invert from opponents point of view
-                        var enumerator = AllCharacterSlots.GetEnumerator();
-                        for (int i = 0; i <= targetInex; i++) enumerator.MoveNext();
-                        targetSlot = enumerator.Current;
+                        targetSlot = ResolveCharacterTarget(who, action.CharacterTarget);
                         target = targetSlot.GetComponentInChildren<DamageableActor>();
                     }
                     if (card.cardType == CardType.Minion)
@@ -715,7 +732,7 @@ namespace CardGame
             return math.max(cost, 0);
         }
 
-        int InvertIndex(int index)
+        public int InvertIndex(int index)
         {
 
             if (index < maxMinionSlots) index += maxMinionSlots;
@@ -724,6 +741,23 @@ namespace CardGame
             else index -= maxMinionSlots;
 
             return index;
+        }
+
+        /// <summary>Converts a board-global character slot to the acting player's wire representation.</summary>
+        private CharacterTargetIndex EncodeCharacterTarget(P player, CardSlot slot)
+        {
+            int playerRelativeIndex = player == P.P1 ? slot.index : InvertIndex(slot.index);
+            return CharacterTargetIndex.FromPlayerPerspective(playerRelativeIndex);
+        }
+
+        /// <summary>Resolves a player-relative wire target back to the local board slot.</summary>
+        private CardSlot ResolveCharacterTarget(P player, CharacterTargetIndex target)
+        {
+            int boardIndex = player == P.P1 ? target.Value : InvertIndex(target.Value);
+            if (boardIndex < 0 || boardIndex >= 2 * maxMinionSlots + 2)
+                throw new ArgumentOutOfRangeException(nameof(target), target.Value, "Invalid character target index.");
+
+            return AllCharacterSlots.ElementAt(boardIndex);
         }
 
         public void ToggleTurnOffline()
@@ -853,12 +887,15 @@ namespace CardGame
             AIDeckData = File.ReadAllText(savePaths[OppDeckDropdown.value]);
         }
 
-        public int GetRandomTargetForCard(Card card)
+        public CharacterTargetIndex GetRandomTargetForCard(Card card, P player)
         {
-            var validTargets = from DamageableActor c in AllCharacters
-                               where c != null && card.IsTargetValid(c)
-                               select c.GetComponentInParent<CardSlot>();
-            return validTargets.Any() ? validTargets.ElementAt(UnityEngine.Random.Range(0, validTargets.Count())).index : -1;
+            List<CardSlot> validTargets = (from DamageableActor c in AllCharacters
+                                           where c != null && card.IsTargetValid(c)
+                                           select c.GetComponentInParent<CardSlot>()).ToList();
+            if (validTargets.Count == 0) return CharacterTargetIndex.None;
+
+            CardSlot target = validTargets[UnityEngine.Random.Range(0, validTargets.Count)];
+            return EncodeCharacterTarget(player, target);
         }
     }
 }

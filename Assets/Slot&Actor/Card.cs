@@ -42,6 +42,7 @@ namespace CardGame
 
 
 
+    [RequireComponent(typeof(AudioSource))]
     public class Card : GameActor
     {
         public enum CardType
@@ -214,7 +215,7 @@ namespace CardGame
                 return;
             }
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
-            if (!GameManager.Instance.IsCardPlayable(this)) return;//Possibly with visual indication
+            if (!GameManager.Instance.IsCardPlayable(this,GameManager.P.P1)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
             GetComponent<AudioSource>().Play();
         }
