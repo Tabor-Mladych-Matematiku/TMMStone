@@ -62,6 +62,18 @@ namespace CardGame
             return false;
         }
 
+        /// <summary>
+        /// Removes a card from the grave without destroying it, so it can be moved
+        /// to another zone.
+        /// </summary>
+        public bool Take(Card item)
+        {
+            if (!cards.Remove(item)) return false;
+
+            item.transform.SetParent(null);
+            return true;
+        }
+
         public void RemoveAt(int index)
         {
             cards.RemoveAt(index);

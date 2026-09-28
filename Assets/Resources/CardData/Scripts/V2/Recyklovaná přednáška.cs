@@ -11,18 +11,9 @@ public class Recyklovaná_přednáška : CardScriptBase
     {
         GameManager.P owner = GetOwner(sender);
         Grave grave = GameManager.Instance.graves[owner];
-        GameManager.Instance.AddCardToHand(owner, grave.Where(card => card.cardType == Card.CardType.Spell).Last());
-        /*for (int i = grave.Count-1; i >=0 ; i--)
-        {
-            Card card = grave[i];
-            if (card.cardType == Card.CardType.Spell)
-            {
-                grave.RemoveAt(i);//Does nuffin' rn since the AddCardToHand takes it away anyway
-                GameManager.Instance.AddCardToHand(owner, card);
-                return;
-            }
-        }*/
+        Card spell = grave.LastOrDefault(card => card.cardType == Card.CardType.Spell);
+        if (spell == null || !grave.Take(spell)) return;
 
-
+        GameManager.Instance.AddCardToHand(owner, spell, true);
     }
 }
