@@ -20,7 +20,12 @@ namespace CardEditor
         static string jsonGUID;
         //static Dictionary<int, string[]> scriptpaths;
         List<string> choices;
-        DropdownField cardList;
+        VisualElement cardGrid;
+        ScrollView cardGridScroll;
+        Box cardDetails;
+        Button deselectButton;
+        Toggle unfinishedToggle;
+        Toggle finishedToggle;
         [MenuItem("Window/CardScriptEditor")]
         public static void OpenCardEditor()
         {
@@ -42,34 +47,44 @@ namespace CardEditor
             VisualElement root = rootVisualElement;
             //root.Add(new Label("Behold Card Script editor!"));
 
-            var box = new Box();
-            cardList = new("Cards", new List<string>(), 0);
+            cardDetails = new Box();
+            choices = new List<string>();
             foreach (var item in CardDatabase)
             {
-                cardList.choices.Add(item.Value.name);
+                choices.Add(item.Value.name);
                 nameToId.Add(item.Value.name, item.Key);
             }
-            choices = cardList.choices;
-            cardList.RegisterValueChangedCallback((item) =>
+
+            deselectButton = new(ShowCardGrid)
             {
-                ShowCard(box, item.newValue);
-            });
-            root.Add(cardList);
-            Toggle t = new("Show unfinished only");
-            Toggle t2 = new("Show finished only");
-            t.RegisterValueChangedCallback(value =>
+                text = "Deselect card"
+            };
+            root.Add(deselectButton);
+
+            unfinishedToggle = new Toggle("Show unfinished only");
+            finishedToggle = new Toggle("Show finished only");
+            unfinishedToggle.RegisterValueChangedCallback(value =>
             {
-                if (value.newValue) t2.value = false;
-                if (!t2.value) FilterCardlist(value.newValue);
+                if (value.newValue) finishedToggle.SetValueWithoutNotify(false);
+                RebuildCardGrid();
             });
-            t2.RegisterValueChangedCallback(value =>
+            finishedToggle.RegisterValueChangedCallback(value =>
             {
-                if (value.newValue) t.value = false;
-                if (!t.value) FilterCardlistRev(value.newValue);
+                if (value.newValue) unfinishedToggle.SetValueWithoutNotify(false);
+                RebuildCardGrid();
             });
-            root.Add(t);
-            root.Add(t2);
-            root.Add(box);
+            root.Add(unfinishedToggle);
+            root.Add(finishedToggle);
+
+            cardGridScroll = new ScrollView();
+            cardGridScroll.style.flexGrow = 1;
+            cardGrid = cardGridScroll.contentContainer;
+            cardGrid.style.flexDirection = FlexDirection.Row;
+            cardGrid.style.flexWrap = Wrap.Wrap;
+            root.Add(cardGridScroll);
+            root.Add(cardDetails);
+
+            ShowCardGrid();
             /*var toolbarMenu = new ToolbarMenu() { text = "Menu Text" };
             toolbarMenu.menu.AppendAction("Menu item 1", (a) => { Debug.Log("Menu item 1 clicked"); });
             toolbarMenu.menu.AppendAction("Menu item 2", (a) => { Debug.Log("Menu item 2 clicked"); });
@@ -80,6 +95,64 @@ namespace CardEditor
             //TODO: Store a json of finished cards somewhere - add an option to filter finished cards.
             //Has an option to create/assing script
             //Scripts should end up in some special assembly.
+        }
+
+        private void ShowCardGrid()
+        {
+            deselectButton.style.display = DisplayStyle.None;
+            unfinishedToggle.style.display = DisplayStyle.Flex;
+            finishedToggle.style.display = DisplayStyle.Flex;
+            cardGridScroll.style.display = DisplayStyle.Flex;
+            cardDetails.style.display = DisplayStyle.None;
+            RebuildCardGrid();
+        }
+
+        private void RebuildCardGrid()
+        {
+            cardGrid.Clear();
+            IEnumerable<string> visibleCards = choices;
+            if (unfinishedToggle.value)
+                visibleCards = visibleCards.Where(CheckFilter);
+            else if (finishedToggle.value)
+                visibleCards = visibleCards.Where(card => !CheckFilter(card));
+
+            foreach (string cardName in visibleCards)
+            {
+                CardData.CardData data = CardDatabase[nameToId[cardName]];
+                Texture2D cardImage = Resources.Load<Texture2D>(
+                    "CardData/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + cardName);
+
+                Button cardButton = new(() => SelectCard(cardName));
+                cardButton.tooltip = cardName;
+                cardButton.style.width = 160;
+                cardButton.style.height = 230;
+                cardButton.style.marginLeft = 4;
+                cardButton.style.marginRight = 4;
+                cardButton.style.marginTop = 4;
+                cardButton.style.marginBottom = 4;
+                cardButton.style.flexDirection = FlexDirection.Column;
+
+                Image image = new()
+                {
+                    image = cardImage,
+                    scaleMode = ScaleMode.ScaleToFit
+                };
+                image.style.width = 150;
+                image.style.height = 195;
+                cardButton.Add(image);
+                cardButton.Add(new Label(cardName));
+                cardGrid.Add(cardButton);
+            }
+        }
+
+        private void SelectCard(string cardName)
+        {
+            deselectButton.style.display = DisplayStyle.Flex;
+            unfinishedToggle.style.display = DisplayStyle.None;
+            finishedToggle.style.display = DisplayStyle.None;
+            cardGridScroll.style.display = DisplayStyle.None;
+            cardDetails.style.display = DisplayStyle.Flex;
+            ShowCard(cardDetails, cardName);
         }
 
         private void ShowCard(Box box, string name)
@@ -248,14 +321,6 @@ namespace CardEditor
             return Resources.Load<MonoScript>("CardData/Scripts/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + name);
         }*/
 
-        private void FilterCardlist(bool filter)
-        {
-            cardList.choices = (from choice in choices where !filter || CheckFilter(choice) select choice).ToList();
-        }
-        private void FilterCardlistRev(bool filter)
-        {
-            cardList.choices = (from choice in choices where !filter || !CheckFilter(choice) select choice).ToList();
-        }
         bool CheckFilter(string card)
         {
             if (CardDatabase[nameToId[card]].scripts.Count != 0) return false;
