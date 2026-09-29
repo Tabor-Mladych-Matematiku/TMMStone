@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class AIPlayerEager : AIPlayerBase
 {
+    [SerializeField]
+    private bool enableTargetedSpellsAndAttacks = false;
+
     public override void OnTurnStart()
     {
         base.OnTurnStart();
@@ -50,9 +53,15 @@ public class AIPlayerEager : AIPlayerBase
                             GameManager.Instance.OnAICastSpell(i);
                             i = 0;
                         }
-                        else
+                        else if (enableTargetedSpellsAndAttacks)
                         {
-                            Debug.Log("AIPlayerEager skipping targeted spell: " + card.cardname);
+                            GameManager.CharacterTargetIndex target = GameManager.Instance.GetRandomTargetForCard(card, GameManager.Instance.PlayerOnTurn);
+                            if (target.HasTarget)
+                            {
+                                Debug.Log("AIPlayerEager playing targeted spell: " + card.cardname + " on target: " + target);
+                                GameManager.Instance.OnAICastSpell(i, target.Value);
+                                i = 0;
+                            }
                         }
                         break;
                     case Card.CardType.Field:
@@ -64,6 +73,22 @@ public class AIPlayerEager : AIPlayerBase
                 }
             }
             if (i == 0) ownPlayerData = GameManager.Instance.GetPlayerData(GameManager.Instance.PlayerOnTurn);//Reset if something happened to the hand or mana. It will reset extra time, but at least we stop it from reloading after every card.
+        }
+
+        if (enableTargetedSpellsAndAttacks)
+        {
+            Minion[] attackers = new List<Minion>(GameManager.Instance.GetAllMinionsOwnedBy(GameManager.Instance.PlayerOnTurn)).ToArray();
+            foreach (Minion attacker in attackers)
+            {
+                while (attacker != null && attacker.CanAttack && attacker.Attack > 0)
+                {
+                    GameManager.CharacterTargetIndex target = GameManager.Instance.GetRandomTargetForMinion(attacker, GameManager.Instance.PlayerOnTurn);
+                    if (!target.HasTarget) break;
+
+                    int sourceSlot = attacker.GetComponentInParent<CardSlot>().index % GameManager.maxMinionSlots;
+                    GameManager.Instance.OnAIMinionAttack(sourceSlot, target.Value);
+                }
+            }
         }
 
         Debug.Log("Ending turn.");
