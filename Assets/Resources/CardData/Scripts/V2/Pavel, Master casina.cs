@@ -26,18 +26,22 @@ public class Pavel__Master_casina : CardScriptBase
     //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
-        Minion minion = sender as Minion;
-        Card topcardOpponent = GameManager.Instance.decks[minion.Owner.Other()][0];
-        Card topcardOwn = GameManager.Instance.decks[minion.Owner][0];
+        GameManager.P owner = GetOwner(sender);
+        Deck ownDeck = GameManager.Instance.decks[owner];
+        Deck opponentDeck = GameManager.Instance.decks[owner.Other()];
+        if (ownDeck.Count == 0 || opponentDeck.Count == 0) return;
+
+        Card topcardOpponent = opponentDeck[0];
+        Card topcardOwn = ownDeck[0];
         if (topcardOwn.mana >= topcardOpponent.mana)
         {
             GameManager.Instance.AddCardToHand(
-                minion.Owner,
-                GameManager.Instance.decks[minion.Owner].PopFirst(),
+                owner,
+                ownDeck.PopFirst(),
                 true);
             GameManager.Instance.AddCardToHand(
-                minion.Owner,
-                GameManager.Instance.decks[minion.Owner.Other()].PopFirst(),
+                owner,
+                opponentDeck.PopFirst(),
                 true);
         }
     }
