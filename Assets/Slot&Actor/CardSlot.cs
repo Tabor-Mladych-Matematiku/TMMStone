@@ -67,14 +67,14 @@ namespace CardGame
             return c;
         }
         public Minion GetMinion() => transform.GetComponentInChildren<Minion>();
-        public void RemoveMinion()
+        public void RemoveMinion(Minion minion)
         {
-            RemoveActor();
+            RemoveActor(minion);
             minionDestroyPlayer.Play();
         }
-        public void RemoveActor()
+        public void RemoveActor(TableActor actor = null)
         {
-            TableActor actor = transform.GetComponentInChildren<TableActor>();
+            actor = actor != null ? actor : transform.GetComponentInChildren<TableActor>();
             if (actor!=null){
                 actor.transform.SetParent(null);
                 Destroy(actor.gameObject);

@@ -191,7 +191,7 @@ namespace CardGame
             backupOwner = slot.Owner;
             transform.SetParent(null);
             OnDeath?.Invoke(this, new());
-            slot.RemoveMinion();
+            slot.RemoveMinion(this);
         }
         private int baseAttack;
         public int Attack
