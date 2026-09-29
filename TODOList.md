@@ -12,7 +12,7 @@
 
 - [x] Add BattleCry target selection and cancellation.
 - [x] Define and enforce specific target constraints for every targeted spell, such as friendly minions, enemy minions, or any character.
-- [ ] Implement Taunt.
+- [x] Implement Taunt.
 - [ ] Finish implementing the remaining cards.
 
 ## Decks and card data

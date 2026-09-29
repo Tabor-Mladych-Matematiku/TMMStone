@@ -8,6 +8,11 @@ using UnityEngine.UI;
 
 namespace CardGame
 {
+    public interface ITauntProvider
+    {
+        bool Taunt { get; }
+    }
+
     public abstract class TableActor : GameActor
     {
         [SerializeField] protected Image HighlightRim;
@@ -232,7 +237,26 @@ namespace CardGame
 
         public bool IsTargetValid(TableActor target)
         {
-            return true; //TODO taunt and such
+            if (target == null || target.Owner == Owner) return false;
+
+            foreach (Minion enemy in GameManager.Instance.GetAllMinionsOwnedBy(Owner.Other()))
+            {
+                if (enemy.HasTaunt) return target is Minion targetMinion && targetMinion.HasTaunt;
+            }
+
+            return true;
+        }
+        public bool HasTaunt
+        {
+            get
+            {
+                foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
+                {
+                    if (behaviour is ITauntProvider provider && provider.Taunt) return true;
+                }
+
+                return false;
+            }
         }
         public bool CanAwake()
         {
@@ -251,6 +275,7 @@ namespace CardGame
 
         public void AttackAction(Minion oppminion)
         {
+            if (!IsTargetValid(oppminion)) return;
             OnBeforeAttack?.Invoke(this, new() { target = oppminion });
             CanAttack = false;//TODO windfury shit.
             Damage(oppminion.Attack);
@@ -261,6 +286,7 @@ namespace CardGame
         }
         public void AttackAction(Face face)
         {
+            if (!IsTargetValid(face)) return;
             OnBeforeAttack?.Invoke(this, new() { target = face });
             CanAttack = false;//TODO windfury shit.
             face.Damage(Attack);

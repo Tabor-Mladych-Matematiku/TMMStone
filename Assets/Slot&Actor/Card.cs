@@ -344,6 +344,13 @@ namespace CardGame
         }
 
         public void OnDiscard() => OnDiscardEvent?.Invoke(this, new());
+
+        /// <summary>
+        /// Plays this card without paying mana, choosing a random slot and target
+        /// where applicable. Discards the card when it cannot be played.
+        /// </summary>
+        public void PlayRandomly() => GameManager.Instance.PlayRandomly(this);
+
         private void OnMouseUp()
         {
 

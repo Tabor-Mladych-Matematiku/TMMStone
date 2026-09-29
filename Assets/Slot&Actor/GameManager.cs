@@ -644,6 +644,7 @@ namespace CardGame
         {
             c.OnDiscard();
             CardDiscarded?.Invoke(this, new(c));
+            DetachCard(c, who);
             AddToGrave(c, who);
         }
         public void Fatigue(P who)
@@ -690,6 +691,95 @@ namespace CardGame
 
         public bool ValidTargetExists(Card card)
             => AllCharacters.Any(character => character != null && card.IsTargetValid(character));
+
+        public void PlayRandomly(Card card)
+        {
+            P owner = card.Owner;
+            GameActor target = null;
+
+            if (card.Targetted && card.cardType != Card.CardType.Field)
+            {
+                List<DamageableActor> validTargets = AllCharacters
+                    .Where(character => character != null && card.IsTargetValid(character))
+                    .ToList();
+
+                if (validTargets.Count == 0)
+                {
+                    if (card.cardType == Card.CardType.Spell)
+                    {
+                        Discard(card, owner);
+                        return;
+                    }
+                }
+                else
+                {
+                    target = validTargets[UnityEngine.Random.Range(0, validTargets.Count)];
+                }
+            }
+
+            switch (card.cardType)
+            {
+                case Card.CardType.Minion:
+                    int slotIndex = GetRandomFreeMinionSlot(owner);
+                    if (slotIndex == -1)
+                    {
+                        Discard(card, owner);
+                        return;
+                    }
+
+                    DetachCard(card, owner);
+                    CardSlot minionSlot = minionSlots[owner][slotIndex];
+                    minionSlot.PlaceCard(card);
+                    card.gameObject.SetActive(false);
+                    OnPlayed?.Invoke(card.PlayMinion(minionSlot, target), new(Card.CardType.Minion, target));
+                    break;
+
+                case Card.CardType.Spell:
+                    DetachCard(card, owner);
+                    card.CastSpell(target);
+                    AddToGrave(card, owner);
+                    card.standardScale = Vector3.one;
+                    OnPlayed?.Invoke(card, new(Card.CardType.Spell, target));
+                    break;
+
+                case Card.CardType.Field:
+                    DetachCard(card, owner);
+                    FieldSlot.ClearField();
+                    FieldSlot.Initialize(owner, FieldSlot.index);
+                    FieldSlot.PlaceCard(card);
+                    card.gameObject.SetActive(false);
+                    OnPlayed?.Invoke(card.PlayField(), new(Card.CardType.Field, null));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(card.cardType), card.cardType, "Unknown card type.");
+            }
+        }
+
+        private static void DetachCard(Card card, P owner)
+        {
+            card.backupOwner = owner;
+
+            if (card.transform.parent != null && card.transform.parent.TryGetComponent(out CardSlot slot))
+            {
+                slot.PopCard();
+                return;
+            }
+
+            if (card.transform.parent != null && card.transform.parent.TryGetComponent(out Deck deck))
+            {
+                deck.Remove(card);
+                return;
+            }
+
+            if (card.transform.parent != null && card.transform.parent.TryGetComponent(out Grave grave))
+            {
+                grave.Take(card);
+                return;
+            }
+
+            card.transform.SetParent(null);
+        }
 
         
 

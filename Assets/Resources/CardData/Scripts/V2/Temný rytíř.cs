@@ -4,9 +4,9 @@ using UnityEngine;
 using CardGame;
 using System;
 
-public class #NAME# : #BASE_CLASS#
+public class Temný_rytíř : CardScriptBase
 {
-#TARGETED_SECTION#
+
 
     //Minion events
     //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
@@ -18,7 +18,12 @@ public class #NAME# : #BASE_CLASS#
     //protected override void OnTableActorStartTurn(object sender, GameActor.TurnEventArgs e) { }
     //protected override void OnTableActorEndOwnTurn(object sender, GameActor.TurnEventArgs e) { }
     //protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e) { }
-    //protected override void OnDeath(object sender, EventArgs e) { }
+    protected override void OnDeath(object sender, EventArgs e)
+    {
+        Minion minion = sender as Minion;
+        Card topcard = GameManager.Instance.decks[minion.Owner.Other()].PopFirst();
+        if (topcard != null)topcard.PlayRandomly();
+    }
 
     //Card events
     //protected override void OnDiscard(object sender, EventArgs e){}
@@ -33,7 +38,7 @@ public class #NAME# : #BASE_CLASS#
     //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
 
     //States
-    //public override bool Taunt => true;
+    public override bool Taunt => true;
     //protected override Func<Card, int> ManaCostModifier => (card) => 0;
 
 }

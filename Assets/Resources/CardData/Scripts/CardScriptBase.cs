@@ -23,9 +23,10 @@ public abstract class TargetableCardScriptBase : CardScriptBase
     protected abstract bool TargetValidate(TableActor target);
 
 }
-public abstract class CardScriptBase : MonoBehaviour
+public abstract class CardScriptBase : MonoBehaviour, ITauntProvider
 {
     //TODO: stop implemented methods from being virtual. Add separete nonvirtual ones that run virtual ones at the end
+    public virtual bool Taunt => false;
     private int spelldamage = 0;
     /// <summary>
     /// Returns an additive modifier for this card's mana cost. This does not set
