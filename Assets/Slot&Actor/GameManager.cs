@@ -1165,12 +1165,23 @@ namespace CardGame
             return EncodeCharacterTarget(player, target);
         }
 
+        public CharacterTargetIndex GetRandomTargetForMinion(Minion minion, P player)
+        {
+            List<CardSlot> validTargets = (from DamageableActor character in AllCharacters
+                                           where character != null && minion.IsTargetValid(character)
+                                           select character.GetComponentInParent<CardSlot>()).ToList();
+            if (validTargets.Count == 0) return CharacterTargetIndex.None;
+
+            CardSlot target = validTargets[UnityEngine.Random.Range(0, validTargets.Count)];
+            return EncodeCharacterTarget(player, target);
+        }
+
         public override void OnDestroy()
         {
             if (targetingArrow != null) Destroy(targetingArrow);
             if (targetingArrowMaterial != null) Destroy(targetingArrowMaterial);
             if (cardPrefabHandle.IsValid()) Addressables.Release(cardPrefabHandle);
-            Card.ReleaseSharedAssets();
+            ReleaseSharedAssets();
 
             if (Instance == this) Instance = null;
             base.OnDestroy();
