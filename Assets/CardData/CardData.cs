@@ -57,7 +57,7 @@ namespace CardData
             }
         }
         public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
-            {"Z�klad", "V2"},
+            {"Základ", "V2"},
             {"PTMM","GULAG" }
         };
         public static List<object> JSONToList(string json)
@@ -79,7 +79,7 @@ namespace CardData
             foreach (var (item, stats) in from Dictionary<string, object> item in extraloadList
                                           select (item, ((string)item["Staty"]).Split("/")))
             {
-                extraData.Add((string)item["N�zev"], new() { { "Attack", stats[0] }, { "Health", stats[1] } });
+                extraData.Add((string)item["Název"], new() { { "Attack", stats[0] }, { "Health", stats[1] } });
             }
 
             return extraData;
