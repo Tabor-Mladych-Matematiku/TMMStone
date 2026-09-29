@@ -26,7 +26,7 @@ public class Jiříkova_kniha_vědění : CardScriptBase
     //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
-        foreach (Minion _ in GameManager.Instance.AllMinions)GameManager.Instance.AddCardToHandByID(GameManager.Instance.PlayerOnTurn,FunfactID);
+        foreach (Minion _ in GameManager.Instance.AllMinions)GameManager.Instance.AddCardToHandByID(GetOwner(sender),FunfactID);
     }
 
     //Other card events
