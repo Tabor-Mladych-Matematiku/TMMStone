@@ -60,7 +60,7 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
     {
         card.OnSelfPlayed += (sender, args) => OnSelfPlayed(sender, new(args.cardType));//OnSelfPlayed is called when the card is played from hand and triggers before OnPlayed
     }
-    public void Start()
+    public void Awake()
     {
         GameManager.Instance.OnPlayed += OnPlayed;
         GameManager.Instance.OnSummoned += _OnMinionSummoned;
