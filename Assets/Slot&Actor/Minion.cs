@@ -84,6 +84,7 @@ namespace CardGame
         private static readonly Color AttackReadyColor = new(0f, 1f, 0f, 1f);
         private int h = 0;
         private int a = 0;
+        private bool isDying;
         private Image attackReadyOutline;
         [SerializeField] TextMeshProUGUI AttackLabel;
         [SerializeField] TextMeshProUGUI HealthLabel;
@@ -181,8 +182,16 @@ namespace CardGame
         }
         public void Death()
         {
+            if (isDying) return;
+
+            CardSlot slot = GetComponentInParent<CardSlot>();
+            if (slot == null) return;
+
+            isDying = true;
+            backupOwner = slot.Owner;
+            transform.SetParent(null);
             OnDeath?.Invoke(this, new());
-            GetComponentInParent<CardSlot>().RemoveMinion();
+            slot.RemoveMinion();
         }
         private int baseAttack;
         public int Attack
