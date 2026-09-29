@@ -728,6 +728,7 @@ namespace CardGame
                 if (i == 10)
                 {
                     if (discardExcesive) Discard(c, who);
+                    else Destroy(c.gameObject);
                     break;
                 }
                 if (!HandSlots[who][i].Occupied)

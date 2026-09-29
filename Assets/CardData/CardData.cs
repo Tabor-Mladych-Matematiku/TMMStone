@@ -4,7 +4,6 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using System.Linq;
-using UnityEditor;
 using System.Text;
 
 namespace CardData
@@ -58,7 +57,7 @@ namespace CardData
             }
         }
         public readonly static Dictionary<string, string> expansionMapping = new() {//Maps JSON name to folder name
-            {"Základ", "V2"},
+            {"Zï¿½klad", "V2"},
             {"PTMM","GULAG" }
         };
         public static List<object> JSONToList(string json)
@@ -80,7 +79,7 @@ namespace CardData
             foreach (var (item, stats) in from Dictionary<string, object> item in extraloadList
                                           select (item, ((string)item["Staty"]).Split("/")))
             {
-                extraData.Add((string)item["Název"], new() { { "Attack", stats[0] }, { "Health", stats[1] } });
+                extraData.Add((string)item["Nï¿½zev"], new() { { "Attack", stats[0] }, { "Health", stats[1] } });
             }
 
             return extraData;
