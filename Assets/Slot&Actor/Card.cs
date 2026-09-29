@@ -320,13 +320,18 @@ namespace CardGame
 
             expansion = "Tokeny";
             if (CDJsonUtils.expansionMapping.ContainsKey(data.expansion)) expansion = CDJsonUtils.expansionMapping[data.expansion];
-            Sprite sprite = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardname);
-            if (sprite != null)
+            CardArt.Load(CardArt.FaceAddress(expansion, cardname), sprite =>
             {
+                if (this == null || sprite == null) return;
                 face = sprite;
-                sr.sprite = face;
-            }
-            cardBack = Resources.Load<Sprite>("CardData/card-back");
+                if (!Hidden) sr.sprite = face;
+            });
+            CardArt.Load("card-face/card-back", sprite =>
+            {
+                if (this == null || sprite == null) return;
+                cardBack = sprite;
+                if (Hidden) sr.sprite = cardBack;
+            });
 
             if (data.scripts != null)
             {

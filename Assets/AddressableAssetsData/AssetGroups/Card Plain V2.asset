@@ -1,0 +1,785 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Card Plain V2
+  m_EditorClassIdentifier: 
+  m_GroupName: Card Plain V2
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 07630fbaa44f0e34f92aae11cd042895
+  m_SerializeEntries:
+  - m_GUID: 0315e4f1afd422743bc7c303c8b68324
+    m_Address: "card-plain/V2/Lv\xED kr\xE1lovna"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 044a9abbdd1d9a741b482b4391f7f6db
+    m_Address: "card-plain/V2/Anihilace pozitron\u016F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 066cee2cc9290ce408b0cbf67fd66c80
+    m_Address: "card-plain/V2/Finan\u010Dn\xED podvod"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 07686ff913d3d37418896478990c6cdd
+    m_Address: "card-plain/V2/N\xE1\u0161lapn\xE1 mina"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b74f112826ba5045ac82996222e4be6
+    m_Address: "card-plain/V2/Matemagick\xE1 ar\xE9na"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0bb8c15788ff137478ed90a959e1766d
+    m_Address: "card-plain/V2/Bou\u0159\u0148\xE1k"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0c54cfc6e5c01ce40862454cac6ea947
+    m_Address: "card-plain/V2/\xDAt\u011Bk experimentu"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0f8c2879692828a4294f998a8eb021cb
+    m_Address: "card-plain/V2/Drakfyz\xE1k"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 10da2eb0a0695dd499976ae907740a93
+    m_Address: "card-plain/V2/Jm\xE9no pole"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11138c6292888834587c8247eb396e0b
+    m_Address: "card-plain/V2/Ambici\xF3zn\xED vyn\xE1lezce"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11149b3cb7cc8ca429542c53fa29a31d
+    m_Address: "card-plain/V2/Ji\u0159\xEDkova p\u0159edn\xE1\u0161ka"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 144fb4e2a90b9e4458b3da5af621296b
+    m_Address: card-plain/V2/Oprava na koleni
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14bbb94fc0362ec4ea13c7ca8e2513b1
+    m_Address: "card-plain/V2/Jana Hanu\u0161ov\xE1, Pan\xED ve\u010Derky"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 18b76bcca56ec0245989118d28db8eb0
+    m_Address: "card-plain/V2/Jm\xE9no jednotky"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 190238fc732992548ac9462a4098194d
+    m_Address: "card-plain/V2/Michal\u016Fv matematick\xFD model"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 195cfb3ae29476e45af491c6992a92cd
+    m_Address: card-plain/V2/Honzovo auto
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1a8348310ba04b84c9d481a8cec534b8
+    m_Address: "card-plain/V2/F\xE9nix"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b2c791b743987141bc3c1382f32a26e
+    m_Address: "card-plain/V2/Prohozen\xED prom\u011Bnn\xFDch"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c355d428ce22a942ac5a6c9fd33a162
+    m_Address: "card-plain/V2/Zaokrouhlovac\xED chyba"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cc20ed476d37e543bbd435e9fcb1354
+    m_Address: "card-plain/V2/Elis, Nej\u0161\u0165astn\u011Bj\u0161\xED statistik"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cd12cae58ce0b0449cb5bf352181fbc
+    m_Address: "card-plain/V2/\u0160koln\xED garda"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1da58393e92172e459d29f6b8985a7ab
+    m_Address: "card-plain/V2/Adam, Bastl\xED\u0159"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e3a004ddd475194eba0a668634fa803
+    m_Address: "card-plain/V2/Nerozhodn\xFD prodejce"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f3004435f60c944cb4c478b1016dfe3
+    m_Address: "card-plain/V2/Legu\xE1n"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20c49705f7e1a81498661aad8d7df3ec
+    m_Address: "card-plain/V2/P\xED blast"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20e789c66d8cf8a41a2b3a8c419a1518
+    m_Address: "card-plain/V2/Velk\xE9 kladivo"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21ff3503e4539024a9cabb42256b84b6
+    m_Address: "card-plain/V2/Petr, T\u011Blocvik\xE1\u0159"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 240d1192d277697429e45fc552636f9c
+    m_Address: card-plain/V2/Obr z karet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 28f82c75da5aa73438c5516b34744fb5
+    m_Address: "card-plain/V2/Tom\xEDk, Zeusus"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2a156bc1a6752d6449adbcd5440b7101
+    m_Address: "card-plain/V2/Po\u017E\xEDra\u010D \u0161rotu"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2a4d5b6c82ed1d44a989656d99976d93
+    m_Address: "card-plain/V2/Ji\u0159\xEDk, Gener\xE1tor funfact\u016F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b3486b3f66d991478e5930bf9d2912e
+    m_Address: "card-plain/V2/Recyklovan\xE1 p\u0159edn\xE1\u0161ka"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b54236011f30b74ca9ef91cf85cb478
+    m_Address: "card-plain/V2/Genetick\xE1 modifikace"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2cea0964abb28bd4d8087662f5ccc2d0
+    m_Address: "card-plain/V2/Zaveden\xED o(n) notace"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 342ea7791725ddc43a13eb05c2576a84
+    m_Address: "card-plain/V2/Duch matematik\u016Fv"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 35b65c7727e339147a34dd1ad518b60c
+    m_Address: card-plain/V2/Standardizace
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3607b06b2731f4d42ac122c72ec436a8
+    m_Address: "card-plain/V2/U\u010Ditel v laborato\u0159i"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3950e1916c3695448a2f3eba4f97befa
+    m_Address: "card-plain/V2/Zpir\xE1t\u011Bn\xFD software"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 397939d34d849784a8e712d6a8c2b236
+    m_Address: "card-plain/V2/David, Neohro\u017Een\xFD dobrodruh"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3bc9a7f95ee7c8845bec0e35bcfc55f5
+    m_Address: card-plain/V2/Upgrade
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3c562371a0f72494a992dda76721cac9
+    m_Address: "card-plain/V2/Farm\xE1\u0159sk\xFD robot"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3cf006b1efbd95f4db6565c5f8c37b74
+    m_Address: "card-plain/V2/Kilometrov\xE9 kole\u010Dko"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 418b3c0c9bdc1654bbf766814ba71b84
+    m_Address: "card-plain/V2/P\u0159etaktov\xE1n\xED"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 42144c2811ec60245866b39ebf1e3318
+    m_Address: "card-plain/V2/Poledn\xED klid"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 47e4f4f84c614b940aa745b3aa92b5e8
+    m_Address: card-plain/V2/Implementace v C
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48297763c4c444f4a88398e7342c97df
+    m_Address: "card-plain/V2/Tom\xEDk, Dobyvatel vrchol\u016F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 49814dac8cd38e54abae839b394a69fb
+    m_Address: "card-plain/V2/\u201CBezchybn\xE1\u201D optimalizace"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4bd6a0bc18e32d14aaf70800ec2f3b98
+    m_Address: card-plain/V2/Okamie
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ca882c1b9cb6a64b8d3cfcc8087f854
+    m_Address: "card-plain/V2/Pavel, Arci\u017Eid"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e7857d8f58cbf24a909ddfb033d94b9
+    m_Address: "card-plain/V2/\u010Carobot 2000"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f22d6dfa6cba0d4488bf99964a6bdba
+    m_Address: card-plain/V2/Student FIT
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5243ca6dd45b38d4d9e6d1dfbcb8a303
+    m_Address: "card-plain/V2/P\u0159edn\xE1\u0161ka z anal\xFDzy"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 52d03c8c691bc0f4e9c7a1ab55f79937
+    m_Address: card-plain/V2/Ezomatematik
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 538780fbe6cd6484687fd1cf30b66dca
+    m_Address: "card-plain/V2/Pochybn\xFD web"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5445912f55637d14ea02b7b2fc51cc45
+    m_Address: "card-plain/V2/Schr\xF6dingerova ko\u010Dka"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 56ecdf8025d795548a36768d7e1abe7a
+    m_Address: card-plain/V2/Profesor matematiky
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57a5e8b595a98094cbbf800436232218
+    m_Address: "card-plain/V2/Petr, Sportovn\xED vedouc\xED"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57a82ab82df8bc14c80f2de4655012a2
+    m_Address: "card-plain/V2/Font\xE1na \u017Eivota"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59277fe891d0a1142b9c88f350ccab42
+    m_Address: "card-plain/V2/Temn\xFD ryt\xED\u0159"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ac51a36c8a8eba4e89a39b3c078c36f
+    m_Address: "card-plain/V2/S\xEDma, Architekt tance"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c1ec7ede4be9474194d411201649f73
+    m_Address: "card-plain/V2/Atom\xE1g"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5df139701d11ef64f867564c60cf92a8
+    m_Address: "card-plain/V2/Pololetn\xED test"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60e9e7093a254d640af15721bf8cd531
+    m_Address: "card-plain/V2/Leni\u010Dka, Matka p\u0159\xEDrody"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 610c823439e4f044c9d5b4f4bf52307e
+    m_Address: "card-plain/V2/Kamar\xE1d ze Strahova"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 636f177423c703440ae72aae46818936
+    m_Address: "card-plain/V2/Trojsk\xFD k\u016F\u0148"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 64829f72cf425cd43b7c0680743803fc
+    m_Address: "card-plain/V2/Spla\u0161en\xE9 st\xE1do"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 654b4dae9657beb4cb921e0fee2d1f29
+    m_Address: "card-plain/V2/Filip, Mistr sout\u011B\u017E\xED"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 680c8f7612b26064d818127caec8b33f
+    m_Address: card-plain/V2/Implementace v Java
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6977a121e10b3fc478c602f9b27165ee
+    m_Address: "card-plain/V2/Troll ze sklepen\xED"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 697a344c50662f74593fc59f5af81130
+    m_Address: "card-plain/V2/Pl\xE1n cesty na Bezd\u011Bz"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6ce526ae2cae4dc48a57940707cbdf36
+    m_Address: card-plain/V2/Kladivo z houby
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6d3012d38f0250547a8635f6fbd7f495
+    m_Address: card-plain/V2/Kofola
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6d47049c617e60049a324142f8b7a0a7
+    m_Address: "card-plain/V2/Kyti\u010Dka"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7191dc43a1e40014cae19b0c528a9916
+    m_Address: "card-plain/V2/Pep\u010Da, Ledov\xE1 \u010Darod\u011Bjnice"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 71ec5a78086c68844911b1e83d873f32
+    m_Address: "card-plain/V2/Platonsk\xE9 t\u011Bleso"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7307ea1c8a32ba24b87fd051beb053d8
+    m_Address: "card-plain/V2/Vzd\xE1len\xE1 podpora"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 76803c8dee96c494aa16325a22251a80
+    m_Address: "card-plain/V2/Sab\u010Da, Dvacetist\u011Bn"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a0626fe77fbcf44cb29ea39b82f137e
+    m_Address: "card-plain/V2/Zl\xFD profesor"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7bf539f6122bc864c80319f6a0b8cba1
+    m_Address: "card-plain/V2/Programov\xE1 dokumentace"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c24fbaa55faeaf4aa11c6a9e09f8e71
+    m_Address: "card-plain/V2/Klonovac\xED p\u0159\xEDstroj"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c837082de56be94cb00e32ba8070a67
+    m_Address: "card-plain/V2/EVIL Ji\u0159\xEDk, P\xE1n chaosu"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e9a81cc3e4ceb44ebf349ae7dd17940
+    m_Address: "card-plain/V2/St\xE1\u017Eista"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8150ba8cb3f7c6045b03fad8d6efc6d7
+    m_Address: "card-plain/V2/Jitka, Dvan\xE1ctist\u011Bn"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 82c0ff0c84874aa4abc948ce3faa91a9
+    m_Address: "card-plain/V2/Filip, P\u0159ina\u0161e\u010D m\xEDru"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 847667e02c053aa46b87bc0c1a254897
+    m_Address: "card-plain/V2/Adam\u016Fv v\xFDbu\u0161n\xFD pt\xE1k"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8535ec8053a23ac4ebd5b6c5ffb94c91
+    m_Address: "card-plain/V2/Zanedb\xE1n\xED odporu vzduchu"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8567a75599b34fb4c92c1eda0e8c0356
+    m_Address: "card-plain/V2/Kelnatec \u0161edoh\u0159bet\xFD"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f74662fab0fa4f498f2e22b9c9d1276
+    m_Address: "card-plain/V2/Ji\u0159\xEDkova kniha v\u011Bd\u011Bn\xED"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 903142816ab0b7c42b903cbd3ae87f63
+    m_Address: card-plain/V2/Teorie chaosu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90beecb0789efe34eb28a8209c292750
+    m_Address: card-plain/V2/Studium skript
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 92dce6da0f5e4bc4da1ea6c16afce9c7
+    m_Address: "card-plain/V2/\u0158\xE1dn\xFD str\xE1vn\xEDk"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 93604c51ba729354daa1966a25eeba2c
+    m_Address: card-plain/V2/Deprese z nepodstatnosti
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 93e402a5a7410df4294670269e46e1f8
+    m_Address: "card-plain/V2/Akademick\xE1 spolupr\xE1ce"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 942a7bc479add2044be7417d985b1658
+    m_Address: "card-plain/V2/Jana Z., D\xE1rkyn\u011B \u017Eivota"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 956aec52e7cf80749bb45d7dc6a9a433
+    m_Address: "card-plain/V2/P\u011Bt-blast"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99b298bdf6742464386cceec8c40a178
+    m_Address: "card-plain/V2/Velmi otravn\xFD robot"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9aa537b6bb9bddf4f8ab1d3944a022c2
+    m_Address: "card-plain/V2/Ji\u0159\xEDk\u016Fv bezedn\xFD hrnek"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b1b316216b33aa43a506bd4a5b38e9e
+    m_Address: "card-plain/V2/\u0160\xED\u0159en\xED ransomware"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b3b4ed5059a39d4380c8709819868f2
+    m_Address: "card-plain/V2/David, Spr\xE1vce syst\xE9mu"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c61b6bb2e6d44a44900cb991761d23f
+    m_Address: "card-plain/V2/Elektrik\xE1\u0159 z \u010CVUTu"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9df523e46458fcb4a9cf02bbea1f0847
+    m_Address: "card-plain/V2/Lokomotiva Mat\u011Bj"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9dfb410f521b2c1468aa5fdeacb82dd4
+    m_Address: card-plain/V2/Honza, Geodet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a171f6c3c100a60489091c17ced3bf92
+    m_Address: "card-plain/V2/Aritmetick\xE1 destrukce"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a32b506e41072bf41a5f0e22fa36b65d
+    m_Address: "card-plain/V2/Zaokrouhlen\xED"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a658e7a3f1f13ed4994a782c5b36bb6c
+    m_Address: "card-plain/V2/Vyhozen\xED z prv\xE1ku"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a981f1de680813e4f9399a66f747fd37
+    m_Address: card-plain/V2/Otrok Matfyzu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: abc34cc918cd79f4aabec7cd2001e95d
+    m_Address: "card-plain/V2/Extra p\xE1r rukou"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: abf84177fcd0608409cc4b84ab1fde65
+    m_Address: "card-plain/V2/Manifestace n\xE1hody"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ac3648524e780f842a8c6d2ff732ce8e
+    m_Address: "card-plain/V2/Pofid\xE9rn\xED bank\xE9\u0159"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad84dd953a483674eb9b2d1cf367066d
+    m_Address: "card-plain/V2/V\xE9sa, P\xE1n low level jazyk\u016F"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af074bd59181e2b4181e80db57ead6d6
+    m_Address: "card-plain/V2/Grantov\xE1 komise"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af33ef83e2234e54e90d8160a4d81e35
+    m_Address: "card-plain/V2/Sn\xED\u017Een\xE1 gravitace"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af3c81561b2392144ba3f29bbc419369
+    m_Address: "card-plain/V2/Pochybn\xFD investi\u010Dn\xED poradce"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0e43c143f0de5e49aa21d192210a879
+    m_Address: "card-plain/V2/Povst\xE1n\xED AI"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b28f24f717eab9646b1c03d366a7c0e5
+    m_Address: "card-plain/V2/Michal, Hlavn\xED matem\xE1g"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b415c47ba2d7f1749b6d06f0895b76f3
+    m_Address: 'card-plain/V2/Implementace v Pythonu '
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4ac170795d303c438cb1b521fb12bf5
+    m_Address: card-plain/V2/Algedrak
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5db4f2a3b36aec45ba972dc888c498c
+    m_Address: card-plain/V2/Bystrozor
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b64f4861ddd228f4fa1e90c17725060c
+    m_Address: "card-plain/V2/\u017Dlut\xE1 helma"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b76ed2b9d10284b41a5b55db989ad913
+    m_Address: card-plain/V2/Rekurze
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7cffe9037ddb5f46a85e9915fd83ef8
+    m_Address: "card-plain/V2/Elda, Zakl\xEDna\u010D rostlin"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be2662807a6007541a15b4b3341ff46d
+    m_Address: "card-plain/V2/Naka\u017Een\xE1 laboratorn\xED my\u0161"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c17de67fd07c4bb4184ea8fc11eac6a7
+    m_Address: "card-plain/V2/Obvodov\xFD zkrat"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c275880ef2fe7e343be75e92cf834bac
+    m_Address: "card-plain/V2/Dobit\xED baterie"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc074f1107ccdbf499129881aa91f6b8
+    m_Address: card-plain/V2/Visual learner
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3e9df91e4fb31d49a7df24b65fd7c14
+    m_Address: "card-plain/V2/Honza, P\u0159edseda spolku"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d54ffd8eaa7b3874691dfd6cc2b86d8e
+    m_Address: "card-plain/V2/Sv. Jana Hanu\u0161ov\xE1, Bohyn\u011B matematiky"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d66543d5a1bf29e43a1c2b5291f60ca4
+    m_Address: "card-plain/V2/Mur\xE9na"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d665d61510de3a547b88aa9b2b257194
+    m_Address: "card-plain/V2/Test prvo\u010D\xEDselnosti"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d982dcdfa55b11348b8d44e93d902fbd
+    m_Address: "card-plain/V2/Lekce pravd\u011Bpodobnosti"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da222f322f5a43a4a8f5d99b2d77877e
+    m_Address: "card-plain/V2/Zkou\u0161kov\xE9 obdob\xED"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db3f00bb2d05a7e43a655d955221b70e
+    m_Address: card-plain/V2/Ransomware
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc62a204b0b34f74a89f4c719c182b1f
+    m_Address: card-plain/V2/Bod
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dcae1bf2c1582414f8da208f714998e5
+    m_Address: "card-plain/V2/Testr\xE1l"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: def17ffaf4508cb419cd46f421684e7f
+    m_Address: "card-plain/V2/DDoS \xFAtok"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e09de800fbb6e10489833834166f86ee
+    m_Address: card-plain/V2/Odmocnina z g-blast
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e440f5f2a64bd0642ad38afe71de7c46
+    m_Address: "card-plain/V2/Bezradn\xFD student"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e83f49b280f479147b43290f630aff55
+    m_Address: "card-plain/V2/Matem\xE1g\u016Fv u\u010De\u0148"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e8e919012a0801d4e8e7178c82c6eba0
+    m_Address: card-plain/V2/Implementace v Pythonu
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ed04b7b2a46bde046b78073a8dc07e56
+    m_Address: "card-plain/V2/R\u016Fstov\xE9 hormony"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee05ea0707751eb49b1f595a0ae8602c
+    m_Address: "card-plain/V2/Gravita\u010Dn\xED r\xE1na"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f28e21c445f174a489760ec6948d21d1
+    m_Address: "card-plain/V2/Jm\xE9no kouzla"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2b62b31babef4f4b9b02f68a1f50c3e
+    m_Address: "card-plain/V2/T\xFDnka, Ocelov\xE1 d\xE1ma"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5ca33216341ed142867b91a63b1d5a8
+    m_Address: "card-plain/V2/Opakov\xE1n\xED zkou\u0161ky"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f88f4abccd4e3ae478bebf9ec13678ff
+    m_Address: "card-plain/V2/Aktivn\xED student"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: faf752dcd1a401f46bb2b225851fe025
+    m_Address: "card-plain/V2/Rozebr\xE1n\xED na zdrojov\xFD k\xF3d"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb259fed1e59a3841957fb338607d1bd
+    m_Address: "card-plain/V2/M\xED\u0161a, Mistr k\xF3du"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb73abe387a4b9e4e9687d1ccff50b65
+    m_Address: "card-plain/V2/P\u0159\xEDm\xE1 \xFAm\u011Bra"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb7cc393daae98d4687254f0beb34b05
+    m_Address: "card-plain/V2/Vyhled\xE1vac\xED automat"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb835ae905f2fe24cbaccf4c3552c9c7
+    m_Address: card-plain/V2/Jana Z., Zdravotnice
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd79ef7477c2ae64aa5bbe48c2a343b6
+    m_Address: "card-plain/V2/Havran matfyz\xE1ck\xFD"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff6ce4bbf0e9fed42a3dd0f3afdf9476
+    m_Address: card-plain/V2/Yetti
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1740b00bacd1fe441b39de3739611fb2, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: e506b34c3030f9c4a94a0a216ee46929, type: 2}
+    - {fileID: 11400000, guid: 652fa0216202fef4f9848be08b6a1ffb, type: 2}

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using CardGame;
 
 [RequireComponent(typeof(Image))]
 public class CardDeckbuilderListing : MonoBehaviour
@@ -19,7 +20,11 @@ public class CardDeckbuilderListing : MonoBehaviour
         if (CDJsonUtils.expansionMapping.ContainsKey(cardData.expansion))
         {
             string expansion = CDJsonUtils.expansionMapping[cardData.expansion];
-            GetComponent<Image>().sprite = Resources.Load<Sprite>("CardData/" + expansion + "/" + cardData.name);
+            Image image = GetComponent<Image>();
+            CardArt.Load(CardArt.FaceAddress(expansion, cardData.name), sprite =>
+            {
+                if (this != null && sprite != null) image.sprite = sprite;
+            });
         }
         return this;
     }

@@ -54,8 +54,10 @@ namespace CardGame
         public virtual void Initialize(Card c)
         {
             original = c;
-            Sprite sprite = Resources.Load<Sprite>("CardPlainImages/" + c.expansion + "/" + c.cardname);
-            if (sprite != null) graphic.sprite = sprite;
+            CardArt.Load(CardArt.PlainAddress(c.expansion, c.cardname), sprite =>
+            {
+                if (this != null && sprite != null) graphic.sprite = sprite;
+            });
             expansion = c.expansion;
             cardTag = c.cardTag;
         }

@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.UI;
+using CardGame;
 
 public class DeckBuilderDeck : MonoBehaviour
 {
@@ -43,7 +44,11 @@ public class DeckBuilderDeck : MonoBehaviour
         CardInDeckUI instance = Instantiate(listing, transform);
         instance.GetComponentInChildren<TextMeshProUGUI>().text = cardData.name;
         string expansion = CDJsonUtils.expansionMapping[cardData.expansion];
-        instance.GetComponent<Image>().sprite = Resources.Load<Sprite>("CardPlainImages/" + expansion + "/" + cardData.name);
+        Image image = instance.GetComponent<Image>();
+        CardArt.Load(CardArt.PlainAddress(expansion, cardData.name), sprite =>
+        {
+            if (instance != null && sprite != null) image.sprite = sprite;
+        });
         instance.GetComponent<Button>().onClick.AddListener(() => {
             RemoveCard(cardID);
             Destroy(instance.gameObject);
