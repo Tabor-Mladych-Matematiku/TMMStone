@@ -31,7 +31,18 @@ public class HPCounter : CardSlot
     public event EventHandler Healed;
     public void Heal(int ammount)
     {
-        int newHealth = math.min(Health + ammount, maxHP);
+        int newHealth;
+        try
+        {
+            checked
+            {
+                newHealth = math.min(Health + ammount, maxHP);
+            }
+        }
+        catch (OverflowException)
+        {
+            newHealth = maxHP;
+        }
         if(newHealth>Health) Healed?.Invoke(this, new());
         Health = newHealth;
     }
