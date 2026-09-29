@@ -755,7 +755,7 @@ namespace CardGame
             }
         }
 
-        private int GetManaCost(Card card)
+        public int GetManaCost(Card card)
         {
             int cost = card.mana;
             foreach (var item in AllActors)

@@ -59,6 +59,11 @@ namespace CardGame
         public string cardname;
         public CardType cardType;
         Image sr;
+        GameObject manaBadge;
+        TextMeshProUGUI manaCostLabel;
+        GameObject previewManaBadge;
+        TextMeshProUGUI previewManaCostLabel;
+        bool previewHighlighted;
         Sprite face;
         public Sprite cardBack {  get; private set; }
         bool hidden;
@@ -117,12 +122,149 @@ namespace CardGame
         }
         private void Update()
         {
+            UpdateManaBadge();
             if (GameManager.Instance.cursor != this) return;
             if (!SafeZone.InSafeZone && !Targetted && cardType==CardType.Spell)
             {
                 sr.color = new(0.5f, 1, 0.5f, 1);
             }
             else sr.color = Color.white;
+        }
+        private void UpdateManaBadge()
+        {
+            bool showMana = !Hidden
+                && transform.parent != null
+                && transform.parent.TryGetComponent(out HandSlot _)
+                && GameManager.Instance != null;
+
+            if (!showMana)
+            {
+                if (manaBadge != null) manaBadge.SetActive(false);
+                return;
+            }
+
+            EnsureManaBadge();
+            if (manaBadge == null) return;
+
+            manaBadge.SetActive(true);
+            int currentManaCost = GameManager.Instance.GetManaCost(this);
+            UpdateManaCostLabel(manaCostLabel, currentManaCost);
+            if (previewHighlighted)
+            {
+                EnsurePreviewManaBadge();
+                if (previewManaBadge != null)
+                {
+                    previewManaBadge.SetActive(true);
+                    UpdateManaCostLabel(previewManaCostLabel, currentManaCost);
+                }
+            }
+        }
+        private void EnsureManaBadge()
+        {
+            if (manaBadge != null) return;
+
+            Sprite manaIcon = Resources.Load<Sprite>("Grafika/Mana-icon");
+            if (manaIcon == null)
+            {
+                Debug.LogError("Could not load Resources/Grafika/Mana-icon.png.");
+                return;
+            }
+
+            manaBadge = new GameObject("ManaCost", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image))
+            {
+                layer = gameObject.layer
+            };
+            manaBadge.transform.SetParent(transform, false);
+
+            RectTransform badgeRect = manaBadge.GetComponent<RectTransform>();
+            badgeRect.anchorMin = Vector2.one;
+            badgeRect.anchorMax = Vector2.one;
+            badgeRect.pivot = new Vector2(0.5f, 0.5f);
+            badgeRect.anchoredPosition = new Vector2(-1.35f, -1.5f);
+            badgeRect.sizeDelta = new Vector2(3f, 3f);
+
+            Image badgeImage = manaBadge.GetComponent<Image>();
+            badgeImage.sprite = manaIcon;
+            badgeImage.preserveAspect = true;
+            badgeImage.raycastTarget = false;
+
+            GameObject labelObject = new("Value", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI))
+            {
+                layer = gameObject.layer
+            };
+            labelObject.transform.SetParent(manaBadge.transform, false);
+
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+
+            manaCostLabel = labelObject.GetComponent<TextMeshProUGUI>();
+            manaCostLabel.alignment = TextAlignmentOptions.Center;
+            manaCostLabel.color = Color.white;
+            manaCostLabel.enableAutoSizing = true;
+            manaCostLabel.fontSizeMin = 0.75f;
+            manaCostLabel.fontSizeMax = 2.2f;
+            manaCostLabel.fontStyle = FontStyles.Bold;
+            manaCostLabel.raycastTarget = false;
+        }
+        private void EnsurePreviewManaBadge()
+        {
+            if (previewManaBadge != null) return;
+
+            Transform existingBadge = GameManager.Instance.CardHighlighter.transform.Find("ManaCost");
+            if (existingBadge != null)
+            {
+                previewManaBadge = existingBadge.gameObject;
+                previewManaCostLabel = existingBadge.GetComponentInChildren<TextMeshProUGUI>();
+                return;
+            }
+
+            Sprite manaIcon = Resources.Load<Sprite>("Grafika/Mana-icon");
+            if (manaIcon == null) return;
+
+            previewManaBadge = new GameObject("ManaCost", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image))
+            {
+                layer = GameManager.Instance.CardHighlighter.gameObject.layer
+            };
+            previewManaBadge.transform.SetParent(GameManager.Instance.CardHighlighter.transform, false);
+
+            RectTransform badgeRect = previewManaBadge.GetComponent<RectTransform>();
+            badgeRect.anchorMin = Vector2.one;
+            badgeRect.anchorMax = Vector2.one;
+            badgeRect.pivot = new Vector2(0.5f, 0.5f);
+            badgeRect.anchoredPosition = new Vector2(-6.5f, -7.5f);
+            badgeRect.sizeDelta = new Vector2(14f, 14f);
+
+            Image badgeImage = previewManaBadge.GetComponent<Image>();
+            badgeImage.sprite = manaIcon;
+            badgeImage.preserveAspect = true;
+            badgeImage.raycastTarget = false;
+
+            GameObject labelObject = new("Value", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI))
+            {
+                layer = previewManaBadge.layer
+            };
+            labelObject.transform.SetParent(previewManaBadge.transform, false);
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+
+            previewManaCostLabel = labelObject.GetComponent<TextMeshProUGUI>();
+            previewManaCostLabel.alignment = TextAlignmentOptions.Center;
+            previewManaCostLabel.enableAutoSizing = true;
+            previewManaCostLabel.fontSizeMin = 3f;
+            previewManaCostLabel.fontSizeMax = 10f;
+            previewManaCostLabel.fontStyle = FontStyles.Bold;
+            previewManaCostLabel.raycastTarget = false;
+        }
+        private void UpdateManaCostLabel(TextMeshProUGUI label, int currentManaCost)
+        {
+            label.text = currentManaCost.ToString();
+            label.color = currentManaCost < mana ? Color.green : currentManaCost > mana ? Color.red : Color.white;
         }
         public Card Initialize(CardData.CardData data)
         {
@@ -294,6 +436,16 @@ namespace CardGame
         {
             GameManager.Instance.CardHighlighter.texture = face.texture;
             GameManager.Instance.CardHighlighter.gameObject.SetActive(true);
+            previewHighlighted = !Hidden
+                && transform.parent != null
+                && transform.parent.TryGetComponent(out HandSlot _);
+            EnsurePreviewManaBadge();
+            if (previewManaBadge != null)
+            {
+                previewManaBadge.SetActive(previewHighlighted);
+                if (previewHighlighted)
+                    UpdateManaCostLabel(previewManaCostLabel, GameManager.Instance.GetManaCost(this));
+            }
         }
         public void OnMouseExit()
         {
@@ -302,6 +454,8 @@ namespace CardGame
         }
         public void DeHighlightCard()
         {
+            previewHighlighted = false;
+            if (previewManaBadge != null) previewManaBadge.SetActive(false);
             GameManager.Instance.CardHighlighter.gameObject.SetActive(false);
         }
 
