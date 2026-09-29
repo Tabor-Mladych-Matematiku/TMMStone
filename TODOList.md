@@ -2,9 +2,9 @@
 
 ## Bugs
 
-- [ ] Verify Relay joining after adding bounded retries and host/client startup checks.
-- [ ] Make turn changes resolve consistently on both peers instead of `ServerOnTurn.OnValueChanged` running at observably different times.
-- [ ] Verify that end-of-turn and start-of-turn lethal effects finish the match correctly for both players after delayed network shutdown was added.
+- [x] Harden Relay joining with bounded retries, startup checks, and failure propagation back to the lobby.
+- [x] Make turn changes resolve consistently on both peers instead of `ServerOnTurn.OnValueChanged` running at observably different times.
+- [x] Stop turn resolution after an end-of-turn or start-of-turn effect finishes the match.
 - [x] Stop a dead Algedrak from reacting to the owner's spell that killed it.
 - [x] Prevent `highlightedSlot` and `highlightedActor` from retaining or clearing stale targets incorrectly.
 
@@ -26,9 +26,9 @@
 
 ## Networking and lobby
 
-- [ ] Add lobby UI controls for the existing join-by-code service method.
-- [ ] Add a lobby UI control for the existing Quick Join service method.
-- [ ] Decide and enforce lobby-name validation rules, including whether foreign characters are allowed.
+- [x] Add lobby UI controls for the existing join-by-code service method.
+- [x] Add a lobby UI control for the existing Quick Join service method.
+- [x] Decide and enforce lobby-name validation rules, including whether foreign characters are allowed.
 
 ## UI and graphics
 
@@ -53,6 +53,8 @@
 
 ## Testing
 
+- [ ] Run a two-player Relay integration test covering host creation, client joining, and failed joins.
+- [ ] Verify on two peers that end-of-turn and start-of-turn lethal effects show the correct result before shutdown.
 - [ ] Test the current build on Android.
 
 ## Notes

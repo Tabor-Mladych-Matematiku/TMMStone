@@ -37,44 +37,29 @@ public class TMMStoneLobby : MonoBehaviour
     }
     private float heartbeattimer;
     private float lobbyupdatetimer;
+    private bool lobbyUpdateInProgress;
     private string PlayerName { get => LobbyUI.Instance.PlayerName; }
     private const string KEY_START_GAME = nameof(KEY_START_GAME);
     public async void Authenticate()
     {
-        InitializationOptions opts = new();
-        opts.SetProfile(PlayerName);
-        SignInOptions signInOptions = new()//Currently unused but might be useful for later
+        try
         {
-            CreateAccount = true
-        };
-        UnityServices.Initialized += async () =>
-        {
+            InitializationOptions opts = new();
+            opts.SetProfile(PlayerName);
+            if (UnityServices.State == ServicesInitializationState.Uninitialized)
+                await UnityServices.InitializeAsync(opts);
+
             Debug.Log("Unity Services Initialized");
-            bool anonymousAttempt = false;
-            AuthenticationService.Instance.SignedIn += () =>
-            {
-                Debug.Log("Signed in!");
-                ListLobbies();
-            };
-            AuthenticationService.Instance.SignInFailed += async (err) =>
-            {
-                Debug.Log("Sign in failed: " + err);
-                if (anonymousAttempt) return;
-                anonymousAttempt = true;
-                //TODO: this here does not work - It still things we are signing in even tho it failed
+            if (!AuthenticationService.Instance.IsSignedIn)
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
-                Debug.Log("Signed in anonymously!");
-            };
-            //await AuthenticationService.Instance.SignInWithUnityAsync("TODO or something");//This will be done later if we wanna
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        };
-        await UnityServices.InitializeAsync(opts).ContinueWith(task =>
+
+            Debug.Log("Signed in anonymously!");
+            ListLobbies();
+        }
+        catch (Exception e)
         {
-            if (task.IsFaulted)
-            {
-                Debug.LogError("Failed to initialize Unity Services: " + task.Exception);
-            }
-        });
+            Debug.LogException(e);
+        }
     }
     private void Awake()
     {
@@ -110,32 +95,57 @@ public class TMMStoneLobby : MonoBehaviour
     }
     private async void UpdateLobbyData()
     {
-        if (JoinedLobby != null)
+        if (JoinedLobby != null && !lobbyUpdateInProgress)
         {
             lobbyupdatetimer -= Time.deltaTime;
             if (lobbyupdatetimer < 0f)
             {
                 lobbyupdatetimer = 1.1f;
-                JoinedLobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
-                if (!IsPlayerInLobby())
+                lobbyUpdateInProgress = true;
+                try
                 {
-                    JoinedLobby = null;
-                }
-                else if (JoinedLobby.Data[KEY_START_GAME].Value != "0")
-                {
-                    loadingScreen.SetActive(true);
-                    if (!IsLobbyHost())
+                    JoinedLobby = await LobbyService.Instance.GetLobbyAsync(JoinedLobby.Id);
+                    if (!IsPlayerInLobby())
                     {
-                        TMMStoneRelay.Instance.JoinRelay(JoinedLobby.Data[KEY_START_GAME].Value);
-                        LobbyUI.Instance.Hide();
+                        JoinedLobby = null;
                     }
-                    JoinedLobby = null;
+                    else if (JoinedLobby.Data.TryGetValue(KEY_START_GAME, out DataObject startGameData)
+                        && startGameData.Value != "0")
+                    {
+                        loadingScreen.SetActive(true);
+                        if (!IsLobbyHost())
+                        {
+                            bool relayStarted = await TMMStoneRelay.Instance.JoinRelay(startGameData.Value);
+                            if (!relayStarted)
+                            {
+                                loadingScreen.SetActive(false);
+                                return;
+                            }
+                            LobbyUI.Instance.Hide();
+                            JoinedLobbyUI.Instance.Hide();
+                        }
+                        JoinedLobby = null;
+                    }
+                }
+                catch (LobbyServiceException e)
+                {
+                    Debug.LogException(e);
+                }
+                finally
+                {
+                    lobbyUpdateInProgress = false;
                 }
             }
         }
     }
     public async void CreateLobby(bool Private, string lobbyName)
     {
+        if (!LobbyUI.TryValidateLobbyName(lobbyName, out lobbyName, out string validationError))
+        {
+            Debug.LogWarning(validationError);
+            return;
+        }
+
         try
         {
             CreateLobbyOptions opts = new()
@@ -309,6 +319,7 @@ public class TMMStoneLobby : MonoBehaviour
                 }
                 catch (LobbyServiceException e)
                 {
+                    loadingScreen.SetActive(false);
                     Debug.Log(e);
                 }
             }

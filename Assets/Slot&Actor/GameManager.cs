@@ -262,6 +262,7 @@ namespace CardGame
         public int TurnCount = 0;//This is not Round counter - tzn this is double of RoundCount
 
         public NetworkVariable<bool> ServerOnTurn = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private bool? resolvingLocalTurn;
         internal GameActor cursor;
         internal Transform highlightedSlot;
         internal GameActor highlightedActor;
@@ -323,7 +324,7 @@ namespace CardGame
 
         public bool OnTurn
         {
-            get => IsServer == ServerOnTurn.Value;
+            get => resolvingLocalTurn ?? IsServer == ServerOnTurn.Value;
             set
             {
                 if (IsServer) ServerOnTurn.Value = value;
@@ -489,13 +490,6 @@ namespace CardGame
             AddCardToHandByID(P.P2, bodID);//Bod
 
             EndTurnBtn.onClick.AddListener(ToggleTurnOffline);
-            ServerOnTurn.OnValueChanged += (prev, n) =>
-            {
-                if (prev == n) return;//Should not happen but to make sure.
-                EndTurn();
-                StartTurn();
-                if (n != start) AIPlayer.OnTurnStart();
-            };
             StartTurn();
         }
 
@@ -513,12 +507,6 @@ namespace CardGame
             }
             else Debug.Log("Client starts?: " + OnTurn);
             EndTurnBtn.onClick.AddListener(() => ToggleTurnServerRpc(new()));
-            ServerOnTurn.OnValueChanged += (bool prev, bool n) =>
-            {
-                if (prev == n) return;//Should not happen but to make sure.
-                EndTurn();
-                StartTurn();
-            };
             NetworkManager.OnClientDisconnectCallback += ClientDisconnected;
             //Load decks
             LoadSelectedDecksData();
@@ -585,16 +573,18 @@ namespace CardGame
             }
 
         }
-        public void StartTurn()
+        public void StartTurn() => StartTurn(OnTurn);
+        private void StartTurn(bool localOnTurn)
         {
             foreach (TableActor actor in AllTableActors)//Might be reasonable to do it through events. but this should ensure consistency with the rules as in which order things happen
             {
                 if (actor.transform.parent.GetComponentInChildren<Card>(true) == null && actor is not Effect) continue;//I don't like this. but it may hold for now. (Actor might be destroyed while in the loop and it shows by its card being removed when we get to him (he is still active for a bit))
-                actor.StartTurn(OnTurn);//TODO: destruction of things should be proably queued and done after the effect has ended
+                actor.StartTurn(localOnTurn);//TODO: destruction of things should be proably queued and done after the effect has ended
+                if (gameEnding) return;
             }
 
             TurnCount++;
-            if (!OnTurn)
+            if (!localOnTurn)
             {
                 EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "Opponents Turn";
                 EndTurnBtn.interactable = false;
@@ -660,11 +650,13 @@ namespace CardGame
             FatigueVals[who]++;
             //Debug.Log(FatigueVals[who]);
         }
-        public void EndTurn()
+        public void EndTurn() => EndTurn(OnTurn);
+        private void EndTurn(bool localOnTurn)
         {
             foreach (GameActor actor in AllActors)
             {
-                actor.EndTurn(OnTurn);
+                actor.EndTurn(localOnTurn);
+                if (gameEnding) return;
             }
         }
         public void AddToGrave(Card c, P who)
@@ -806,15 +798,33 @@ namespace CardGame
 
         public void ToggleTurnOffline()
         {
+            bool previousLocalTurn = OnTurn;
             ServerOnTurn.Value = !ServerOnTurn.Value;
+            ResolveTurnTransition(previousLocalTurn, OnTurn);
+            if (!gameEnding && !OnTurn) AIPlayer.OnTurnStart();
         }
 
         [ServerRpc(RequireOwnership = false)]
         private void ToggleTurnServerRpc(ServerRpcParams Srpcparams)
         {
-            //Debug.Log("SenderID: " + Srpcparams.Receive.SenderClientId);
-            if (ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 0) ServerOnTurn.Value = false;
-            else if (!ServerOnTurn.Value && Srpcparams.Receive.SenderClientId == 1) ServerOnTurn.Value = true;
+            ulong expectedPlayer = ServerOnTurn.Value ? NetworkManager.ServerClientId : NetworkManager.ConnectedClientsIds.First(id => id != NetworkManager.ServerClientId);
+            if (Srpcparams.Receive.SenderClientId != expectedPlayer) return;
+
+            bool previousServerTurn = ServerOnTurn.Value;
+            ServerOnTurn.Value = !previousServerTurn;
+            ResolveTurnTransitionClientRpc(previousServerTurn, ServerOnTurn.Value);
+        }
+        [ClientRpc]
+        private void ResolveTurnTransitionClientRpc(bool previousServerTurn, bool newServerTurn)
+        {
+            ResolveTurnTransition(IsServer == previousServerTurn, IsServer == newServerTurn);
+        }
+        private void ResolveTurnTransition(bool previousLocalTurn, bool newLocalTurn)
+        {
+            resolvingLocalTurn = newLocalTurn;
+            EndTurn(previousLocalTurn);
+            if (!gameEnding) StartTurn(newLocalTurn);
+            resolvingLocalTurn = null;
         }
         [ClientRpc(RequireOwnership = false)]
         private void TakeActionClientRpc(PlayerAction action, ClientRpcParams _) => TakeAction(P.P2, action);//This runs only on opponent.

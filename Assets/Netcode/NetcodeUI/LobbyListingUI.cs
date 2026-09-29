@@ -13,6 +13,7 @@ public class LobbyListingUI : MonoBehaviour
     [SerializeField] Button joinButton;
     public void Initialize(Lobby lobby)
     {
+        Name.richText = false;
         playerCount.text = lobby.Players.Count.ToString() + "/" + lobby.MaxPlayers;
         Name.text = lobby.Name;
         joinButton.onClick.AddListener(() => JoinedLobbyUI.Instance.JoinButtonClicked(lobby.Id));

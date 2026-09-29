@@ -22,6 +22,7 @@ public class JoinedLobbyUI : MonoBehaviour
     }
     void Start()
     {
+        LobbyName.richText = false;
         LeaveLobbyButton.onClick.AddListener(OnLeaveClick);
 
         TMMStoneLobby.Instance.OnLobbyUpdated += UpdateLobbyData;
