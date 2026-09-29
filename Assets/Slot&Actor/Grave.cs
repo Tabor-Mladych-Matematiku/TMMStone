@@ -27,7 +27,8 @@ namespace CardGame
         /// </summary>
         public void Clear()
         {
-            for (int i = 0; i < transform.childCount; i++) Destroy(transform.GetChild(0).gameObject);//Oughta be one cuz y'know
+            for (int i = transform.childCount - 1; i >= 0; i--)
+                Destroy(transform.GetChild(i).gameObject);
             cards.Clear();
         }
 
