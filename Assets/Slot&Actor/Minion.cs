@@ -276,22 +276,26 @@ namespace CardGame
         public void AttackAction(Minion oppminion)
         {
             if (!IsTargetValid(oppminion)) return;
-            OnBeforeAttack?.Invoke(this, new() { target = oppminion });
-            CanAttack = false;//TODO windfury shit.
-            Damage(oppminion.Attack);
-            oppminion.Damage(Attack);
-            audioSource.PlayOneShot(attackSound);
-            OnAfterAttack?.Invoke(this, new() { target = oppminion });
-            //TODO visuals
+            ResolveAttack(oppminion);
         }
         public void AttackAction(Face face)
         {
             if (!IsTargetValid(face)) return;
-            OnBeforeAttack?.Invoke(this, new() { target = face });
+            ResolveAttack(face);
+        }
+        private void ResolveAttack(DamageableActor initialTarget)
+        {
+            TargetedEventEventArgs attackEvent = new() { target = initialTarget };
+            OnBeforeAttack?.Invoke(this, attackEvent);
+
+            if (attackEvent.target is not DamageableActor target) return;
+
             CanAttack = false;//TODO windfury shit.
-            face.Damage(Attack);
+            if (target is Minion targetMinion) Damage(targetMinion.Attack);
+            target.Damage(Attack);
             audioSource.PlayOneShot(attackSound);
-            OnAfterAttack?.Invoke(this, new() { target = face });
+            OnAfterAttack?.Invoke(this, attackEvent);
+            //TODO visuals
         }
 
         public bool Alive()
