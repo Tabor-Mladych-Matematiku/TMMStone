@@ -119,8 +119,7 @@ namespace CardEditor
             foreach (string cardName in visibleCards)
             {
                 CardData.CardData data = CardDatabase[nameToId[cardName]];
-                Texture2D cardImage = Resources.Load<Texture2D>(
-                    "CardData/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + cardName);
+                Texture2D cardImage = LoadCardImage(data, cardName);
 
                 Button cardButton = new(() => SelectCard(cardName));
                 cardButton.tooltip = cardName;
@@ -162,7 +161,7 @@ namespace CardEditor
             CardData.CardData data = CardDatabase[id];
             box.Add(new Image()
             {
-                image = Resources.Load<Texture2D>("CardData/" + CDJsonUtils.expansionMapping[data.expansion] + "/" + name)
+                image = LoadCardImage(data, name)
             });
 
             if (data.scripts.Count == 0)
@@ -326,6 +325,25 @@ namespace CardEditor
             if (CardDatabase[nameToId[card]].scripts.Count != 0) return false;
             return true;
         }
+
+        private static Texture2D LoadCardImage(CardData.CardData data, string cardName)
+        {
+            const string tokenSuffix = " (token)";
+            string artName = cardName.EndsWith(tokenSuffix, StringComparison.Ordinal)
+                ? cardName[..^tokenSuffix.Length]
+                : cardName;
+            string expansion = CDJsonUtils.expansionMapping[data.expansion];
+            string folder = $"Assets/CardArt/CardFaces/{expansion}";
+            if (!Directory.Exists(folder)) return null;
+
+            string imagePath = Directory.EnumerateFiles(folder)
+                .FirstOrDefault(path => !path.EndsWith(".meta", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(Path.GetFileNameWithoutExtension(path), artName, StringComparison.Ordinal));
+            return imagePath == null
+                ? null
+                : AssetDatabase.LoadAssetAtPath<Texture2D>(imagePath.Replace('\\', '/'));
+        }
+
         public static List<MonoScript> LoadScripts(List<string> scriptpaths)
         {
             List<MonoScript> scripts = new();
