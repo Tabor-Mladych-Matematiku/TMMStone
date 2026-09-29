@@ -112,14 +112,30 @@ public class LobbyUI : MonoBehaviour
         if (ValidationMessage == null)
         {
             TextMeshProUGUI source = CreateLobbyButton.GetComponentInChildren<TextMeshProUGUI>();
-            ValidationMessage = Instantiate(source, transform);
-            ValidationMessage.name = "LobbyValidationMessage";
+            GameObject validationObject = new("LobbyValidationMessage", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI))
+            {
+                layer = gameObject.layer
+            };
+            validationObject.transform.SetParent(transform, false);
+            ValidationMessage = validationObject.GetComponent<TextMeshProUGUI>();
+            ValidationMessage.font = source.font;
+            ValidationMessage.fontSharedMaterial = source.fontSharedMaterial;
             ValidationMessage.text = string.Empty;
             ValidationMessage.color = Color.red;
             ValidationMessage.richText = false;
+            ValidationMessage.alignment = TextAlignmentOptions.Center;
+            ValidationMessage.enableWordWrapping = true;
+            ValidationMessage.enableAutoSizing = true;
+            ValidationMessage.fontSizeMin = 12f;
+            ValidationMessage.fontSizeMax = 28f;
+            ValidationMessage.raycastTarget = false;
             RectTransform rect = ValidationMessage.rectTransform;
-            rect.anchoredPosition = Vector2.down * 100f;
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -250f);
             rect.sizeDelta = new Vector2(700f, 60f);
+            validationObject.SetActive(false);
         }
     }
 
@@ -138,6 +154,7 @@ public class LobbyUI : MonoBehaviour
     private void ShowValidationError(string message)
     {
         ValidationMessage.text = message;
+        ValidationMessage.gameObject.SetActive(!string.IsNullOrEmpty(message));
     }
 
     public static bool TryValidateLobbyName(string input, out string normalizedName, out string error)
