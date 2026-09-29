@@ -75,6 +75,7 @@ namespace CardGame
 
     public class Minion : DamageableActor
     {
+        public int CardID => original.ID;
         private static readonly Color AttackReadyColor = new(0f, 1f, 0f, 1f);
         private int h = 0;
         private int a = 0;

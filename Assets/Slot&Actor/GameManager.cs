@@ -675,7 +675,7 @@ namespace CardGame
         {
             foreach (int id in ids)
             {
-                d.Add(Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[id]));
+                d.Add(Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[id], id));
             }
 
         }
@@ -742,7 +742,20 @@ namespace CardGame
         }
         public void AddCardToHandByID(P who, int ID, bool discardExcesive = false)
         {
-            AddCardToHand(who, Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID]), discardExcesive);
+            AddCardToHand(who, Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID], ID), discardExcesive);
+        }
+
+        public bool SummonMinion(P who, int id)
+        {
+            int slotIndex = GetNextFreeMinionSlot(who);
+            if (slotIndex == -1) return false;
+
+            Card card = Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[id], id);
+            CardSlot slot = minionSlots[who][slotIndex];
+            slot.PlaceCard(card);
+            card.gameObject.SetActive(false);
+            card.SummonMinion(slot);
+            return true;
         }
         public void Discard(Card c, P who)
         {

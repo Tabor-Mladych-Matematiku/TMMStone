@@ -56,6 +56,7 @@ namespace CardGame
             Field
         }
         public int mana;
+        public int ID { get; private set; }
         public string cardname;
         public CardType cardType;
         Image sr;
@@ -290,8 +291,9 @@ namespace CardGame
             label.text = currentManaCost.ToString();
             label.color = currentManaCost < mana ? Color.green : currentManaCost > mana ? Color.red : Color.white;
         }
-        public Card Initialize(CardData.CardData data)
+        public Card Initialize(CardData.CardData data, int id = -1)
         {
+            ID = id;
             mana = data.cost;
             cardname = data.name;
             cardTag = data.tag;
@@ -511,6 +513,18 @@ namespace CardGame
             m.Summoned(target);//Selfsummon
             GameManager.Instance.InvokeSummoned(m);//TODO: probably do the InvokeSummoned on one place
             return m;
+        }
+
+        internal Minion SummonMinion(CardSlot slot)
+        {
+            Minion minion = CreateMinionVisual(slot, playSound: true);
+            foreach (Type script in scriptTypes)
+            {
+                minion.gameObject.AddComponent(script);
+            }
+            minion.Summoned(null);
+            GameManager.Instance.InvokeSummoned(minion);
+            return minion;
         }
 
         private Minion CreateMinionVisual(CardSlot slot, bool playSound)
