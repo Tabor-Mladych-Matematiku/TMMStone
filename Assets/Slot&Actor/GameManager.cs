@@ -235,6 +235,11 @@ namespace CardGame
         GameObject CardPrefab;
         private AsyncOperationHandle<GameObject> cardPrefabHandle;
         public Button EndTurnBtn;
+        private GameObject targetingArrow;
+        private LineRenderer targetingArrowShaft;
+        private LineRenderer targetingArrowHeadLeft;
+        private LineRenderer targetingArrowHeadRight;
+        private Material targetingArrowMaterial;
         public const int maxMinionSlots = 7;
         public const int maxEffSlots = 6;
         public const int maxHandSlots = 10;
@@ -449,11 +454,94 @@ namespace CardGame
 
         private void Update()
         {
-            if (cursor != null && !(cursor is Card card && card.IsChoosingBattlecryTarget))
+            if (cursor == null)
             {
-                Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                cursor.transform.position = new(mousepos.x, mousepos.y);
+                HideTargetingArrow();
+                return;
             }
+
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            if (cursor is Minion minion)
+            {
+                ShowTargetingArrow(minion.transform.position, mousePosition);
+                return;
+            }
+
+            if (cursor is Card card && card.IsChoosingBattlecryTarget)
+            {
+                ShowTargetingArrow(card.TargetingArrowOrigin, mousePosition);
+                return;
+            }
+
+            HideTargetingArrow();
+            cursor.transform.position = new(mousePosition.x, mousePosition.y);
+        }
+
+        private void ShowTargetingArrow(Vector3 start, Vector3 mousePosition)
+        {
+            EnsureTargetingArrow();
+
+            Vector3 end = new(mousePosition.x, mousePosition.y, start.z);
+            Vector3 direction = end - start;
+            float distance = direction.magnitude;
+            if (distance <= Mathf.Epsilon)
+            {
+                targetingArrow.SetActive(false);
+                return;
+            }
+
+            targetingArrow.SetActive(true);
+            direction /= distance;
+
+            float headLength = Mathf.Clamp(distance * 0.12f, 0.8f, 2.5f);
+            Vector3 headLeft = end - Quaternion.Euler(0, 0, 30) * direction * headLength;
+            Vector3 headRight = end - Quaternion.Euler(0, 0, -30) * direction * headLength;
+
+            SetArrowLine(targetingArrowShaft, start, end);
+            SetArrowLine(targetingArrowHeadLeft, end, headLeft);
+            SetArrowLine(targetingArrowHeadRight, end, headRight);
+        }
+
+        private void EnsureTargetingArrow()
+        {
+            if (targetingArrow != null) return;
+
+            targetingArrow = new GameObject("TargetingArrow");
+            targetingArrowMaterial = new Material(Shader.Find("Sprites/Default"));
+            targetingArrowShaft = CreateArrowLine("Shaft");
+            targetingArrowHeadLeft = CreateArrowLine("HeadLeft");
+            targetingArrowHeadRight = CreateArrowLine("HeadRight");
+            targetingArrow.SetActive(false);
+        }
+
+        private LineRenderer CreateArrowLine(string lineName)
+        {
+            GameObject lineObject = new(lineName);
+            lineObject.transform.SetParent(targetingArrow.transform, false);
+
+            LineRenderer line = lineObject.AddComponent<LineRenderer>();
+            line.sharedMaterial = targetingArrowMaterial;
+            line.startColor = Color.yellow;
+            line.endColor = Color.yellow;
+            line.startWidth = 0.35f;
+            line.endWidth = 0.35f;
+            line.positionCount = 2;
+            line.useWorldSpace = true;
+            line.numCapVertices = 4;
+            line.sortingOrder = 1000;
+            return line;
+        }
+
+        private static void SetArrowLine(LineRenderer line, Vector3 start, Vector3 end)
+        {
+            line.SetPosition(0, start);
+            line.SetPosition(1, end);
+        }
+
+        private void HideTargetingArrow()
+        {
+            if (targetingArrow != null) targetingArrow.SetActive(false);
         }
         public string OwnDeckData;
         public string AIDeckData;
@@ -1046,6 +1134,8 @@ namespace CardGame
 
         public override void OnDestroy()
         {
+            if (targetingArrow != null) Destroy(targetingArrow);
+            if (targetingArrowMaterial != null) Destroy(targetingArrowMaterial);
             if (cardPrefabHandle.IsValid()) Addressables.Release(cardPrefabHandle);
             Card.ReleaseSharedAssets();
 

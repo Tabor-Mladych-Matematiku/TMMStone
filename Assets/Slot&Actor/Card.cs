@@ -73,7 +73,11 @@ namespace CardGame
         int SlotIndex { get => GetComponentInParent<CardSlot>().index; }
         int battlecrySlotIndex;
         int battlecryCardIndex;
+        Minion battlecryPreview;
         public bool IsChoosingBattlecryTarget { get; private set; }
+        public Vector3 TargetingArrowOrigin => battlecryPreview != null
+            ? battlecryPreview.transform.position
+            : transform.position;
 
         [SerializeField] AssetReferenceGameObject MinionAddressable;
         [SerializeField] AssetReferenceGameObject FieldAddressable;
@@ -384,7 +388,7 @@ namespace CardGame
 
         public bool IsTargetValid(TableActor actor)
         {
-            if (actor == null) return false;
+            if (actor == null || actor == battlecryPreview) return false;
             return TargetValidator(actor);
         }
 
@@ -405,11 +409,11 @@ namespace CardGame
         {
             battlecryCardIndex = SlotIndex;
             battlecrySlotIndex = GameManager.Instance.HighlightedSlotIndex;
+            CardSlot targetSlot = GameManager.Instance.highlightedSlot.GetComponent<CardSlot>();
             IsChoosingBattlecryTarget = true;
             GameManager.Instance.highlightedSlot = null;
-
-            Vector3 targetPosition = Camera.main.ViewportToWorldPoint(new Vector3(0.9f, 0.5f));
-            transform.position = new Vector3(targetPosition.x, targetPosition.y, transform.position.z);
+            transform.localPosition = Vector3.zero;
+            battlecryPreview = CreateMinionVisual(targetSlot, playSound: false);
         }
 
         public void ChooseBattlecryTarget(TableActor target)
@@ -421,6 +425,7 @@ namespace CardGame
             if (targetIndex < 0) return;
 
             IsChoosingBattlecryTarget = false;
+            RemoveBattlecryPreview();
             GameManager.Instance.cursor = null;
             GameManager.Instance.highlightedActor = null;
             GameManager.Instance.OnUIPlayMinion(battlecryCardIndex, battlecrySlotIndex, targetIndex);
@@ -429,9 +434,19 @@ namespace CardGame
         private void CancelBattlecryTargeting()
         {
             IsChoosingBattlecryTarget = false;
+            RemoveBattlecryPreview();
             GameManager.Instance.cursor = null;
             GameManager.Instance.ClearHighlights();
             transform.localPosition = Vector3.zero;
+        }
+
+        private void RemoveBattlecryPreview()
+        {
+            if (battlecryPreview == null) return;
+
+            battlecryPreview.transform.SetParent(null);
+            Destroy(battlecryPreview.gameObject);
+            battlecryPreview = null;
         }
         public void OnMouseEnter()
         {
@@ -469,18 +484,23 @@ namespace CardGame
         internal Minion PlayMinion(CardSlot slot, GameActor target)
         {
             OnSelfPlayed?.Invoke(this, new(CardType.Minion, target));
-            GameObject g = Instantiate(TableActorPrefab, slot.transform);
-            g.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.AngleAxis(-90, new(0, 0, 1)));
-            Minion m = g.GetComponent<Minion>();
-            m.Initialize(this);
-            m.audioSource.PlayOneShot(cardPlaced);//Cannot do it on card cuz that one gets disabled and cannot do sounds thus
+            Minion m = CreateMinionVisual(slot, playSound: true);
             foreach (Type script in scriptTypes)
             {
                 m.gameObject.AddComponent(script);
             }
-            ;
             m.Summoned(target);//Selfsummon
             GameManager.Instance.InvokeSummoned(m);//TODO: probably do the InvokeSummoned on one place
+            return m;
+        }
+
+        private Minion CreateMinionVisual(CardSlot slot, bool playSound)
+        {
+            GameObject g = Instantiate(TableActorPrefab, slot.transform);
+            g.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.AngleAxis(-90, new(0, 0, 1)));
+            Minion m = g.GetComponent<Minion>();
+            m.Initialize(this);
+            if (playSound) m.audioSource.PlayOneShot(cardPlaced);//Cannot do it on card cuz that one gets disabled and cannot do sounds thus
             return m;
         }
 
