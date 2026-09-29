@@ -1043,6 +1043,7 @@ namespace CardGame
         {
             Send = new()
             {
+                // TODO: Resolve the opponent from ConnectedClientsIds if reconnecting is supported.
                 TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
             }
         }
@@ -1052,6 +1053,7 @@ namespace CardGame
         {
             Send = new()
             {
+                // TODO: Resolve the opponent from ConnectedClientsIds if reconnecting is supported.
                 TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
             }
         });
@@ -1084,6 +1086,7 @@ namespace CardGame
         {
             Send = new()
             {
+                // TODO: Resolve the opponent from ConnectedClientsIds if reconnecting is supported.
                 TargetClientIds = new List<ulong>() { 1 - srp.Receive.SenderClientId }//We wanna talk to the other un.
             }
         });
