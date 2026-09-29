@@ -13,6 +13,11 @@ namespace CardGame
         bool Taunt { get; }
     }
 
+    public interface IAttackCountProvider
+    {
+        int AttackCount { get; }
+    }
+
     public abstract class TableActor : GameActor
     {
         [SerializeField] protected Image HighlightRim;
@@ -170,10 +175,25 @@ namespace CardGame
             Health += health;
         }
 
-        public bool CanAttack { get; private set; }
+        private int attacksRemaining;
+        public bool CanAttack => attacksRemaining > 0;
+        public int AttackCount
+        {
+            get
+            {
+                int attackCount = 1;
+                foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
+                {
+                    if (behaviour is IAttackCountProvider provider)
+                        attackCount = Math.Max(attackCount, provider.AttackCount);
+                }
+
+                return attackCount;
+            }
+        }
         public void Charge()
         {
-            CanAttack = true;
+            attacksRemaining = Math.Max(attacksRemaining, AttackCount);
         }
 
 
@@ -185,7 +205,7 @@ namespace CardGame
             Health = c.stats[1];
             MaxHealth = c.stats[1];
             baseHealth = c.stats[1];
-            CanAttack = false;
+            attacksRemaining = 0;
         }
 
         public override void OnMouseDown()
@@ -270,7 +290,7 @@ namespace CardGame
         public override void StartTurn(bool onTurn)
         {
             base.StartTurn(onTurn);
-            if (GameManager.Instance.PlayerOnTurn == Owner && CanAwake()) CanAttack = true;//Cannot use onTurn cuz we also need to know if the minion is owned by the player who is on turn
+            if (GameManager.Instance.PlayerOnTurn == Owner && CanAwake()) attacksRemaining = AttackCount;//Cannot use onTurn cuz we also need to know if the minion is owned by the player who is on turn
         }
 
         public void AttackAction(Minion oppminion)
@@ -290,7 +310,7 @@ namespace CardGame
 
             if (attackEvent.target is not DamageableActor target) return;
 
-            CanAttack = false;//TODO windfury shit.
+            attacksRemaining = Math.Max(0, attacksRemaining - 1);
             if (target is Minion targetMinion) Damage(targetMinion.Attack);
             target.Damage(Attack);
             audioSource.PlayOneShot(attackSound);
