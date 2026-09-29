@@ -240,6 +240,7 @@ namespace CardGame
         private LineRenderer targetingArrowHeadLeft;
         private LineRenderer targetingArrowHeadRight;
         private Material targetingArrowMaterial;
+        private bool minionTargeting;
         public const int maxMinionSlots = 7;
         public const int maxEffSlots = 6;
         public const int maxHandSlots = 10;
@@ -454,6 +455,15 @@ namespace CardGame
 
         private void Update()
         {
+            if (cursor is Card targetingCard
+                && targetingCard.IsChoosingBattlecryTarget
+                && Input.GetMouseButtonDown(1))
+            {
+                targetingCard.CancelBattlecryTargeting();
+                HideTargetingArrow();
+                return;
+            }
+
             if (cursor == null)
             {
                 HideTargetingArrow();
@@ -476,6 +486,12 @@ namespace CardGame
 
             HideTargetingArrow();
             cursor.transform.position = new(mousePosition.x, mousePosition.y);
+        }
+
+        internal void SetMinionTargeting(bool active)
+        {
+            minionTargeting = active;
+            EndTurnBtn.interactable = !active && OnTurn && !gameEnding;
         }
 
         private void ShowTargetingArrow(Vector3 start, Vector3 mousePosition)
@@ -685,7 +701,7 @@ namespace CardGame
             else
             {
                 EndTurnBtn.GetComponentInChildren<TextMeshProUGUI>().text = "End Turn";
-                EndTurnBtn.interactable = true;
+                EndTurnBtn.interactable = !minionTargeting;
                 if (OwnManaCounter.MaxMana < 10) OwnManaCounter.MaxMana++;
                 OwnManaCounter.Mana = OwnManaCounter.MaxMana;
                 DrawCard(P.P1);

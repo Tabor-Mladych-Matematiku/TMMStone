@@ -59,6 +59,7 @@ namespace CardGame
         public string cardname;
         public CardType cardType;
         Image sr;
+        Outline playableOutline;
         GameObject manaBadge;
         TextMeshProUGUI manaCostLabel;
         GameObject previewManaBadge;
@@ -116,6 +117,11 @@ namespace CardGame
         {
             base.Awake();
             sr = GetComponent<Image>();
+            playableOutline = gameObject.AddComponent<Outline>();
+            playableOutline.effectColor = Color.green;
+            playableOutline.effectDistance = new Vector2(0.25f, 0.25f);
+            playableOutline.useGraphicAlpha = true;
+            playableOutline.enabled = false;
             face = sr.sprite;//placeholder
             standardScale = transform.localScale;
         }
@@ -127,12 +133,26 @@ namespace CardGame
         private void Update()
         {
             UpdateManaBadge();
+            UpdatePlayableOutline();
             if (GameManager.Instance.cursor != this) return;
             if (!SafeZone.InSafeZone && !Targetted && cardType==CardType.Spell)
             {
                 sr.color = new(0.5f, 1, 0.5f, 1);
             }
             else sr.color = Color.white;
+        }
+        private void UpdatePlayableOutline()
+        {
+            if (playableOutline == null || GameManager.Instance == null) return;
+
+            bool inOwnedHand = !Hidden
+                && transform.parent != null
+                && transform.parent.TryGetComponent(out HandSlot handSlot)
+                && handSlot.Owner == GameManager.P.P1;
+
+            playableOutline.enabled = inOwnedHand
+                && GameManager.Instance.OnTurn
+                && GameManager.Instance.IsCardPlayable(this, GameManager.P.P1);
         }
         private void UpdateManaBadge()
         {
@@ -394,11 +414,7 @@ namespace CardGame
 
         public void OnMouseDown()
         {
-            if (IsChoosingBattlecryTarget)
-            {
-                CancelBattlecryTargeting();
-                return;
-            }
+            if (GameManager.Instance.cursor is Card targetingCard && targetingCard.IsChoosingBattlecryTarget) return;
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
             if (!GameManager.Instance.IsCardPlayable(this,GameManager.P.P1)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
@@ -411,6 +427,7 @@ namespace CardGame
             battlecrySlotIndex = GameManager.Instance.HighlightedSlotIndex;
             CardSlot targetSlot = GameManager.Instance.highlightedSlot.GetComponent<CardSlot>();
             IsChoosingBattlecryTarget = true;
+            GameManager.Instance.SetMinionTargeting(true);
             GameManager.Instance.highlightedSlot = null;
             transform.localPosition = Vector3.zero;
             battlecryPreview = CreateMinionVisual(targetSlot, playSound: false);
@@ -425,15 +442,17 @@ namespace CardGame
             if (targetIndex < 0) return;
 
             IsChoosingBattlecryTarget = false;
+            GameManager.Instance.SetMinionTargeting(false);
             RemoveBattlecryPreview();
             GameManager.Instance.cursor = null;
             GameManager.Instance.highlightedActor = null;
             GameManager.Instance.OnUIPlayMinion(battlecryCardIndex, battlecrySlotIndex, targetIndex);
         }
 
-        private void CancelBattlecryTargeting()
+        internal void CancelBattlecryTargeting()
         {
             IsChoosingBattlecryTarget = false;
+            GameManager.Instance.SetMinionTargeting(false);
             RemoveBattlecryPreview();
             GameManager.Instance.cursor = null;
             GameManager.Instance.ClearHighlights();

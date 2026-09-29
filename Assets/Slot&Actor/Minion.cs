@@ -75,8 +75,10 @@ namespace CardGame
 
     public class Minion : DamageableActor
     {
+        private static readonly Color AttackReadyColor = new(0f, 1f, 0f, 1f);
         private int h = 0;
         private int a = 0;
+        private Image attackReadyOutline;
         [SerializeField] TextMeshProUGUI AttackLabel;
         [SerializeField] TextMeshProUGUI HealthLabel;
 
@@ -148,6 +150,28 @@ namespace CardGame
             defaultColor = HighlightRim.color;
             highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
             attkColor = new(defaultColor.g, defaultColor.r, defaultColor.b, 0.8f);//Interesting choice but ok
+            CreateAttackReadyOutline();
+        }
+
+        private void CreateAttackReadyOutline()
+        {
+            GameObject outlineObject = new("AttackReadyOutline", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            outlineObject.layer = gameObject.layer;
+            outlineObject.transform.SetParent(transform, false);
+            outlineObject.transform.SetSiblingIndex(0);
+
+            RectTransform outlineRect = outlineObject.GetComponent<RectTransform>();
+            RectTransform graphicRect = graphic.rectTransform;
+            outlineRect.anchorMin = graphicRect.anchorMin;
+            outlineRect.anchorMax = graphicRect.anchorMax;
+            outlineRect.pivot = graphicRect.pivot;
+            outlineRect.anchoredPosition = graphicRect.anchoredPosition;
+            outlineRect.sizeDelta = graphicRect.sizeDelta + new Vector2(0.8f, 0.8f);
+
+            attackReadyOutline = outlineObject.GetComponent<Image>();
+            attackReadyOutline.color = AttackReadyColor;
+            attackReadyOutline.raycastTarget = false;
+            attackReadyOutline.enabled = false;
         }
         public void Death()
         {
@@ -162,6 +186,7 @@ namespace CardGame
             {
                 a = math.max(0, value);
                 AttackLabel.text = a.ToString();
+                RefreshAttackOutline();
             }
         }
         public void ResetAttack()
@@ -194,6 +219,7 @@ namespace CardGame
         public void Charge()
         {
             attacksRemaining = Math.Max(attacksRemaining, AttackCount);
+            RefreshAttackOutline();
         }
 
 
@@ -206,6 +232,7 @@ namespace CardGame
             MaxHealth = c.stats[1];
             baseHealth = c.stats[1];
             attacksRemaining = 0;
+            RefreshAttackOutline();
         }
 
         public override void OnMouseDown()
@@ -255,6 +282,17 @@ namespace CardGame
                 HighlightRim.color = highlightColor;
         }
 
+        private void RefreshAttackOutline()
+        {
+            if (attackReadyOutline == null || GameManager.Instance == null) return;
+
+            bool canAttackNow = GameManager.Instance.OnTurn
+                && Owner == GameManager.P.P1
+                && CanAttack
+                && Attack != 0;
+            attackReadyOutline.enabled = canAttackNow;
+        }
+
         public bool IsTargetValid(TableActor target)
         {
             if (target == null || target.Owner == Owner) return false;
@@ -290,7 +328,9 @@ namespace CardGame
         public override void StartTurn(bool onTurn)
         {
             base.StartTurn(onTurn);
-            if (GameManager.Instance.PlayerOnTurn == Owner && CanAwake()) attacksRemaining = AttackCount;//Cannot use onTurn cuz we also need to know if the minion is owned by the player who is on turn
+            if (GameManager.Instance.PlayerOnTurn == Owner)
+                attacksRemaining = CanAwake() ? AttackCount : 0;//Cannot use onTurn cuz we also need to know if the minion is owned by the player who is on turn
+            RefreshAttackOutline();
         }
 
         public void AttackAction(Minion oppminion)
@@ -311,6 +351,7 @@ namespace CardGame
             if (attackEvent.target is not DamageableActor target) return;
 
             attacksRemaining = Math.Max(0, attacksRemaining - 1);
+            RefreshAttackOutline();
             if (target is Minion targetMinion) Damage(targetMinion.Attack);
             target.Damage(Attack);
             audioSource.PlayOneShot(attackSound);
