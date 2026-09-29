@@ -18,6 +18,11 @@ namespace CardGame
         int AttackCount { get; }
     }
 
+    public interface IAttackDamageImmunityProvider
+    {
+        bool ImmuneToAttackDamage { get; }
+    }
+
     public abstract class TableActor : GameActor
     {
         [SerializeField] protected Image HighlightRim;
@@ -317,6 +322,18 @@ namespace CardGame
                 return false;
             }
         }
+        public bool ImmuneToAttackDamage
+        {
+            get
+            {
+                foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
+                {
+                    if (behaviour is IAttackDamageImmunityProvider provider && provider.ImmuneToAttackDamage) return true;
+                }
+
+                return false;
+            }
+        }
         public bool CanAwake()
         {
             if (Frozen)
@@ -353,7 +370,7 @@ namespace CardGame
 
             attacksRemaining = Math.Max(0, attacksRemaining - 1);
             RefreshAttackOutline();
-            if (target is Minion targetMinion) Damage(targetMinion.Attack);
+            if (target is Minion targetMinion && !ImmuneToAttackDamage) Damage(targetMinion.Attack);
             target.Damage(Attack);
             audioSource.PlayOneShot(attackSound);
             OnAfterAttack?.Invoke(this, attackEvent);
