@@ -34,5 +34,5 @@ public class Obr_z_karet : CardScriptBase
     //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
 
     //States
-    protected override Func<Card, int> ManaCostModifier => (card) => -GameManager.Instance.AllMinions.Count();
+    protected override Func<Card, int> ManaCostModifier => (card) => -GameManager.Instance.GetCardsInHandOwnedBy(card.Owner.Other()).Count();
 }

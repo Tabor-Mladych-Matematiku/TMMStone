@@ -6,7 +6,8 @@ using System;
 
 public class Jiříkova_přednáška : CardScriptBase
 {
+    const int FunfactID = 33;
     protected override void OnTableActorEndTurn(object sender, GameActor.TurnEventArgs e) {
-        GameManager.Instance.DrawCard(GameManager.Instance.PlayerOnTurn);
+        GameManager.Instance.AddCardToHandByID(GameManager.Instance.PlayerOnTurn,FunfactID);
     }
 }
