@@ -302,7 +302,7 @@ namespace CardGame
                 case "Token":
                 case "Jednotka":
                     cardType = CardType.Minion;
-                    TableActorPrefab = LoadSharedAsset(ref minionPrefabHandle, MinionAddressable);
+                    TableActorPrefab = GetLoadedSharedAsset(minionPrefabHandle, MinionAddressable);
                     stats = new int[2] { int.Parse(data.attack), int.Parse(data.health) };
                     break;
                 case "Spelltoken":
@@ -311,11 +311,11 @@ namespace CardGame
                     break;
                 case "Pole":
                     cardType = CardType.Field;
-                    TableActorPrefab = LoadSharedAsset(ref fieldPrefabHandle, FieldAddressable);
+                    TableActorPrefab = GetLoadedSharedAsset(fieldPrefabHandle, FieldAddressable);
                     break;
                 default: throw new Exception("Unknown cardtype: " + data.type);
             }
-            EffectPrefab = LoadSharedAsset(ref effectPrefabHandle, EffectAddressable);
+            EffectPrefab = GetLoadedSharedAsset(effectPrefabHandle, EffectAddressable);
 
 
             expansion = "Tokeny";
@@ -351,14 +351,33 @@ namespace CardGame
             return this;
         }
 
-        private static GameObject LoadSharedAsset(
-            ref AsyncOperationHandle<GameObject> handle,
+        public static IEnumerator PreloadSharedAssets(Card prefab)
+        {
+            yield return LoadSharedAsset(prefab.MinionAddressable, handle => minionPrefabHandle = handle);
+            yield return LoadSharedAsset(prefab.FieldAddressable, handle => fieldPrefabHandle = handle);
+            yield return LoadSharedAsset(prefab.EffectAddressable, handle => effectPrefabHandle = handle);
+        }
+
+        private static IEnumerator LoadSharedAsset(
+            AssetReferenceGameObject reference,
+            Action<AsyncOperationHandle<GameObject>> setHandle)
+        {
+            AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>(reference.RuntimeKey);
+            setHandle(handle);
+            yield return handle;
+
+            if (handle.Status != AsyncOperationStatus.Succeeded)
+                throw new Exception($"Could not load Addressable prefab: {reference.RuntimeKey}");
+        }
+
+        private static GameObject GetLoadedSharedAsset(
+            AsyncOperationHandle<GameObject> handle,
             AssetReferenceGameObject reference)
         {
-            if (!handle.IsValid())
-                handle = Addressables.LoadAssetAsync<GameObject>(reference.RuntimeKey);
+            if (!handle.IsValid() || !handle.IsDone || handle.Status != AsyncOperationStatus.Succeeded)
+                throw new InvalidOperationException($"Addressable prefab was used before it finished loading: {reference.RuntimeKey}");
 
-            return handle.WaitForCompletion();
+            return handle.Result;
         }
 
         public static void ReleaseSharedAssets()

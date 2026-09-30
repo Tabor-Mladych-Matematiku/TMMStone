@@ -234,6 +234,7 @@ namespace CardGame
         public AssetReferenceGameObject CardAddressable;
         GameObject CardPrefab;
         private AsyncOperationHandle<GameObject> cardPrefabHandle;
+        private bool prefabsReady;
         public Button EndTurnBtn;
         private GameObject targetingArrow;
         private LineRenderer targetingArrowShaft;
@@ -363,7 +364,7 @@ namespace CardGame
             };
 
         }
-        private void Start()
+        private IEnumerator Start()
         {
             RefreshDropdown();
             for (int i = 0; i < maxMinionSlots; i++)
@@ -411,8 +412,15 @@ namespace CardGame
             HPCounters[P.P2].Death += (_, _) => GameManager_PlayerDeath(P.P2);
             //Load cards
             cardPrefabHandle = Addressables.LoadAssetAsync<GameObject>(CardAddressable.RuntimeKey);
-            CardPrefab = cardPrefabHandle.WaitForCompletion();
             CardDatabase = CDJsonUtils.LoadCardDatabase();
+
+            yield return cardPrefabHandle;
+            if (cardPrefabHandle.Status != AsyncOperationStatus.Succeeded)
+                throw new Exception($"Could not load the Addressable card prefab: {CardAddressable.RuntimeKey}");
+
+            CardPrefab = cardPrefabHandle.Result;
+            yield return Card.PreloadSharedAssets(CardPrefab.GetComponent<Card>());
+            prefabsReady = true;
 
             //Debug.Log(CardDatabase);
         }
@@ -563,6 +571,23 @@ namespace CardGame
         public string AIDeckData;
         public void OnOfflineStart()
         {
+            if (!prefabsReady)
+            {
+                StartCoroutine(StartOfflineWhenReady());
+                return;
+            }
+
+            StartOfflineGame();
+        }
+
+        private IEnumerator StartOfflineWhenReady()
+        {
+            yield return new WaitUntil(() => prefabsReady);
+            StartOfflineGame();
+        }
+
+        private void StartOfflineGame()
+        {
             online = false;
             seed = (int)DateTime.Now.Ticks;
             UnityEngine.Random.InitState(seed);
@@ -602,6 +627,17 @@ namespace CardGame
 
 
         public override void OnNetworkSpawn()//TODO: this is probably what we can replace with the offline play.
+        {
+            StartCoroutine(StartNetworkGameWhenReady());
+        }
+
+        private IEnumerator StartNetworkGameWhenReady()
+        {
+            yield return new WaitUntil(() => prefabsReady);
+            StartNetworkGame();
+        }
+
+        private void StartNetworkGame()
         {
             online = true;
             Console.WriteLine("NetworkSpawn");
