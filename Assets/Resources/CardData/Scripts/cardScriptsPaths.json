@@ -122,6 +122,12 @@
     "54": [
         "CardData/Scripts/V2/Honza, Předseda spolku"
     ],
+    "55": [
+        "CardData/Scripts/V2/Sabča, Dvacetistěn"
+    ],
+    "56": [
+        "CardData/Scripts/V2/Jitka, Dvanáctistěn"
+    ],
     "58": [
         "CardData/Scripts/Blank"
     ],
@@ -218,8 +224,14 @@
     "101": [
         "CardData/Scripts/V2/Vésa, Pán low level jazyků"
     ],
+    "103": [
+        "CardData/Scripts/V2/Přetaktování"
+    ],
     "104": [
         "CardData/Scripts/V2/Matemágův učeň"
+    ],
+    "107": [
+        "CardData/Scripts/V2/Kilometrové kolečko"
     ],
     "108": [
         "CardData/Scripts/V2/Test prvočíselnosti"
@@ -239,6 +251,24 @@
     "126": [
         "CardData/Scripts/Blank"
     ],
+    "128": [
+        "CardData/Scripts/V2/Dobití baterie"
+    ],
+    "129": [
+        "CardData/Scripts/V2/Statická elektřina"
+    ],
+    "133": [
+        "CardData/Scripts/V2/Lví královna"
+    ],
+    "134": [
+        "CardData/Scripts/V2/Alfa samec"
+    ],
+    "135": [
+        "CardData/Scripts/V2/Snížená gravitace"
+    ],
+    "137": [
+        "CardData/Scripts/V2/Anihilace pozitronů"
+    ],
     "142": [
         "CardData/Scripts/V2/Požírač šrotu"
     ],
@@ -248,8 +278,23 @@
     "144": [
         "CardData/Scripts/V2/Kladivo z houby"
     ],
+    "145": [
+        "CardData/Scripts/V2/Růstové hormony"
+    ],
+    "146": [
+        "CardData/Scripts/V2/Zlý profesor"
+    ],
+    "147": [
+        "CardData/Scripts/V2/Standardizace"
+    ],
+    "148": [
+        "CardData/Scripts/V2/Obvodový zkrat"
+    ],
     "149": [
         "CardData/Scripts/V2/Upgrade"
+    ],
+    "150": [
+        "CardData/Scripts/V2/Extra pár rukou"
     ],
     "153": [
         "CardData/Scripts/V2/Kamarád ze Strahova"
@@ -272,6 +317,15 @@
     "169": [
         "CardData/Scripts/V2/Táborový lékař"
     ],
+    "172": [
+        "CardData/Scripts/V2/Férovkový obr"
+    ],
+    "176": [
+        "CardData/Scripts/V2/Obr z plastové stavebnice"
+    ],
+    "177": [
+        "CardData/Scripts/V2/Větrný mlýn"
+    ],
     "178": [
         "CardData/Scripts/V2/V.I. Leničkin, vůdce revoluce"
     ],
@@ -287,14 +341,53 @@
     "183": [
         "CardData/Scripts/V2/Městečko Mnichov"
     ],
+    "187": [
+        "CardData/Scripts/V2/Táborový hlídač"
+    ],
+    "188": [
+        "CardData/Scripts/V2/Zeď s ostnatým drátem"
+    ],
+    "193": [
+        "CardData/Scripts/V2/Ježibaba"
+    ],
+    "196": [
+        "CardData/Scripts/V2/Medvěd"
+    ],
+    "199": [
+        "CardData/Scripts/V2/Pepčuše, raketová baterie"
+    ],
     "203": [
         "CardData/Scripts/V2/Vodní pistolka s tekutým dusíkem"
     ],
     "204": [
         "CardData/Scripts/V2/Studená fronta"
     ],
+    "205": [
+        "CardData/Scripts/V2/Roztržitá dozorkyně"
+    ],
+    "208": [
+        "CardData/Scripts/V2/Duch dělníkův"
+    ],
+    "209": [
+        "CardData/Scripts/V2/Duch matemágův"
+    ],
+    "211": [
+        "CardData/Scripts/V2/Vrh hrnečkem"
+    ],
     "212": [
         "CardData/Scripts/Blank"
+    ],
+    "214": [
+        "CardData/Scripts/V2/Duch vodníkův"
+    ],
+    "215": [
+        "CardData/Scripts/V2/Duch Jiříkův"
+    ],
+    "217": [
+        "CardData/Scripts/V2/Příchod Zimnice"
+    ],
+    "219": [
+        "CardData/Scripts/V2/Sibiřská zima"
     ],
     "239": [
         "CardData/Scripts/GULAG/Uran"
