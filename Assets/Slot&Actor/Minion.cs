@@ -105,6 +105,17 @@ namespace CardGame
         {
             public GameActor target;
         }
+        public class DamageDealtEventArgs : EventArgs
+        {
+            public DamageDealtEventArgs(DamageableActor target, int amount)
+            {
+                Target = target;
+                Amount = amount;
+            }
+
+            public DamageableActor Target { get; }
+            public int Amount { get; }
+        }
         //Health on card
         private int baseHealth;
         private int mh;
