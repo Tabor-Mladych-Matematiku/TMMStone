@@ -418,10 +418,11 @@ namespace CardGame
             if (!IsTargetValid(face)) return;
             ResolveAttack(face);
         }
-        // Forced attacks can hit allies and bypass Taunt, Frozen and the normal attack allowance.
+        // Forced attacks can hit allies and bypass Taunt and the normal attack allowance,
+        // but Frozen is an explicit prohibition and is not consumed by the failed attempt.
         public void ForceAttack(Minion target)
         {
-            if (target == null || target == this || !Alive() || !target.Alive()) return;
+            if (target == null || target == this || !Alive() || !target.Alive() || Frozen) return;
             ResolveAttack(target, consumeAttack: false);
         }
 
