@@ -267,14 +267,16 @@ namespace CardGame
         {
             get
             {
-                int attackCount = 1;
+                int? attackCount = null;
                 foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
                 {
                     if (behaviour is IAttackCountProvider provider)
-                        attackCount = Math.Max(attackCount, provider.AttackCount);
+                        attackCount = attackCount.HasValue
+                            ? Math.Max(attackCount.Value, provider.AttackCount)
+                            : provider.AttackCount;
                 }
 
-                return attackCount;
+                return Math.Max(0, attackCount ?? 1);
             }
         }
         public void Charge()
