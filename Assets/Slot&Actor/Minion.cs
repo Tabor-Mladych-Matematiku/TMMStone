@@ -434,8 +434,17 @@ namespace CardGame
 
             if (consumeAttack) attacksRemaining = Math.Max(0, attacksRemaining - 1);
             RefreshAttackOutline();
-            if (target is Minion targetMinion && !ImmuneToAttackDamage) Damage(targetMinion.Attack);
-            target.Damage(Attack);
+            int outgoingDamage = Attack;
+            if (target is Minion targetMinion && !ImmuneToAttackDamage)
+            {
+                int retaliationDamage = targetMinion.Attack;
+                Damage(retaliationDamage);
+                if (retaliationDamage > 0)
+                    targetMinion.OnCombatDamageDealt?.Invoke(targetMinion, new(this, retaliationDamage));
+            }
+            target.Damage(outgoingDamage);
+            if (outgoingDamage > 0)
+                OnCombatDamageDealt?.Invoke(this, new(target, outgoingDamage));
             audioSource.PlayOneShot(attackSound);
             OnAfterAttack?.Invoke(this, attackEvent);
             //TODO visuals
