@@ -92,7 +92,7 @@ public class AckCardTests
     }
 
     [Test]
-    public void CarPrefersFirstEnemyHonzaAndBypassesTauntFrozenAndAttackLimit()
+    public void CarPrefersFirstEnemyHonzaAndBypassesTauntAndAttackLimit()
     {
         Minion car = Minion(GameManager.P.P1, 0, 53);
         Minion friend = Minion(GameManager.P.P1, 1, 54);
@@ -101,7 +101,6 @@ public class AckCardTests
         Minion first = Minion(GameManager.P.P2, 1, 54);
         Minion second = Minion(GameManager.P.P2, 2, 54);
         car.Attack = 12;
-        car.Frozen = true;
         Set(car, "attacksRemaining", 0);
         var script = car.gameObject.AddComponent<Honzovo_auto>();
         Assert.That(car.IsTargetValid(first), Is.False);
@@ -111,8 +110,23 @@ public class AckCardTests
         Assert.That(friend.Health, Is.EqualTo(100));
         Assert.That(taunt.Health, Is.EqualTo(100));
         Assert.That(car.Health, Is.EqualTo(99));
-        Assert.That(car.Frozen, Is.True);
+        Assert.That(car.Frozen, Is.False);
         Assert.That(car.CanAttack, Is.False);
+    }
+
+    [Test]
+    public void FrozenStopsForcedAttackWithoutBeingConsumed()
+    {
+        Minion car = Minion(GameManager.P.P1, 0, 53);
+        Minion target = Minion(GameManager.P.P2, 0, 54);
+        car.Attack = 12;
+        car.Frozen = true;
+
+        car.ForceAttack(target);
+
+        Assert.That(target.Health, Is.EqualTo(100));
+        Assert.That(car.Health, Is.EqualTo(100));
+        Assert.That(car.Frozen, Is.True);
     }
 
     [Test]
