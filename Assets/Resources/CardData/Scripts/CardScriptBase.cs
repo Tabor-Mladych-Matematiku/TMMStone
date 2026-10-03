@@ -90,6 +90,7 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
             minion.OnBeforeAttack += OnBeforeAttack;
             minion.OnAfterAttack += OnAfterAttack;
             minion.OnDeath += HandleDeath;
+            minion.OnRemovedWithoutDeath += (_, _) => UnsubscribeFromGameManager();
             minion.OnHealed += OnHealed;
             minion.OnDamaged += OnDamaged;
             return;
