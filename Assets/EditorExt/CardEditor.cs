@@ -274,9 +274,39 @@ namespace CardEditor
 
         private static void SaveScriptPaths()
         {
-            string json = MiniJson.JsonEncode(CDJsonUtils.Scriptpaths);
-            File.WriteAllText(AssetDatabase.GUIDToAssetPath(jsonGUID), json);
-            AssetDatabase.ImportAsset(AssetDatabase.GUIDToAssetPath(jsonGUID));
+            string assetPath = AssetDatabase.GUIDToAssetPath(jsonGUID);
+            File.WriteAllText(assetPath, FormatScriptPathsJson(CDJsonUtils.Scriptpaths), new UTF8Encoding(false));
+            AssetDatabase.ImportAsset(assetPath);
+        }
+
+        private static string FormatScriptPathsJson(Dictionary<int, List<string>> scriptPaths)
+        {
+            var json = new StringBuilder();
+            json.AppendLine("{");
+
+            var entries = scriptPaths.OrderBy(pair => pair.Key).ToList();
+            for (int entryIndex = 0; entryIndex < entries.Count; entryIndex++)
+            {
+                KeyValuePair<int, List<string>> entry = entries[entryIndex];
+                json.Append("    ")
+                    .Append(MiniJson.JsonEncode(entry.Key.ToString()))
+                    .AppendLine(": [");
+
+                for (int pathIndex = 0; pathIndex < entry.Value.Count; pathIndex++)
+                {
+                    json.Append("        ")
+                        .Append(MiniJson.JsonEncode(entry.Value[pathIndex]));
+                    if (pathIndex < entry.Value.Count - 1) json.Append(',');
+                    json.AppendLine();
+                }
+
+                json.Append("    ]");
+                if (entryIndex < entries.Count - 1) json.Append(',');
+                json.AppendLine();
+            }
+
+            json.AppendLine("}");
+            return json.ToString();
         }
 
         class EndNameEditHandler : UnityEditor.ProjectWindowCallback.EndNameEditAction
