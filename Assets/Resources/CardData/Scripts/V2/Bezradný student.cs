@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
+using System.Linq;
 using System;
 
 public class Bezradný_student : CardScriptBase
@@ -12,9 +13,15 @@ public class Bezradný_student : CardScriptBase
     //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
     protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e)
     {
-        if(UnityEngine.Random.value>0.5f) return;
-        List<DamageableActor> targets = new(GameManager.Instance.GetAllCharactersOwnedBy(e.target.Owner));
-        e.target = targets[UnityEngine.Random.Range(0, targets.Count)];
+        if (RandomRange(0, 2) != 0) return;
+
+        DamageableActor originalTarget = e.target as DamageableActor;
+        DamageableActor[] alternatives = GameManager.Instance
+            .GetAllCharactersOwnedBy(GetOwner(sender).Other())
+            .Where(target => target != originalTarget)
+            .ToArray();
+        if (alternatives.Length > 0)
+            e.target = alternatives[RandomRange(0, alternatives.Length)];
     }
     //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnHealed(object sender, EventArgs e) { }
