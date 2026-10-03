@@ -96,6 +96,7 @@ namespace CardGame
         public event EventHandler<TargetedEventEventArgs> OnSelfSummoned;
         public event EventHandler<TargetedEventEventArgs> OnBeforeAttack;
         public event EventHandler<TargetedEventEventArgs> OnAfterAttack;
+        public event EventHandler<DamageDealtEventArgs> OnCombatDamageDealt;
         public event EventHandler OnDeath;
         // Cleanup notification only; death effects must not subscribe to this event.
         public event EventHandler OnRemovedWithoutDeath;
