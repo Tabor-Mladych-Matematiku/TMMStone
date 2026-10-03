@@ -33,7 +33,7 @@ public class Pavel__Master_casina : CardScriptBase
 
         Card topcardOpponent = opponentDeck[0];
         Card topcardOwn = ownDeck[0];
-        if (topcardOwn.mana >= topcardOpponent.mana)
+        if (GameManager.Instance.GetManaCost(topcardOwn) >= GameManager.Instance.GetManaCost(topcardOpponent))
         {
             GameManager.Instance.AddCardToHand(
                 owner,
