@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using CardData;
 using System.Reflection;
@@ -16,13 +17,19 @@ namespace CardGame
     {
         public class TurnEventArgs
         {
-            public TurnEventArgs(bool onTurn) => this.OnTurn = onTurn;
+            public TurnEventArgs(bool onTurn) => OnTurn = onTurn;
             public bool OnTurn { get; private set; }
+            public GameManager.P Player => OnTurn ? GameManager.P.P1 : GameManager.P.P2;
         }
         public event EventHandler<TurnEventArgs> OnStartTurn;
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
         public string cardTag;
+        public bool HasTag(string tag) => !string.IsNullOrWhiteSpace(tag)
+            && (cardTag ?? string.Empty)
+                .Split(',')
+                .Select(value => value.Trim())
+                .Any(value => string.Equals(value, tag, StringComparison.OrdinalIgnoreCase));
         public List<Func<Card, int>> manacostmod = new();
         public AudioSource audioSource;
         public GameManager.P backupOwner;//ugly as heck TODO proly make this better somehow
