@@ -187,6 +187,31 @@ namespace CardGame
             }
             return -1;
         }
+        /// <summary>
+        /// Transfers the existing minion and its card without replaying or resummoning it.
+        /// Returns false if it is not on the board or the destination is full; a full
+        /// destination removes it without death effects. Call during synchronized resolution.
+        /// </summary>
+        public bool TakeControl(Minion minion, P newController, bool allowImmediateAttack = false)
+        {
+            if (minion == null || !minion.Alive()) return false;
+            CardSlot source = minion.GetComponentInParent<CardSlot>();
+            if (source == null || !minionSlots[minion.Owner].Contains(source)) return false;
+            if (minion.Owner == newController) return true;
+
+            CardSlot destination = minionSlots[newController].LastOrDefault(slot => !slot.Occupied);
+            ClearHighlights();
+            if (cursor == minion) cursor = null;
+            if (destination == null)
+            {
+                minion.RemoveWithoutDeath();
+                return false;
+            }
+
+            minion.TransferControl(destination, allowImmediateAttack);
+            return true;
+        }
+
         public int GetRandomFreeMinionSlot(P player)
         {
             List<int> freeSlots = new();
