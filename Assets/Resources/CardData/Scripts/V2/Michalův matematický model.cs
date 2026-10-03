@@ -10,7 +10,6 @@ public class Michalův_matematický_model : CardScriptBase
         Minion minion = gameObject.GetComponent<Minion>();
         if (minion == null || minion.Owner != spell.Owner) return;
 
-        Card spellCopy = Instantiate(spell);
-        GameManager.Instance.decks[minion.Owner].Add(spellCopy);
+        GameManager.Instance.AddCardToDeckByID(minion.Owner, spell.ID);
     }
 }
