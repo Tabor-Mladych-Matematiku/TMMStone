@@ -822,6 +822,10 @@ namespace CardGame
         {
             AddCardToHand(who, Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID], ID), discardExcesive);
         }
+        public void AddCardToDeckByID(P who, int ID)
+        {
+            decks[who].Add(Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID], ID));
+        }
 
         public bool SummonMinion(P who, int id)
         {
