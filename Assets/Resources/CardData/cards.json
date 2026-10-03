@@ -619,13 +619,13 @@
    "56": {
       "name": "Jitka, Dvanáctistěn",
       "rarity": "Org",
-      "type": "Token",
+      "type": "Jednotka",
       "cost": 5,
       "tag": "Člověk ",
       "Class": "Neutral",
       "expansion": "Základ",
       "token_list": [],
-      "not_for_sale": true
+      "not_for_sale": false
    },
    "57": {
       "name": "Síma, Architekt tance",
