@@ -140,6 +140,9 @@
     "66": [
         "CardData/Scripts/V2/Michal, Hlavní matemág"
     ],
+    "69": [
+        "CardData/Scripts/V2/Aritmetická destrukce"
+    ],
     "70": [
         "CardData/Scripts/V2/Finanční podvod"
     ],
@@ -170,8 +173,14 @@
     "80": [
         "CardData/Scripts/V2/Přednáška z analýzy"
     ],
+    "81": [
+        "CardData/Scripts/V2/Zaokrouhlení"
+    ],
     "82": [
         "CardData/Scripts/V2/Lekce pravděpodobnosti"
+    ],
+    "84": [
+        "CardData/Scripts/V2/Profesor matematiky"
     ],
     "85": [
         "CardData/Scripts/V2/Michalův matematický model"
@@ -179,8 +188,20 @@
     "86": [
         "CardData/Scripts/V2/Pí blast"
     ],
+    "88": [
+        "CardData/Scripts/V2/Šíření ransomware"
+    ],
     "89": [
         "CardData/Scripts/V2/Ransomware"
+    ],
+    "90": [
+        "CardData/Scripts/V2/Implementace v C"
+    ],
+    "91": [
+        "CardData/Scripts/V2/Programová dokumentace"
+    ],
+    "92": [
+        "CardData/Scripts/V2/Prohození proměnných"
     ],
     "93": [
         "CardData/Scripts/V2/Pět-blast"
@@ -191,11 +212,29 @@
     "95": [
         "CardData/Scripts/V2/Implementace v Pythonu"
     ],
+    "97": [
+        "CardData/Scripts/V2/Rozebrání na zdrojový kód"
+    ],
     "101": [
         "CardData/Scripts/V2/Vésa, Pán low level jazyků"
     ],
     "104": [
         "CardData/Scripts/V2/Matemágův učeň"
+    ],
+    "108": [
+        "CardData/Scripts/V2/Test prvočíselnosti"
+    ],
+    "110": [
+        "CardData/Scripts/V2/DDoS útok"
+    ],
+    "113": [
+        "CardData/Scripts/V2/Míša, Mistr kódu"
+    ],
+    "115": [
+        "CardData/Scripts/V2/Atomág"
+    ],
+    "123": [
+        "CardData/Scripts/V2/Deprese z nepodstatnosti"
     ],
     "126": [
         "CardData/Scripts/Blank"
@@ -212,14 +251,35 @@
     "149": [
         "CardData/Scripts/V2/Upgrade"
     ],
+    "153": [
+        "CardData/Scripts/V2/Kamarád ze Strahova"
+    ],
     "154": [
         "CardData/Scripts/V2/Cyberdyne Systems T-800"
+    ],
+    "157": [
+        "CardData/Scripts/V2/Adam, Bastlíř"
+    ],
+    "163": [
+        "CardData/Scripts/V2/Maniodepresivní robot"
+    ],
+    "164": [
+        "CardData/Scripts/V2/Fontána života"
+    ],
+    "167": [
+        "CardData/Scripts/V2/Prvostupňový matemág"
+    ],
+    "169": [
+        "CardData/Scripts/V2/Táborový lékař"
     ],
     "178": [
         "CardData/Scripts/V2/V.I. Leničkin, vůdce revoluce"
     ],
     "179": [
         "CardData/Scripts/V2/Nevysprchovaný účastník"
+    ],
+    "180": [
+        "CardData/Scripts/V2/Dítě v lese"
     ],
     "182": [
         "CardData/Scripts/V2/C'thyna"
