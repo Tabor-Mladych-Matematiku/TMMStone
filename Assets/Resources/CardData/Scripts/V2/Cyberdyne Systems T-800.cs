@@ -27,11 +27,9 @@ public class Cyberdyne_Systems_T_800 : CardScriptBase
     //Other card events
     //protected override void OnPlayed(object sender, Card.CardPlayedEventArgs e){}
     //protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e) { }
-    protected override void OnMinionPlayed(Minion minion, Card.CardPlayedEventArgs e) {
-        if(TryGetComponent(out Minion selfminion))
-        {
-            selfminion.AttackAction(minion);
-        }
+    protected override void OnMinionSummoned(Minion minion) {
+        if (TryGetComponent(out Minion selfminion) && minion.Owner != selfminion.Owner)
+            selfminion.ForceAttack(minion);
     }
     //protected override void OnFieldPlayed(Field field, Card.CardPlayedEventArgs e) { }
 
