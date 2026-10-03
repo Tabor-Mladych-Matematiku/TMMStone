@@ -3521,5 +3521,16 @@
          313
       ],
       "not_for_sale": false
+   },
+   "314": {
+      "name": "Bug",
+      "rarity": "Common",
+      "type": "Token",
+      "cost": 1,
+      "tag": "",
+      "Class": "Informatik",
+      "expansion": "Základ",
+      "token_list": [],
+      "not_for_sale": false
    }
 }
