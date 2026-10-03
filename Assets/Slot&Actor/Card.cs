@@ -596,6 +596,7 @@ namespace CardGame
             {
                 f.gameObject.AddComponent(script);
             }
+            GameManager.Instance.RefreshHandVisibility();
             return f;
         }
     }

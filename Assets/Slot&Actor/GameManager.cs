@@ -757,6 +757,22 @@ namespace CardGame
             }
 
         }
+        public bool HandsRevealed
+        {
+            get
+            {
+                Field field = FieldSlot.GetField();
+                return field != null && field.GetComponents<IHandRevealProvider>().Any(provider => provider.RevealsHands);
+            }
+        }
+
+        public void RefreshHandVisibility()
+        {
+            bool revealed = HandsRevealed;
+            foreach (Card card in AllCards)
+                card.Hidden = card.Owner != P.P1 && !revealed;
+        }
+
         public void AddCardToHand(P who, Card c, bool discardExcesive = false)
         {
             for (int i = 0; i < 11; i++)
@@ -770,7 +786,7 @@ namespace CardGame
                 if (!HandSlots[who][i].Occupied)
                 {
                     HandSlots[who][i].PlaceCard(c);
-                    c.Hidden = who != P.P1;
+                    c.Hidden = who != P.P1 && !HandsRevealed;
                     c.transform.localPosition = Vector3.zero;
                     c.standardScale = c.transform.localScale;
                     break;

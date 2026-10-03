@@ -372,14 +372,21 @@ namespace CardGame
             if (!IsTargetValid(face)) return;
             ResolveAttack(face);
         }
-        private void ResolveAttack(DamageableActor initialTarget)
+        // Forced attacks can hit allies and bypass Taunt, Frozen and the normal attack allowance.
+        public void ForceAttack(Minion target)
+        {
+            if (target == null || target == this || !Alive() || !target.Alive()) return;
+            ResolveAttack(target, consumeAttack: false);
+        }
+
+        private void ResolveAttack(DamageableActor initialTarget, bool consumeAttack = true)
         {
             TargetedEventEventArgs attackEvent = new() { target = initialTarget };
             OnBeforeAttack?.Invoke(this, attackEvent);
 
             if (attackEvent.target is not DamageableActor target) return;
 
-            attacksRemaining = Math.Max(0, attacksRemaining - 1);
+            if (consumeAttack) attacksRemaining = Math.Max(0, attacksRemaining - 1);
             RefreshAttackOutline();
             if (target is Minion targetMinion && !ImmuneToAttackDamage) Damage(targetMinion.Attack);
             target.Damage(Attack);

@@ -1,0 +1,6 @@
+{
+    "name": "AckCards.Tests",
+    "references": ["CardScripts", "CardData", "TMMGameActors", "Unity.TextMeshPro", "Unity.ugui", "Unity.Netcode.Runtime"],
+    "includePlatforms": ["Editor"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

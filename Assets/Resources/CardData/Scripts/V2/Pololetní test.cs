@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
 using System;
+using System.Linq;
 
 public class Pololetní_test : CardScriptBase
 {
@@ -19,7 +20,7 @@ public class Pololetní_test : CardScriptBase
     //protected override void OnEndTurn(object sender, GameActor.TurnEventArgs e){}
     //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) {
-        foreach (Minion minion in GameManager.Instance.GetAllMinionsOwnedBy(GetOwner(sender).Other()))
+        foreach (Minion minion in GameManager.Instance.GetAllMinionsOwnedBy(GetOwner(sender).Other()).ToArray())
         {
             DealSpellDamage(minion, 4,sender);
         }

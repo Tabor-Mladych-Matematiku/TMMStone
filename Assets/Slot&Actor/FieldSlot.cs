@@ -8,7 +8,11 @@ namespace CardGame
         public override bool IsCardPlacable(Card c) => c.cardType == Card.CardType.Field;
         public Field GetField() => GetComponentInChildren<Field>();
 
-        public void ClearField()=>RemoveActor();
+        public void ClearField()
+        {
+            RemoveActor();
+            GameManager.Instance.RefreshHandVisibility();
+        }
         
     }
 }
