@@ -9,7 +9,11 @@ public class Elektrikář_z_ČVUTu : TargetableCardScriptBase
     protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
     {
         Minion target = (Minion)e.Target;
-        (target.Health, target.Attack) = (target.Attack, target.Health);
+        int oldHealth = target.Health;
+        int oldAttack = target.Attack;
+        target.Attack = oldHealth;
+        target.MaxHealth = oldAttack;
+        target.Health = oldAttack;
     }
 
     protected override bool TargetValidate(TableActor target)=>target is Minion;
