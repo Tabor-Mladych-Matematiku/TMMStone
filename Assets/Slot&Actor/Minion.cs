@@ -97,6 +97,8 @@ namespace CardGame
         public event EventHandler<TargetedEventEventArgs> OnBeforeAttack;
         public event EventHandler<TargetedEventEventArgs> OnAfterAttack;
         public event EventHandler OnDeath;
+        // Cleanup notification only; death effects must not subscribe to this event.
+        public event EventHandler OnRemovedWithoutDeath;
         public event EventHandler OnHealed;
         public event EventHandler OnDamaged;
         public class TargetedEventEventArgs
@@ -195,6 +197,32 @@ namespace CardGame
             OnDeath?.Invoke(this, new());
             slot.RemoveMinion(this);
         }
+        internal void RemoveWithoutDeath()
+        {
+            if (isDying) return;
+            CardSlot slot = GetComponentInParent<CardSlot>();
+            if (slot == null) return;
+
+            isDying = true;
+            backupOwner = slot.Owner;
+            OnRemovedWithoutDeath?.Invoke(this, EventArgs.Empty);
+            slot.RemoveActor(this);
+        }
+
+        internal void TransferControl(CardSlot destination, bool allowImmediateAttack)
+        {
+            CardSlot source = GetComponentInParent<CardSlot>();
+            Card card = source.PopCard();
+            destination.PlaceCard(card);
+            card.transform.localPosition = Vector3.zero;
+            card.backupOwner = destination.Owner;
+            transform.SetParent(destination.transform, false);
+            transform.localPosition = Vector3.zero;
+            backupOwner = destination.Owner;
+            attacksRemaining = allowImmediateAttack && !Frozen ? AttackCount : 0;
+            RefreshAttackOutline();
+        }
+
         private int baseAttack;
         public int Attack
         {
