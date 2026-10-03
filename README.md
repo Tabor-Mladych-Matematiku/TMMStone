@@ -97,7 +97,7 @@ A deck may contain at most one Ability (`Schopnost`). It begins the game in its 
 
 A ready minion normally attacks once during its controller's turn and cannot attack a friendly character. When one minion attacks another, both deal their attack to each other simultaneously. A minion at 0 health dies and its attached card moves to the graveyard.
 
-Some effects force attacks. Unless their text says otherwise, forced attacks preserve combat and attack events while bypassing Taunt, Frozen and the normal attack allowance. Explicit attack prohibitions still apply.
+Some effects force attacks. Unless their text says otherwise, forced attacks preserve combat and attack events while bypassing Taunt and the normal attack allowance. Frozen and other explicit attack prohibitions still block them; a blocked forced attack does not consume Frozen.
 
 ## Effect resolution order
 
