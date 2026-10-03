@@ -42,7 +42,8 @@ public class AckCardTests
         var implementedIds = new HashSet<int> {
             15, 21, 22, 23, 24, 25, 27, 28, 29, 32, 33, 34, 36, 38, 45, 46,
             47, 48, 49, 50, 51, 52, 54, 58, 59, 64, 72, 73, 74, 75, 76, 78,
-            79, 80, 82, 312
+            79, 80, 82, 89, 93, 94, 95, 101, 178, 179, 182, 183, 203, 204,
+            312
         };
         int checkedCards = 0;
         foreach (var pair in CDJsonUtils.LoadCardDatabase())
@@ -58,7 +59,7 @@ public class AckCardTests
             }
             checkedCards++;
         }
-        Assert.That(checkedCards, Is.EqualTo(36));
+        Assert.That(checkedCards, Is.EqualTo(47));
     }
 
     [Test]
