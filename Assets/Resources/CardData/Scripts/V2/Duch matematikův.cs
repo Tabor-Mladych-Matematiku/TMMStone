@@ -7,8 +7,8 @@ using System;
 public class Duch_matematikův : CardScriptBase
 {
     //Minion events
-    protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) {
-        ((DamageableActor)e.target).Frozen = true;
+    protected override void OnCombatDamageDealt(object sender, Minion.DamageDealtEventArgs e) {
+        if (e.Amount > 0) e.Target.Frozen = true;
     }
     //protected override void OnHealed(object sender, EventArgs e) { }
     //protected override void OnDamaged(object sender, EventArgs e) { }
