@@ -25,19 +25,14 @@ public class Dolní_šichta : CardScriptBase
     //protected override void OnStartTurn(object sender, GameActor.TurnEventArgs e){}
     const int UranID = 239;
     protected override void OnSelfPlayed(object sender, TargetlessEventArgs e) {
-        int survivingMinionsCount = 0;
-        void LogDeath(object s, EventArgs args) { survivingMinionsCount--; }
-        List<Minion> minions = GameManager.Instance.AllMinions.ToList();//This should ensure that it targets only the minions that are currently on the board, and not any that are summoned during the resolution of this spell
-        foreach (var minion in minions)
+        Minion[] minions = GameManager.Instance.AllMinions.ToArray();
+        foreach (Minion minion in minions)
         {
-            if (minion != null)
-            { //If one of them died while this spell is resolving, we don't want to crash
-                survivingMinionsCount++;
-                minion.OnDeath += LogDeath;
+            if (minion != null && minion.Alive())
                 DealSpellDamage(minion, 2,sender);
-                minion.OnDeath -= LogDeath;
-            }
         }
+
+        int survivingMinionsCount = minions.Count(minion => minion != null && minion.Alive());
         for (int i = 0; i < survivingMinionsCount; i++)
             GameManager.Instance.AddCardToHandByID(GetOwner(sender), UranID, true);
         
