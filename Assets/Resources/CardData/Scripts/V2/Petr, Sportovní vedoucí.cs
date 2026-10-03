@@ -7,6 +7,7 @@ using System.Linq;
 
 public class Petr__Sportovní_vedoucí : CardScriptBase
 {
+    public override int AttackCount => 0;
     //Minion events
     //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
