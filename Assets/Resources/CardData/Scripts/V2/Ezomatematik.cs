@@ -15,8 +15,7 @@ public class Ezomatematik : CardScriptBase
     //protected override void OnBattleCry(){}
     protected override void OnSpellPlayed(Card spell, Card.CardPlayedEventArgs e)
     {
-        if (spell.Owner == GameManager.Instance.PlayerOnTurn&&
-            gameObject.TryGetComponent(out Minion minion))
+        if (gameObject.TryGetComponent(out Minion minion) && spell.Owner == minion.Owner)
         {
             GameManager.Instance.HPCounters[minion.Owner].Heal(2);
         }
