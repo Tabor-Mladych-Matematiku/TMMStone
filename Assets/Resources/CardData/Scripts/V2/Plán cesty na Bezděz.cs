@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
 using System;
+using System.Linq;
 
 public class Plán_cesty_na_Bezděz : CardScriptBase
 {
@@ -13,7 +14,7 @@ public class Plán_cesty_na_Bezděz : CardScriptBase
     //protected override void OnMinionEndTurn(object sender, GameActor.TurnEventArgs e) { }
     protected override void OnTableActorStartOwnTurn(object sender, GameActor.TurnEventArgs e)
     {
-        foreach (Minion minion in GameManager.Instance.AllMinions)
+        foreach (Minion minion in GameManager.Instance.AllMinions.ToArray())
         {
             minion.Death();
         }
