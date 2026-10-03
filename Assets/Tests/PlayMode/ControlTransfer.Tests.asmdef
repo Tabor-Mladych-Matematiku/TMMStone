@@ -1,0 +1,5 @@
+{
+    "name": "ControlTransfer.Tests",
+    "references": ["TMMGameActors", "CardScripts", "Unity.TextMeshPro", "Unity.ugui", "Unity.Netcode.Runtime"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

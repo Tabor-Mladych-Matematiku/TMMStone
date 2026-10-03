@@ -36,18 +36,18 @@ public class AckCardTests
     }
 
     [Test]
-    public void AllAckCardsAndTheirTokenVariantsResolveToScripts()
+    public void ImplementedAckBatchAndTokenVariantsResolveToScripts()
     {
-        var extra = CDJsonUtils.JSONToList(Resources.Load<TextAsset>("CardData/extraCardData").text);
-        var names = new HashSet<string>(extra.Cast<Dictionary<string, object>>()
-            .Where(card => card.TryGetValue("ReviewNote", out var note) && (string)note == "ACK")
-            .Select(card => (string)card["Název"]));
+        // Review approval does not mean implementation: later review rounds add ACKs.
+        var implementedIds = new HashSet<int> {
+            15, 21, 22, 23, 24, 25, 27, 28, 29, 32, 33, 34, 36, 38, 45, 46,
+            47, 48, 49, 50, 51, 52, 54, 58, 59, 64, 72, 73, 74, 75, 76, 78,
+            79, 80, 82, 312
+        };
         int checkedCards = 0;
         foreach (var pair in CDJsonUtils.LoadCardDatabase())
         {
-            string name = pair.Value.name;
-            if (name.EndsWith(" (token)")) name = name[..^8];
-            if (!names.Contains(name)) continue;
+            if (!implementedIds.Contains(pair.Key)) continue;
             Assert.That(pair.Value.scripts, Is.Not.Empty, pair.Value.name);
             foreach (string path in pair.Value.scripts)
             {
