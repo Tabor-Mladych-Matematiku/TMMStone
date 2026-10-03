@@ -152,8 +152,12 @@ namespace CardGame
         public override void Damage(int ammount)
         {
             if (ammount < 0) throw new ArgumentException("Ammount must be greater or equal to 0");
-            Health = checked(Health - ammount);
-            if (ammount > 0) OnDamaged?.Invoke(this, new());
+            if (ammount == 0) return;
+
+            h = checked(h - ammount);
+            HealthLabel.text = h.ToString();//This is not using Health property because OnDamaged can occur before death.
+            OnDamaged?.Invoke(this, EventArgs.Empty);
+            if (h <= 0) Death();
         }
         internal override void Awake()
         {
