@@ -89,6 +89,7 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
             minion.OnSelfSummoned += OnSelfSummoned;
             minion.OnBeforeAttack += OnBeforeAttack;
             minion.OnAfterAttack += OnAfterAttack;
+            minion.OnCombatDamageDealt += OnCombatDamageDealt;
             minion.OnDeath += HandleDeath;
             minion.OnRemovedWithoutDeath += (_, _) => UnsubscribeFromGameManager();
             minion.OnHealed += OnHealed;
@@ -113,6 +114,7 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
     protected virtual void OnSelfSummoned(object sender, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
+    protected virtual void OnCombatDamageDealt(object sender, Minion.DamageDealtEventArgs e) { }
     protected virtual void OnHealed(object sender, EventArgs e) { }
     protected virtual void OnDamaged(object sender, EventArgs e) { }
     /// <summary>
@@ -122,7 +124,7 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
     /// <param name="e"></param>
     protected virtual void OnTableActorEndTurn(object sender, GameActor.TurnEventArgs e)
     {
-        if (GetOwner(sender) == GameManager.Instance.PlayerOnTurn) OnTableActorEndOwnTurn(sender, e);
+        if (GetOwner(sender) == e.Player) OnTableActorEndOwnTurn(sender, e);
     }
     /// <summary>
     /// At the end of your turn
@@ -139,7 +141,7 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
 
     private void _OnTableActorStartTurn(object sender, GameActor.TurnEventArgs e)
     {
-        if (GetOwner(sender) == GameManager.Instance.PlayerOnTurn) OnTableActorStartOwnTurn(sender, e);
+        if (GetOwner(sender) == e.Player) OnTableActorStartOwnTurn(sender, e);
         OnTableActorStartTurn(sender, e);
     }
 
