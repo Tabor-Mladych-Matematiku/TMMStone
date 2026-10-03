@@ -30,7 +30,7 @@ public class Požírač_šrotu : CardScriptBase
         if (TryGetComponent(out Minion selfminion)
             && minion != selfminion
             && minion.Owner == selfminion.Owner
-            && minion.cardTag == "Stroj")
+            && minion.HasTag("Stroj"))
         {
             selfminion.Buff(1, 1);
         }
