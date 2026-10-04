@@ -847,6 +847,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ab2ed103e06bc26498b6d745d9a9c1c3
+    m_Address: "card-face/V2/N\xE1hl\xE1 lobotomie (token)"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb89f2a7007778f4f8c347e6bde05c99
+    m_Address: card-face/V2/Bug
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 1740b00bacd1fe441b39de3739611fb2, type: 2}
   m_SchemaSet:

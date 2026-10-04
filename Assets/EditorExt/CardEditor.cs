@@ -371,9 +371,13 @@ namespace CardEditor
             string folder = $"Assets/CardArt/CardFaces/{expansion}";
             if (!Directory.Exists(folder)) return null;
 
-            string imagePath = Directory.EnumerateFiles(folder)
-                .FirstOrDefault(path => !path.EndsWith(".meta", StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(Path.GetFileNameWithoutExtension(path), artName, StringComparison.Ordinal));
+            string[] imagePaths = Directory.EnumerateFiles(folder)
+                .Where(path => !path.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            string imagePath = imagePaths.FirstOrDefault(path =>
+                    string.Equals(Path.GetFileNameWithoutExtension(path), cardName, StringComparison.Ordinal))
+                ?? imagePaths.FirstOrDefault(path =>
+                    string.Equals(Path.GetFileNameWithoutExtension(path), artName, StringComparison.Ordinal));
             return imagePath == null
                 ? null
                 : AssetDatabase.LoadAssetAtPath<Texture2D>(imagePath.Replace('\\', '/'));

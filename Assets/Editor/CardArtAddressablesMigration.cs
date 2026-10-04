@@ -29,7 +29,6 @@ public static class CardArtAddressablesMigration
 
             MoveIfPresent("Assets/Resources/CardData/V2", $"{Root}/CardFaces/V2");
             MoveIfPresent("Assets/Resources/CardData/GULAG", $"{Root}/CardFaces/GULAG");
-            MoveIfPresent("Assets/Resources/CardData/Tokeny", $"{Root}/CardFaces/Tokeny");
             MoveIfPresent("Assets/Resources/CardData/card-back.png", $"{Root}/CardFaces/card-back.png");
             MoveIfPresent("Assets/Resources/CardPlainImages/V2", $"{Root}/CardPlainImages/V2");
             MoveIfPresent("Assets/Resources/CardPlainImages/GULAG", $"{Root}/CardPlainImages/GULAG");
@@ -47,7 +46,6 @@ public static class CardArtAddressablesMigration
 
         ConfigureGroup(settings, "Card Faces V2", $"{Root}/CardFaces/V2", "card-face/V2");
         ConfigureGroup(settings, "Card Faces GULAG", $"{Root}/CardFaces/GULAG", "card-face/GULAG");
-        ConfigureGroup(settings, "Card Faces Tokeny", $"{Root}/CardFaces/Tokeny", "card-face/Tokeny");
         ConfigureGroup(settings, "Card Plain V2", $"{Root}/CardPlainImages/V2", "card-plain/V2");
         ConfigureGroup(settings, "Card Plain GULAG", $"{Root}/CardPlainImages/GULAG", "card-plain/GULAG");
         ConfigureSingleAsset(settings, "Card Faces V2", $"{Root}/CardFaces/card-back.png", "card-face/card-back");
@@ -61,12 +59,9 @@ public static class CardArtAddressablesMigration
     private static void RunIfNeeded()
     {
         if (AssetDatabase.IsValidFolder("Assets/Resources/CardData/V2")
-            || AssetDatabase.IsValidFolder("Assets/Resources/CardData/Tokeny")
             || AssetDatabase.IsValidFolder("Assets/Resources/CardPlainImages/V2")
             || (AssetDatabase.IsValidFolder($"{Root}/CardFaces/V2")
-                && AddressableAssetSettingsDefaultObject.Settings?.FindGroup("Card Faces V2") == null)
-            || (AssetDatabase.IsValidFolder($"{Root}/CardFaces/Tokeny")
-                && AddressableAssetSettingsDefaultObject.Settings?.FindGroup("Card Faces Tokeny") == null))
+                && AddressableAssetSettingsDefaultObject.Settings?.FindGroup("Card Faces V2") == null))
             Run();
     }
 
