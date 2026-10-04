@@ -60,7 +60,7 @@ public class AckCardTests
         var implementedIds = new HashSet<int> {
             15, 21, 22, 23, 24, 25, 27, 28, 29, 32, 33, 34, 36, 38, 45, 46,
             47, 48, 49, 50, 51, 52, 54, 55, 56, 58, 59, 64, 72, 73, 74, 75,
-            76, 78,
+            76, 78, 17, 174,
             69, 79, 80, 81, 82, 84, 88, 89, 90, 91, 92, 93, 94, 95, 97,
             101, 103, 107, 108, 110, 113, 115, 123, 128, 129, 133, 134, 135,
             137, 145, 146, 147, 148, 150, 153, 157, 163, 164, 167, 169, 172,
@@ -82,7 +82,7 @@ public class AckCardTests
             }
             checkedCards++;
         }
-        Assert.That(checkedCards, Is.EqualTo(107));
+        Assert.That(checkedCards, Is.EqualTo(109));
     }
 
     [Test]
@@ -113,6 +113,67 @@ public class AckCardTests
         Assert.That(own.Hidden, Is.False);
         Assert.That(opponent.Hidden, Is.True);
         Assert.That(drawn.Hidden, Is.True);
+    }
+
+    [Test]
+    public void LordOfChaosCreatesOneSharedDrawPile()
+    {
+        CreateDeckAndGraveZones();
+        Card first = Card(1);
+        Card second = Card(33);
+        manager.decks[GameManager.P.P1].Add(first);
+        manager.decks[GameManager.P.P2].Add(second);
+
+        Card lord = Card(17);
+        Type lordScriptType = typeof(Honzovo_auto).Assembly.GetType("EVIL_Jiřík__Pán_chaosu", true);
+        Component lordScript = lord.gameObject.AddComponent(lordScriptType);
+        Invoke(lordScript, "OnSelfPlayed", lord,
+            new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Minion));
+
+        Assert.That(manager.decks[GameManager.P.P1].Pile,
+            Is.SameAs(manager.decks[GameManager.P.P2].Pile));
+        Assert.That(manager.decks[GameManager.P.P1], Is.EquivalentTo(new[] { first, second }));
+        manager.decks[GameManager.P.P1].PopFirst();
+        Assert.That(manager.decks[GameManager.P.P2].Count, Is.EqualTo(1));
+        lord.backupOwner = GameManager.P.P2;
+        Invoke(lordScript, "OnSelfPlayed", lord,
+            new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Minion));
+        Assert.That(manager.decks[GameManager.P.P1].Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ChaosWardenExchangesGravesAndDrawPilesWithoutDuplicatingAliasedPile()
+    {
+        CreateDeckAndGraveZones();
+        Card formerDeck = Card(1);
+        Card firstGrave = Card(33);
+        Card secondGrave = Card(48);
+        manager.decks[GameManager.P.P1].Add(formerDeck);
+        Card lord = Card(17);
+        Type lordScriptType = typeof(Honzovo_auto).Assembly.GetType("EVIL_Jiřík__Pán_chaosu", true);
+        Invoke(lord.gameObject.AddComponent(lordScriptType), "OnSelfPlayed", lord,
+            new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Minion));
+        manager.graves[GameManager.P.P1].Add(firstGrave);
+        manager.graves[GameManager.P.P2].Add(secondGrave);
+
+        Card warden = Card(314);
+        Type wardenScriptType = typeof(Honzovo_auto).Assembly.GetType(
+            "EVIL_Jiřík__Dozorce_chaosu__druhá_fáze", true);
+        Component wardenScript = warden.gameObject.AddComponent(wardenScriptType);
+        Invoke(wardenScript, "OnSelfPlayed", warden,
+            new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Minion));
+
+        Assert.That(manager.decks[GameManager.P.P1].Pile,
+            Is.SameAs(manager.decks[GameManager.P.P2].Pile));
+        Assert.That(manager.decks[GameManager.P.P1], Is.EquivalentTo(new[] { firstGrave, secondGrave }));
+        Assert.That(manager.graves[GameManager.P.P1].Pile,
+            Is.SameAs(manager.graves[GameManager.P.P2].Pile));
+        Assert.That(manager.graves[GameManager.P.P1], Is.EquivalentTo(new[] { formerDeck }));
+
+        warden.backupOwner = GameManager.P.P2;
+        Invoke(wardenScript, "OnSelfPlayed", warden,
+            new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Minion));
+        Assert.That(manager.decks[GameManager.P.P1].Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -338,6 +399,17 @@ public class AckCardTests
         manager.ManaCounters ??= new Dictionary<GameManager.P, ManaCounter>();
         manager.ManaCounters[owner] = counter;
         return counter;
+    }
+
+    void CreateDeckAndGraveZones()
+    {
+        manager.decks = new Dictionary<GameManager.P, Deck>();
+        manager.graves = new Dictionary<GameManager.P, Grave>();
+        foreach (GameManager.P owner in new[] { GameManager.P.P1, GameManager.P.P2 })
+        {
+            manager.decks[owner] = NewObject("Deck").AddComponent<Deck>();
+            manager.graves[owner] = NewObject("Grave").AddComponent<Grave>();
+        }
     }
 
     GameObject NewObject(string name)

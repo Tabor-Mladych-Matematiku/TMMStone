@@ -5,12 +5,12 @@ namespace CardGame
 {
     public class Grave : MonoBehaviour, IList<Card>//TODO: might be better to have a list and not ask the tree about it all the time. Sounds effortfull
     {
-        List<Card> cards = new();
+        CardPile pile = new();
 
 
-        public Card this[int index] { get => transform.GetChild(index).GetComponent<Card>(); set => throw new System.NotImplementedException(); }
+        public Card this[int index] { get => pile.Cards[index]; set => throw new System.NotImplementedException(); }
 
-        public int Count { get => transform.childCount; }
+        public int Count => pile.Cards.Count;
 
         public bool IsReadOnly => throw new System.NotImplementedException();
 
@@ -20,7 +20,8 @@ namespace CardGame
             item.transform.localPosition = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), 0);
             item.standardScale = transform.localScale;
             item.Hidden = false;
-            cards.Add(item);
+            pile.Cards.Add(item);
+            pile.NotifyChanged();
         }
         /// <summary>
         /// Destroys all Cards in grave
@@ -29,19 +30,20 @@ namespace CardGame
         {
             for (int i = transform.childCount - 1; i >= 0; i--)
                 Destroy(transform.GetChild(i).gameObject);
-            cards.Clear();
+            pile.Cards.Clear();
+            pile.NotifyChanged();
         }
 
-        public bool Contains(Card item) => cards.Contains(item);
+        public bool Contains(Card item) => pile.Cards.Contains(item);
 
         public void CopyTo(Card[] array, int arrayIndex)
         {
             throw new System.NotImplementedException();
         }
 
-        public IEnumerator<Card> GetEnumerator() => cards.GetEnumerator();
+        public IEnumerator<Card> GetEnumerator() => pile.Cards.GetEnumerator();
 
-        public int IndexOf(Card item) => cards.IndexOf(item);
+        public int IndexOf(Card item) => pile.Cards.IndexOf(item);
 
         public void Insert(int index, Card item)
         {
@@ -50,15 +52,11 @@ namespace CardGame
 
         public bool Remove(Card item)
         {
-            if (cards.Remove(item))
+            if (pile.Cards.Remove(item))
             {
-                for (int i = 0; i < transform.childCount; i++)
-                    if (transform.GetChild(i).GetComponent<Card>() == item)
-                    {
-                        Destroy(transform.GetChild(i).gameObject);
-                        return true;
-                    }
-                throw new System.Exception("Card was removed from list but not found in transform children");
+                Destroy(item.gameObject);
+                pile.NotifyChanged();
+                return true;
             }
             return false;
         }
@@ -69,18 +67,28 @@ namespace CardGame
         /// </summary>
         public bool Take(Card item)
         {
-            if (!cards.Remove(item)) return false;
+            if (!pile.Cards.Remove(item)) return false;
 
             item.transform.SetParent(null);
+            pile.NotifyChanged();
             return true;
         }
 
         public void RemoveAt(int index)
         {
-            cards.RemoveAt(index);
-            Destroy(transform.GetChild(index).gameObject);
+            Card item = pile.Cards[index];
+            pile.Cards.RemoveAt(index);
+            Destroy(item.gameObject);
+            pile.NotifyChanged();
         }
 
         IEnumerator IEnumerable.GetEnumerator()=>GetEnumerator();
+
+        public CardPile Pile => pile;
+
+        public void UsePile(CardPile sharedPile)
+        {
+            pile = sharedPile ?? throw new System.ArgumentNullException(nameof(sharedPile));
+        }
     }
 }
