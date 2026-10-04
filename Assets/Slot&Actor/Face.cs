@@ -50,6 +50,7 @@ namespace CardGame
 
         public override void Damage(int ammount)
         {
+            if (Immune) return;
             GetComponentInParent<HPCounter>().Health-= ammount;
         }
 
