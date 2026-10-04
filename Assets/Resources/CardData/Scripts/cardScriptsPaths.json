@@ -92,6 +92,9 @@
     "38": [
         "CardData/Scripts/V2/Recyklovaná přednáška"
     ],
+    "42": [
+        "CardData/Scripts/V2/Filip, Přinašeč míru"
+    ],
     "45": [
         "CardData/Scripts/V2/Bouřňák"
     ],
@@ -142,6 +145,9 @@
     ],
     "64": [
         "CardData/Scripts/V2/Zkouškové období"
+    ],
+    "65": [
+        "CardData/Scripts/V2/Přímá úměra"
     ],
     "66": [
         "CardData/Scripts/V2/Michal, Hlavní matemág"
@@ -245,8 +251,17 @@
     "115": [
         "CardData/Scripts/V2/Atomág"
     ],
+    "118": [
+        "CardData/Scripts/V2/Genetická modifikace"
+    ],
+    "120": [
+        "CardData/Scripts/V2/Grantová komise"
+    ],
     "123": [
         "CardData/Scripts/V2/Deprese z nepodstatnosti"
+    ],
+    "124": [
+        "CardData/Scripts/V2/Lenička, Matka přírody"
     ],
     "126": [
         "CardData/Scripts/Blank"
@@ -302,6 +317,9 @@
     "154": [
         "CardData/Scripts/V2/Cyberdyne Systems T-800"
     ],
+    "156": [
+        "CardData/Scripts/V2/Doma namíchaná trhavina"
+    ],
     "157": [
         "CardData/Scripts/V2/Adam, Bastlíř"
     ],
@@ -350,6 +368,9 @@
     "193": [
         "CardData/Scripts/V2/Ježibaba"
     ],
+    "194": [
+        "CardData/Scripts/V2/Chaloupka na kuří nožce"
+    ],
     "196": [
         "CardData/Scripts/V2/Medvěd"
     ],
@@ -382,6 +403,9 @@
     ],
     "215": [
         "CardData/Scripts/V2/Duch Jiříkův"
+    ],
+    "216": [
+        "CardData/Scripts/V2/Velká mýdlová bouře"
     ],
     "217": [
         "CardData/Scripts/V2/Příchod Zimnice"
@@ -418,5 +442,8 @@
     ],
     "312": [
         "CardData/Scripts/V2/Náhlá lobotomie"
+    ],
+    "314": [
+        "CardData/Scripts/V2/Bug"
     ]
 }
