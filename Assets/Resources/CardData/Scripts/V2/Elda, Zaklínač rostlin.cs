@@ -7,7 +7,7 @@ public class Elda__Zaklínač_rostlin : CardScriptBase
         // The played card already occupies its slot while its battlecry resolves.
         for (int i = 0; i < GameManager.maxMinionSlots; i++)
         {
-            if (!GameManager.Instance.SummonMinion(GetOwner(sender), 51)) break;
+            if (GameManager.Instance.SummonMinion(GetOwner(sender), 51) == null) break;
         }
     }
 }

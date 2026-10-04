@@ -27,7 +27,7 @@ public class Jiříkův_bezedný_hrnek : CardScriptBase
         GameManager.P enemy = ((Minion)sender).Owner.Other();
         foreach (int id in stolenMinionIDs)
         {
-            if (!GameManager.Instance.SummonMinion(enemy, id)) break;
+            if (GameManager.Instance.SummonMinion(enemy, id) == null) break;
         }
     }
 

@@ -11,7 +11,7 @@ public class Únos : CardScriptBase
 
         int captiveID = minion.CardID;
         minion.RemoveWithoutDeath();
-        if(GameManager.Instance.SummonMinionActor(owner, 227).TryGetComponent(out Pytel bag) && bag!=null)
+        if(GameManager.Instance.SummonMinion(owner, 227).TryGetComponent(out Pytel bag) && bag!=null)
             bag.SetCaptive(captiveID);
     }
 }

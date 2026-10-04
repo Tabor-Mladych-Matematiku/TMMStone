@@ -842,17 +842,16 @@ namespace CardGame
             decks[who].Add(Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID], ID));
         }
 
-        public bool SummonMinion(P who, int id)
+        public Minion SummonMinion(P who, int id)
         {
             int slotIndex = GetNextFreeMinionSlot(who);
-            if (slotIndex == -1) return false;
+            if (slotIndex == -1) return null;
 
             Card card = Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[id], id);
             CardSlot slot = minionSlots[who][slotIndex];
             slot.PlaceCard(card);
             card.gameObject.SetActive(false);
-            card.SummonMinion(slot);
-            return true;
+            return card.SummonMinion(slot);
         }
         public void Discard(Card c, P who)
         {
