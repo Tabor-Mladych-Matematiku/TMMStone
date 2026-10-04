@@ -117,6 +117,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c5193dbe4a142b44b5a9efca9655e84
+    m_Address: "card-plain/V2/Rob\u016Ftek z plastov\xE9 stavebnice"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1cc20ed476d37e543bbd435e9fcb1354
     m_Address: "card-plain/V2/Elis, Nej\u0161\u0165astn\u011Bj\u0161\xED statistik"
     m_ReadOnly: 0
@@ -124,6 +129,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1cd12cae58ce0b0449cb5bf352181fbc
     m_Address: "card-plain/V2/\u0160koln\xED garda"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d431074f1909e24aa36e2a9cfe6e11c
+    m_Address: "card-plain/V2/Statick\xE1 elekt\u0159ina"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -207,6 +217,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 37a8b9d63fa81a04f8579271326d97bc
+    m_Address: "card-plain/V2/Forexov\xFD obchodn\xEDk"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3950e1916c3695448a2f3eba4f97befa
     m_Address: "card-plain/V2/Zpir\xE1t\u011Bn\xFD software"
     m_ReadOnly: 0
@@ -242,6 +257,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 47bc7c7a108ea0c47b84aec81f5a7089
+    m_Address: "card-plain/V2/Nekone\u010Dn\xE1 nepravd\u011Bpodobnost"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 47e4f4f84c614b940aa745b3aa92b5e8
     m_Address: card-plain/V2/Implementace v C
     m_ReadOnly: 0
@@ -274,6 +294,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f22d6dfa6cba0d4488bf99964a6bdba
     m_Address: card-plain/V2/Student FIT
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5156afb435049c546aecb5beb73c9bb3
+    m_Address: "card-plain/V2/Aplikace prediktivn\xEDho modelu"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -359,6 +384,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 680c8f7612b26064d818127caec8b33f
     m_Address: card-plain/V2/Implementace v Java
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 694483926d433f24f84c963a5320f050
+    m_Address: card-plain/V2/Alfa samec
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -457,6 +487,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 89e93ee5bb86dfb439c26290362dd0cd
+    m_Address: "card-plain/V2/Doma nam\xEDchan\xE1 trhavina"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8f74662fab0fa4f498f2e22b9c9d1276
     m_Address: "card-plain/V2/Ji\u0159\xEDkova kniha v\u011Bd\u011Bn\xED"
     m_ReadOnly: 0
@@ -494,6 +529,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 956aec52e7cf80749bb45d7dc6a9a433
     m_Address: "card-plain/V2/P\u011Bt-blast"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 95778a1c88e9648479460cfb0d06fa75
+    m_Address: card-plain/V2/Cyberdyne systems T-800
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -707,6 +747,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e52169467779646438a4df10aec10b92
+    m_Address: "card-plain/V2/Maniodepresivn\xED robot"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e83f49b280f479147b43290f630aff55
     m_Address: "card-plain/V2/Matem\xE1g\u016Fv u\u010De\u0148"
     m_ReadOnly: 0
@@ -734,6 +779,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f2b62b31babef4f4b9b02f68a1f50c3e
     m_Address: "card-plain/V2/T\xFDnka, Ocelov\xE1 d\xE1ma"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f39990746998c2c41a105ab3eeb69d00
+    m_Address: "card-plain/V2/Robohypno\u017E\xE1ba"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
