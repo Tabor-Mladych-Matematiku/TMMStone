@@ -1211,23 +1211,16 @@ namespace CardGame
         private readonly List<string> savePaths = new();
         public void RefreshDropdown()
         {
-            string saveFolder = Path.Combine(Application.persistentDataPath, "Decks");
-
-            if (!Directory.Exists(saveFolder))
-                Directory.CreateDirectory(saveFolder);
-
             OwnDeckDropdown.ClearOptions();
             OppDeckDropdown.ClearOptions();
             savePaths.Clear();
 
-            string[] files = Directory.GetFiles(saveFolder, "*.json");
-
             List<string> optionNames = new();
 
-            foreach (string file in files)
+            foreach (string deckName in DeckStorage.GetDeckNames())
             {
-                savePaths.Add(file);
-                optionNames.Add(Path.GetFileNameWithoutExtension(file));
+                savePaths.Add(deckName);
+                optionNames.Add(deckName);
             }
 
             if (optionNames.Count == 0)
@@ -1246,8 +1239,8 @@ namespace CardGame
                 return;
             }
 
-            OwnDeckData = File.ReadAllText(savePaths[OwnDeckDropdown.value]);
-            AIDeckData = File.ReadAllText(savePaths[OppDeckDropdown.value]);
+            OwnDeckData = DeckStorage.Read(savePaths[OwnDeckDropdown.value]);
+            AIDeckData = DeckStorage.Read(savePaths[OppDeckDropdown.value]);
         }
 
         public CharacterTargetIndex GetRandomTargetForCard(Card card, P player)
