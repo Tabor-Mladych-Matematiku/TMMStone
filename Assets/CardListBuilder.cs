@@ -28,6 +28,7 @@ public class CardListBuilder : MonoBehaviour
         foreach (var item in cards)
         {
             if (item.Value.type.EndsWith("token", StringComparison.OrdinalIgnoreCase)) continue;
+            if (!GameManager.DEBUG && item.Value.scripts.Count == 0) continue;
             CardDeckbuilderListing instance = Instantiate(CardListingPrefab, transform);
             listings.Add(instance);
             instance.name = item.Value.name;
