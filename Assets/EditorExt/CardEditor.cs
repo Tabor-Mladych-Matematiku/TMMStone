@@ -76,11 +76,15 @@ namespace CardEditor
             root.Add(unfinishedToggle);
             root.Add(finishedToggle);
 
-            cardGridScroll = new ScrollView();
+            cardGridScroll = new ScrollView(ScrollViewMode.Vertical);
             cardGridScroll.style.flexGrow = 1;
-            cardGrid = cardGridScroll.contentContainer;
+            cardGrid = new VisualElement();
+            cardGrid.style.width = Length.Percent(100);
+            cardGrid.style.flexShrink = 0;
             cardGrid.style.flexDirection = FlexDirection.Row;
             cardGrid.style.flexWrap = Wrap.Wrap;
+            cardGrid.style.alignContent = Align.FlexStart;
+            cardGridScroll.Add(cardGrid);
             root.Add(cardGridScroll);
             root.Add(cardDetails);
 
@@ -109,6 +113,7 @@ namespace CardEditor
 
         private void RebuildCardGrid()
         {
+            cardGridScroll.scrollOffset = Vector2.zero;
             cardGrid.Clear();
             IEnumerable<string> visibleCards = choices;
             if (unfinishedToggle.value)
