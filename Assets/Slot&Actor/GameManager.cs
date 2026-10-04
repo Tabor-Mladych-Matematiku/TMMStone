@@ -278,7 +278,19 @@ namespace CardGame
 
         public event EventHandler<CardPlayedEventArgs> OnPlayed;//TODO: OnPlayed should trigger first. Now, at least with minions, it happens last after all the OnSummon effects
         public event EventHandler OnSummoned;//Whenever minion is summoned
+        public event EventHandler<CancelableCardEventArgs> BeforeSpellPlayed;
+        public event EventHandler<Minion.TargetedEventEventArgs> BeforeAttackDeclared;
+        public event EventHandler<Minion.TargetedEventEventArgs> AfterAttackResolved;
+        public event EventHandler MinionDied;
+        public event EventHandler MinionPlayedForReactions;
         public GameStats Stats { get; private set; } = new();
+
+        public sealed class CancelableCardEventArgs : EventArgs
+        {
+            public CancelableCardEventArgs(Card card) => Card = card;
+            public Card Card { get; }
+            public bool Cancel { get; set; }
+        }
 
         public IEnumerable<Minion> GetAdjacentMinions(Minion minion)
         {
@@ -900,7 +912,13 @@ namespace CardGame
 
         public bool IsCardPlayable(Card card, P player)
             =>GetManaCost(card) <= ManaCounters[player].Mana
-               && (!card.Targetted || ValidTargetExists(card));
+               && (!card.Targetted || ValidTargetExists(card))
+               && (!card.IsExperiment || CanStartExperiment(card, player));
+
+        private bool CanStartExperiment(Card card, P player)
+            => GetFreeEffectSlot(player) != null
+               && !GetAllEffectsOwnedBy(player).Any(effect =>
+                   effect.isExperiment && effect.CardID == card.ID);
 
         public bool ValidTargetExists(Card card)
             => AllCharacters.Any(character => character != null && card.IsTargetValid(character));
@@ -909,6 +927,12 @@ namespace CardGame
         {
             P owner = card.Owner;
             GameActor target = null;
+
+            if (!IsCardPlayable(card, owner))
+            {
+                Discard(card, owner);
+                return;
+            }
 
             if (card.Targetted && card.cardType != Card.CardType.Field)
             {
@@ -944,11 +968,18 @@ namespace CardGame
                     CardSlot minionSlot = minionSlots[owner][slotIndex];
                     minionSlot.PlaceCard(card);
                     card.gameObject.SetActive(false);
-                    OnPlayed?.Invoke(card.PlayMinion(minionSlot, target), new(Card.CardType.Minion, target));
+                    Minion randomlyPlayedMinion = card.PlayMinion(minionSlot, target);
+                    InvokeMinionPlayed(randomlyPlayedMinion);
+                    OnPlayed?.Invoke(randomlyPlayedMinion, new(Card.CardType.Minion, target));
                     break;
 
                 case Card.CardType.Spell:
                     DetachCard(card, owner);
+                    if (TryCounterSpell(card, owner))
+                    {
+                        AddToGrave(card, owner);
+                        break;
+                    }
                     card.CastSpell(target);
                     AddToGrave(card, owner);
                     card.standardScale = Vector3.one;
@@ -1023,7 +1054,9 @@ namespace CardGame
                         CardSlot slot = minionSlots[who][action.Slot];
                         slot.PlaceCard(card);
                         card.gameObject.SetActive(false);
-                        OnPlayed?.Invoke(card.PlayMinion(slot, target), new(CardType.Minion, target));
+                        Minion playedMinion = card.PlayMinion(slot, target);
+                        InvokeMinionPlayed(playedMinion);
+                        OnPlayed?.Invoke(playedMinion, new(CardType.Minion, target));
                     }
                     else if (card.cardType == CardType.Field)
                     {
@@ -1035,7 +1068,12 @@ namespace CardGame
                     }
                     else if (card.cardType == CardType.Spell)
                     {
-
+                        if (TryCounterSpell(card, who))
+                        {
+                            AddToGrave(card, who);
+                            card.standardScale = Vector3.one;
+                            break;
+                        }
                         card.CastSpell(target);
                         AddToGrave(card, who);
                         card.standardScale = Vector3.one;//Maybe?
@@ -1072,6 +1110,25 @@ namespace CardGame
             }
             return math.max(cost, 0);
         }
+
+        private bool TryCounterSpell(Card spell, P caster)
+        {
+            CancelableCardEventArgs args = new(spell);
+            BeforeSpellPlayed?.Invoke(spell, args);
+            return args.Cancel;
+        }
+
+        public void InvokeBeforeAttack(Minion attacker, Minion.TargetedEventEventArgs args)
+            => BeforeAttackDeclared?.Invoke(attacker, args);
+
+        public void InvokeAfterAttack(Minion attacker, DamageableActor target)
+            => AfterAttackResolved?.Invoke(attacker, new Minion.TargetedEventEventArgs { target = target });
+
+        public void InvokeMinionDied(Minion minion) => MinionDied?.Invoke(minion, EventArgs.Empty);
+
+        public void InvokeMinionPlayed(Minion minion) => MinionPlayedForReactions?.Invoke(minion, EventArgs.Empty);
+
+        public bool IsOpponentTurn(P effectOwner) => PlayerOnTurn == effectOwner.Other();
 
         public int InvertIndex(int index)
         {

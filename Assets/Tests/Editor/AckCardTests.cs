@@ -66,7 +66,8 @@ public class AckCardTests
             137, 145, 146, 147, 148, 150, 153, 157, 163, 164, 167, 169, 172,
             176, 177, 178, 179, 180, 182, 183, 187, 188, 193, 196, 199, 203,
             204, 205, 208, 209, 211, 214, 215, 217, 219, 312,
-            42, 65, 118, 120, 124, 156, 194, 216, 314
+            42, 65, 118, 119, 120, 122, 124, 138, 139, 156, 194, 216,
+            225, 226, 227, 228, 314
         };
         int checkedCards = 0;
         foreach (var pair in CDJsonUtils.LoadCardDatabase())
@@ -82,7 +83,7 @@ public class AckCardTests
             }
             checkedCards++;
         }
-        Assert.That(checkedCards, Is.EqualTo(109));
+        Assert.That(checkedCards, Is.EqualTo(117));
     }
 
     [Test]
