@@ -278,8 +278,21 @@ namespace CardGame
 
         public event EventHandler<CardPlayedEventArgs> OnPlayed;//TODO: OnPlayed should trigger first. Now, at least with minions, it happens last after all the OnSummon effects
         public event EventHandler OnSummoned;//Whenever minion is summoned
+        public GameStats Stats { get; private set; } = new();
+
+        public IEnumerable<Minion> GetAdjacentMinions(Minion minion)
+        {
+            var slots = minionSlots[minion.Owner];
+            int index = Array.IndexOf(slots, minion.GetComponentInParent<CardSlot>());
+            if (index < 0) yield break;
+            if (index > 0 && slots[index - 1].GetMinion() is Minion left) yield return left;
+            if (index + 1 < slots.Length && slots[index + 1].GetMinion() is Minion right) yield return right;
+        }
+
         public void InvokeSummoned(Minion minion)
         {
+            // Self-summon effects see previous summons; global reactions include this one.
+            Stats.RecordSummon(minion.Owner, minion.CardID);
             OnSummoned?.Invoke(minion, new());
         }
 
@@ -613,6 +626,7 @@ namespace CardGame
 
         private void StartOfflineGame()
         {
+            Stats = new();
             online = false;
             seed = (int)DateTime.Now.Ticks;
             UnityEngine.Random.InitState(seed);
@@ -664,6 +678,7 @@ namespace CardGame
 
         private void StartNetworkGame()
         {
+            Stats = new();
             online = true;
             Console.WriteLine("NetworkSpawn");
             if (IsServer)
@@ -743,7 +758,7 @@ namespace CardGame
         public void StartTurn() => StartTurn(OnTurn);
         private void StartTurn(bool localOnTurn)
         {
-            foreach (TableActor actor in AllTableActors)//Might be reasonable to do it through events. but this should ensure consistency with the rules as in which order things happen
+            foreach (TableActor actor in AllTableActors.ToArray())//Snapshot because effects can move actors between slots while the turn starts.
             {
                 if (actor.transform.parent.GetComponentInChildren<Card>(true) == null && actor is not Effect) continue;//I don't like this. but it may hold for now. (Actor might be destroyed while in the loop and it shows by its card being removed when we get to him (he is still active for a bit))
                 actor.StartTurn(localOnTurn);//TODO: destruction of things should be proably queued and done after the effect has ended

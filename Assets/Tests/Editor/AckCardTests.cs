@@ -320,7 +320,7 @@ public class AckCardTests
         Minion second = Minion(GameManager.P.P1, 1, 314);
         Invoke(second.gameObject.AddComponent<Bug>(), "OnSelfSummoned", second, new Minion.TargetedEventEventArgs());
         int countDuringReaction = 0;
-        manager.OnSummoned += (_, _) => countDuringReaction = manager.GetSummonCount(GameManager.P.P1, 314);
+        manager.OnSummoned += (_, _) => countDuringReaction = manager.Stats.GetSummonCount(GameManager.P.P1, 314);
         manager.InvokeSummoned(second);
         Assert.That(second.Attack, Is.EqualTo(2));
         Assert.That(second.Health, Is.EqualTo(101));
