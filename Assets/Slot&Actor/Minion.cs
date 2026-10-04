@@ -31,18 +31,18 @@ namespace CardGame
         protected Color attkColor;
         protected Color defaultColor;
         [SerializeField] protected Image graphic;
-        protected Card original;
+        public Card Original {get;protected set;}
 
         public virtual void OnMouseEnter()
         {
             if (GameManager.Instance.cursor == null)
             {
-                original.HighlightCard();
+                Original.HighlightCard();
             }
         }
         public virtual void OnMouseExit()
         {
-            original.DeHighlightCard();
+            Original.DeHighlightCard();
             HighlightRim.color = defaultColor;
             if (GameManager.Instance.highlightedActor == this)
                 GameManager.Instance.highlightedActor = null;
@@ -54,7 +54,7 @@ namespace CardGame
         }
         public virtual void Initialize(Card c)
         {
-            original = c;
+            Original = c;
             CardArt.Load(CardArt.PlainAddress(c.expansion, c.cardname), sprite =>
             {
                 if (this != null && sprite != null) graphic.sprite = sprite;
@@ -84,7 +84,7 @@ namespace CardGame
 
     public class Minion : DamageableActor
     {
-        public int CardID => original.ID;
+        public int CardID => Original.ID;
         private static readonly Color AttackReadyColor = new(0f, 1f, 0f, 1f);
         private int h = 0;
         private int a = 0;
