@@ -64,6 +64,11 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
     {
         GameManager.Instance.OnPlayed += OnPlayed;
         GameManager.Instance.OnSummoned += _OnMinionSummoned;
+        GameManager.Instance.BeforeSpellPlayed += _OnBeforeSpellPlayed;
+        GameManager.Instance.BeforeAttackDeclared += _OnBeforeAttackDeclared;
+        GameManager.Instance.AfterAttackResolved += _OnAfterAttackResolved;
+        GameManager.Instance.MinionDied += _OnAnyMinionDied;
+        GameManager.Instance.MinionPlayedForReactions += _OnAnyMinionPlayed;
         
         if (TryGetComponent(out Card card))
         {
@@ -169,6 +174,11 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
 
         GameManager.Instance.OnPlayed -= OnPlayed;//Cleanup
         GameManager.Instance.OnSummoned -= _OnMinionSummoned;
+        GameManager.Instance.BeforeSpellPlayed -= _OnBeforeSpellPlayed;
+        GameManager.Instance.BeforeAttackDeclared -= _OnBeforeAttackDeclared;
+        GameManager.Instance.AfterAttackResolved -= _OnAfterAttackResolved;
+        GameManager.Instance.MinionDied -= _OnAnyMinionDied;
+        GameManager.Instance.MinionPlayedForReactions -= _OnAnyMinionPlayed;
     }
     //Card events
     protected virtual void OnDiscard(object sender, EventArgs e) { }
@@ -209,6 +219,38 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
     /// </summary>
     /// <param name="minion"></param>
     protected virtual void OnMinionSummoned( Minion minion) { }
+    protected virtual void OnExperimentBeforeSpellPlayed(Card spell, GameManager.CancelableCardEventArgs e) { }
+    protected virtual void OnExperimentBeforeAttack(Minion attacker, Minion.TargetedEventEventArgs e) { }
+    protected virtual void OnExperimentAfterAttack(Minion attacker, Minion.TargetedEventEventArgs e) { }
+    protected virtual void OnExperimentMinionDied(Minion minion) { }
+    protected virtual void OnExperimentMinionPlayed(Minion minion) { }
+
+    private bool IsActiveExperiment(out Effect effect) => TryGetComponent(out effect) && effect.isExperiment;
+
+    private void _OnBeforeSpellPlayed(object sender, GameManager.CancelableCardEventArgs e)
+    {
+        if (IsActiveExperiment(out _)) OnExperimentBeforeSpellPlayed((Card)sender, e);
+    }
+
+    private void _OnBeforeAttackDeclared(object sender, Minion.TargetedEventEventArgs e)
+    {
+        if (IsActiveExperiment(out _)) OnExperimentBeforeAttack((Minion)sender, e);
+    }
+
+    private void _OnAfterAttackResolved(object sender, Minion.TargetedEventEventArgs e)
+    {
+        if (IsActiveExperiment(out _)) OnExperimentAfterAttack((Minion)sender, e);
+    }
+
+    private void _OnAnyMinionDied(object sender, EventArgs e)
+    {
+        if (IsActiveExperiment(out _)) OnExperimentMinionDied((Minion)sender);
+    }
+
+    private void _OnAnyMinionPlayed(object sender, EventArgs e)
+    {
+        if (IsActiveExperiment(out _)) OnExperimentMinionPlayed((Minion)sender);
+    }
     public class TargetlessEventArgs : EventArgs
     {
         public TargetlessEventArgs(Card.CardType cardType)
@@ -291,6 +333,12 @@ public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCou
     protected void DealSpellDamage(DamageableActor target, int damage, object sender)
     {
         target.Damage(damage + GetOwnersSpellDamage(GetOwner(sender)));
+    }
+    protected int CalculateSpellDamage(int damage, object sender) => damage + GetOwnersSpellDamage(GetOwner(sender));
+    protected Effect Experiment => GetComponent<Effect>();
+    protected void ConsumeExperiment()
+    {
+        if (Experiment != null && Experiment.isExperiment) Experiment.Destroy();
     }
     public int GetOwnersSpellDamage(GameManager.P owner)
     {
