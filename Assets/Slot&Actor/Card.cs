@@ -62,6 +62,7 @@ namespace CardGame
         public int ID { get; private set; }
         public string cardname;
         public CardType cardType;
+        public bool IsExperiment { get; private set; }
         Image sr;
         Outline playableOutline;
         GameObject manaBadge;
@@ -311,6 +312,12 @@ namespace CardGame
                 case "Spelltoken":
                 case "Spell":
                     cardType = CardType.Spell;
+                    break;
+                case "Experiment":
+                    // Experiments use every ordinary spell rule/event, but resolve by
+                    // leaving a hidden Effect instead of executing an immediate script.
+                    cardType = CardType.Spell;
+                    IsExperiment = true;
                     break;
                 case "Pole":
                     cardType = CardType.Field;
@@ -571,7 +578,14 @@ namespace CardGame
         /// <param name="target">null if no target given</param>
         internal void CastSpell(GameActor target)
         {
-            OnSelfPlayed?.Invoke(this, new(CardType.Spell, target));
+            if (IsExperiment)
+            {
+                CardSlot slot = GameManager.Instance.GetFreeEffectSlot(Owner);
+                if (slot == null) throw new InvalidOperationException("An Experiment was cast without a free Effect slot.");
+                Effect effect = PlaceEffect(slot);
+                effect.isExperiment = true;
+            }
+            else OnSelfPlayed?.Invoke(this, new(CardType.Spell, target));
             audioSource.PlayOneShot(cardPlaced);
         }
         public Effect PlaceEffect(CardSlot slot)
