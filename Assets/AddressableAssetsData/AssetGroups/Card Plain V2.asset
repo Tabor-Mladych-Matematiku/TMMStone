@@ -72,6 +72,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 136e158290aa9cb4b9c57343465e98ba
+    m_Address: card-plain/V2/Pavel, Master casina
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 144fb4e2a90b9e4458b3da5af621296b
     m_Address: card-plain/V2/Oprava na koleni
     m_ReadOnly: 0
