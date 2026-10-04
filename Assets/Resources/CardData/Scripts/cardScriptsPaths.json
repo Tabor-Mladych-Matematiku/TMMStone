@@ -257,8 +257,14 @@
     "118": [
         "CardData/Scripts/V2/Genetická modifikace"
     ],
+    "119": [
+        "CardData/Scripts/V2/Schrödingerova kočka"
+    ],
     "120": [
         "CardData/Scripts/V2/Grantová komise"
+    ],
+    "122": [
+        "CardData/Scripts/V2/Klonovací přístroj"
     ],
     "123": [
         "CardData/Scripts/V2/Deprese z nepodstatnosti"
@@ -286,6 +292,9 @@
     ],
     "137": [
         "CardData/Scripts/V2/Anihilace pozitronů"
+    ],
+    "138": [
+        "CardData/Scripts/V2/Nášlapná mina"
     ],
     "142": [
         "CardData/Scripts/V2/Požírač šrotu"
@@ -418,6 +427,18 @@
     ],
     "219": [
         "CardData/Scripts/V2/Sibiřská zima"
+    ],
+    "225": [
+        "CardData/Scripts/GULAG/Zrada"
+    ],
+    "226": [
+        "CardData/Scripts/GULAG/Únos"
+    ],
+    "227": [
+        "CardData/Scripts/GULAG/Pytel"
+    ],
+    "228": [
+        "CardData/Scripts/GULAG/Útěk za firewall"
     ],
     "239": [
         "CardData/Scripts/GULAG/Uran"
