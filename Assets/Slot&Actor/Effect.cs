@@ -8,7 +8,7 @@ namespace CardGame
     {
         public bool isExperiment = false;
         public int CardID { get; private set; }
-        public string CardName { get; private set; }
+        public string CardName { get; private set; }//TODO: Unneeded or to be placed into TableActor
         public void Destroy()
         {
             CardSlot slot = GetComponentInParent<CardSlot>();
