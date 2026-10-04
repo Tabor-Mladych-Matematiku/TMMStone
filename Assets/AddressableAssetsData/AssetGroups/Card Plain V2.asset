@@ -273,7 +273,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 49814dac8cd38e54abae839b394a69fb
-    m_Address: "card-plain/V2/\u201CBezchybn\xE1\u201D optimalizace"
+    m_Address: "card-plain/V2/\u201EBezchybn\xE1\u201C optimalizace"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -829,6 +829,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ff6ce4bbf0e9fed42a3dd0f3afdf9476
     m_Address: card-plain/V2/Yetti
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8cad343c9e15f3946a0105cbb46cd845
+    m_Address: card-plain/V2/Funfact
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

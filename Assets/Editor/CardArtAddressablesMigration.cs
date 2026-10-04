@@ -78,9 +78,22 @@ public static class CardArtAddressablesMigration
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
             string relativePath = path[(folder.Length + 1)..];
-            string address = $"{addressPrefix}/{Path.ChangeExtension(relativePath, null)}".Replace('\\', '/');
+            string artName = Path.ChangeExtension(relativePath, null);
+            string address = $"{addressPrefix}/{CanonicalizeQuotes(artName)}".Replace('\\', '/');
             settings.CreateOrMoveEntry(guid, group).address = address;
         }
+    }
+
+    private static string CanonicalizeQuotes(string artName)
+    {
+        if (artName.StartsWith("“", StringComparison.Ordinal))
+        {
+            int closingQuote = artName.IndexOf('”', 1);
+            if (closingQuote >= 0)
+                return "„" + artName[1..closingQuote] + "“" + artName[(closingQuote + 1)..];
+        }
+
+        return artName;
     }
 
     private static void ConfigureSingleAsset(

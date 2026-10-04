@@ -32,26 +32,21 @@ public class DeckBuilderDeck : MonoBehaviour
             deckName = string.IsNullOrWhiteSpace(value)
                 ? DefaultDeckName
                 : CDJsonUtils.SanitizeToClassName(value);
-            if (cards.Count == 30)
-            {
-                Debug.Log("Pervol black magic elektrické boogaloo");
-                deckButton.enabled = true;
-            }
+            RefreshSaveButton();
         });
+        RefreshSaveButton();
         CreateBackButton();
     }
 
     public void AddCard(int cardID,CardData.CardData cardData)
     {
-        if (!GameManager.DEBUG && !string.IsNullOrEmpty(ActiveClass) &&
-            !string.Equals(cardData.Class, "Neutral", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(cardData.Class, ActiveClass, StringComparison.OrdinalIgnoreCase))
+        if (!GameManager.DEBUG && !CanAddCard(cardID, cardData, out string validationError))
         {
-            Debug.LogWarning($"Cannot add {cardData.name}: this is a {ActiveClass} deck.");
+            Debug.LogWarning(validationError);
             return;
         }
 
-        if (cards.Count >= 30)
+        if (GameManager.DEBUG && cards.Count >= 30)
         {
             Debug.Log("Too many cards");
             return;
@@ -72,11 +67,7 @@ public class DeckBuilderDeck : MonoBehaviour
         cards.Add(cardID);
         cardDataInDeck.Add(cardData);
         UpdateActiveClass();
-        if (cards.Count == 30 && deckName!=null)
-        {
-            deckButton.enabled = true;
-        }
-        deckButton.GetComponentInChildren<TextMeshProUGUI>().text = "Save Deck (" + cards.Count + "/30)";
+        RefreshSaveButton();
     }
     public void RemoveCard(int cardID) {
         int index = cards.IndexOf(cardID);//Prasečina
@@ -84,11 +75,7 @@ public class DeckBuilderDeck : MonoBehaviour
         cards.RemoveAt(index);
         cardDataInDeck.RemoveAt(index);
         UpdateActiveClass();
-        if (cards.Count < 30)
-        {
-            deckButton.enabled = false;
-        }
-        deckButton.GetComponentInChildren<TextMeshProUGUI>().text = "Save Deck (" + cards.Count + "/30)";
+        RefreshSaveButton();
     }
     public void SaveDeck()
     {
@@ -106,7 +93,76 @@ public class DeckBuilderDeck : MonoBehaviour
         deckButton.enabled = false;
         deckName = DefaultDeckName;
         deckNameInput.text = string.Empty;
-        deckButton.GetComponentInChildren<TextMeshProUGUI>().text = "Save Deck (" + cards.Count + "/30)";
+        RefreshSaveButton();
+    }
+
+    private bool CanAddCard(int cardID, CardData.CardData cardData, out string error)
+    {
+        bool isAbility = IsAbility(cardData);
+        int copies = 0;
+        foreach (int existingID in cards)
+            if (existingID == cardID) copies++;
+
+        if (isAbility && HasAbility())
+        {
+            error = "A deck can contain only one Schopnost card.";
+            return false;
+        }
+
+        int copyLimit = string.Equals(cardData.rarity, "Org", StringComparison.OrdinalIgnoreCase) ? 1 : 2;
+        if (copies >= copyLimit)
+        {
+            error = copyLimit == 1
+                ? $"A deck can contain only one copy of {cardData.name}."
+                : $"A deck can contain only two copies of {cardData.name}.";
+            return false;
+        }
+
+        if (!isAbility && DeckSize >= 30)
+        {
+            error = "The deck already contains 30 cards. Schopnost does not count toward this limit.";
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(ActiveClass) &&
+            !string.Equals(cardData.Class, "Neutral", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(cardData.Class, ActiveClass, StringComparison.OrdinalIgnoreCase))
+        {
+            error = $"Cannot add {cardData.name}: this is a {ActiveClass} deck.";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
+    private int DeckSize
+    {
+        get
+        {
+            int count = 0;
+            foreach (CardData.CardData data in cardDataInDeck)
+                if (!IsAbility(data)) count++;
+            return count;
+        }
+    }
+
+    private bool HasAbility()
+    {
+        foreach (CardData.CardData data in cardDataInDeck)
+            if (IsAbility(data)) return true;
+        return false;
+    }
+
+    private static bool IsAbility(CardData.CardData data) =>
+        string.Equals(data.type, "Schopnost", StringComparison.OrdinalIgnoreCase);
+
+    private void RefreshSaveButton()
+    {
+        int countedCards = GameManager.DEBUG ? cards.Count : DeckSize;
+        deckButton.enabled = countedCards == 30;
+        string abilitySuffix = !GameManager.DEBUG && HasAbility() ? " + Schopnost" : string.Empty;
+        deckButton.GetComponentInChildren<TextMeshProUGUI>().text = $"Save Deck ({countedCards}/30{abilitySuffix})";
     }
 
     private void UpdateActiveClass()
