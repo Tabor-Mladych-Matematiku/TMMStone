@@ -65,7 +65,8 @@ public class AckCardTests
             101, 103, 107, 108, 110, 113, 115, 123, 128, 129, 133, 134, 135,
             137, 145, 146, 147, 148, 150, 153, 157, 163, 164, 167, 169, 172,
             176, 177, 178, 179, 180, 182, 183, 187, 188, 193, 196, 199, 203,
-            204, 205, 208, 209, 211, 214, 215, 217, 219, 312
+            204, 205, 208, 209, 211, 214, 215, 217, 219, 312,
+            42, 65, 118, 120, 124, 156, 194, 216, 314
         };
         int checkedCards = 0;
         foreach (var pair in CDJsonUtils.LoadCardDatabase())
@@ -81,7 +82,7 @@ public class AckCardTests
             }
             checkedCards++;
         }
-        Assert.That(checkedCards, Is.EqualTo(98));
+        Assert.That(checkedCards, Is.EqualTo(107));
     }
 
     [Test]
@@ -182,6 +183,161 @@ public class AckCardTests
         Assert.That(first.Health, Is.EqualTo(96));
         Assert.That(summoned, Is.Not.Null);
         Assert.That(summoned.Health, Is.EqualTo(100));
+    }
+
+    [TestCase(6, 3, 5, 3)]
+    [TestCase(6, 6, 5, 5)]
+    [TestCase(6, 7, 5, 6)]
+    [TestCase(1, 4, 0, 3)]
+    [TestCase(0, 3, 0, 3)]
+    public void ManaStormRemovesEmptySlotsFirstAndPreservesBonusMana(int maximum, int current, int expectedMax, int expectedCurrent)
+    {
+        ManaCounter mana = Mana(GameManager.P.P2, maximum, current);
+        Card spell = Card(216);
+        spell.backupOwner = GameManager.P.P1;
+        var script = spell.gameObject.AddComponent<Velká_mýdlová_bouře>();
+        Invoke(script, "OnSelfPlayed", spell, new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Spell));
+        Assert.That(mana.MaxMana, Is.EqualTo(expectedMax));
+        Assert.That(mana.Mana, Is.EqualTo(expectedCurrent));
+    }
+
+    [TestCase(2, 1)]
+    [TestCase(9, 11)]
+    public void GeneticModificationAddsAnEmptySlotWithoutChangingCurrentMana(int maximum, int current)
+    {
+        ManaCounter mana = Mana(GameManager.P.P1, maximum, current);
+        Card spell = Card(118);
+        spell.backupOwner = GameManager.P.P1;
+        Invoke(spell.gameObject.AddComponent<Genetická_modifikace>(), "OnSelfPlayed", spell,
+            new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Spell));
+        Assert.That(mana.MaxMana, Is.EqualTo(maximum + 1));
+        Assert.That(mana.Mana, Is.EqualTo(current));
+    }
+
+    [TestCase(0)]
+    [TestCase(7)]
+    public void DirectProportionSpendsAllCurrentManaAndAddsSpellDamageEvenAtZero(int current)
+    {
+        ManaCounter mana = Mana(GameManager.P.P1, 5, current);
+        var professor = Minion(GameManager.P.P1, 0, 80).gameObject.AddComponent<Profesor_matematiky>();
+        professor.Awake();
+        Minion target = Minion(GameManager.P.P2, 0, 48);
+        Card spell = Card(65);
+        spell.backupOwner = GameManager.P.P1;
+        Invoke(spell.gameObject.AddComponent<Přímá_úměra>(), "OnSelfPlayed", spell,
+            new Card.CardPlayedEventArgs(CardGame.Card.CardType.Spell, target));
+        Assert.That(mana.Mana, Is.Zero);
+        Assert.That(mana.MaxMana, Is.EqualTo(5));
+        Assert.That(target.Health, Is.EqualTo(100 - current - 2));
+    }
+
+    [TestCase(false, false, 5)]
+    [TestCase(false, true, 5)]
+    [TestCase(true, false, 7)]
+    public void GrantRequiresAnOwnExperimentAndDoesNotCapRestoredMana(bool ownExperiment, bool enemyExperiment, int expected)
+    {
+        var effects = Slots(GameManager.maxEffSlots);
+        Set(manager, "EffSlots", effects);
+        foreach (var owner in new[] { GameManager.P.P1, GameManager.P.P2 })
+        {
+            Effect effect = NewObject("Effect").AddComponent<Effect>();
+            effect.transform.SetParent(effects[owner][0].transform);
+            effect.isExperiment = owner == GameManager.P.P1 ? ownExperiment : enemyExperiment;
+        }
+        ManaCounter mana = Mana(GameManager.P.P1, 5, 5);
+        Card card = Card(120);
+        card.backupOwner = GameManager.P.P1;
+        Invoke(card.gameObject.AddComponent<Grantová_komise>(), "OnSelfPlayed", card,
+            new CardScriptBase.TargetlessEventArgs(CardGame.Card.CardType.Minion));
+        Assert.That(mana.Mana, Is.EqualTo(expected));
+        Assert.That(mana.MaxMana, Is.EqualTo(5));
+    }
+
+    [Test]
+    public void LeničkaGrantsChargeOnlyToNewFriendlyAnimalsAndDoesNotRevokeIt()
+    {
+        Minion oldAnimal = Minion(GameManager.P.P1, 0, 48);
+        oldAnimal.cardTags.Add(CardTag.Zvíře);
+        Minion source = Minion(GameManager.P.P1, 1, 124);
+        var script = source.gameObject.AddComponent<Lenička__Matka_přírody>();
+        script.Awake();
+        manager.InvokeSummoned(source);
+        Assert.That(oldAnimal.CanAttack, Is.False);
+        Minion animal = Minion(GameManager.P.P1, 2, 155);
+        animal.cardTags.UnionWith(new[] { CardTag.Zvíře, CardTag.Stroj });
+        Minion enemy = Minion(GameManager.P.P2, 0, 48);
+        enemy.cardTags.Add(CardTag.Zvíře);
+        Minion nonAnimal = Minion(GameManager.P.P1, 3, 48);
+        manager.InvokeSummoned(animal);
+        manager.InvokeSummoned(enemy);
+        manager.InvokeSummoned(nonAnimal);
+        Assert.That(animal.CanAttack, Is.True);
+        Assert.That(enemy.CanAttack, Is.False);
+        Assert.That(nonAnimal.CanAttack, Is.False);
+        UnityEngine.Object.DestroyImmediate(source.gameObject);
+        Assert.That(animal.CanAttack, Is.True);
+        Minion later = Minion(GameManager.P.P1, 4, 48);
+        later.cardTags.Add(CardTag.Zvíře);
+        manager.InvokeSummoned(later);
+        Assert.That(later.CanAttack, Is.False);
+    }
+
+    [TestCase(0)]
+    [TestCase(2)]
+    [TestCase(6)]
+    public void ExplosivesHitOnlyImmediateNeighborsWithoutCrossingGapsOrEdges(int targetSlot)
+    {
+        Minion target = Minion(GameManager.P.P2, targetSlot, 48);
+        int adjacentSlot = targetSlot == 6 ? 5 : targetSlot + 1;
+        Minion neighbor = Minion(GameManager.P.P2, adjacentSlot, 48);
+        int distantSlot = targetSlot == 0 ? 6 : 0;
+        Minion distant = Minion(GameManager.P.P2, distantSlot, 48);
+        Minion newNeighbor = null;
+        if (targetSlot == 2)
+            target.OnDamaged += (_, _) => newNeighbor = Minion(GameManager.P.P2, 1, 48);
+        Card spell = Card(156);
+        spell.backupOwner = GameManager.P.P1;
+        Invoke(spell.gameObject.AddComponent<Doma_namíchaná_trhavina>(), "OnSelfPlayed", spell,
+            new Card.CardPlayedEventArgs(CardGame.Card.CardType.Spell, target));
+        Assert.That(target.Health, Is.EqualTo(95));
+        Assert.That(neighbor.Health, Is.EqualTo(98));
+        Assert.That(distant.Health, Is.EqualTo(100));
+        if (newNeighbor != null) Assert.That(newNeighbor.Health, Is.EqualTo(100));
+    }
+
+    [Test]
+    public void BugCountsPreviousFriendlySummonsEvenAfterTheyLeaveTheBoard()
+    {
+        Minion first = Minion(GameManager.P.P1, 0, 314);
+        Invoke(first.gameObject.AddComponent<Bug>(), "OnSelfSummoned", first, new Minion.TargetedEventEventArgs());
+        manager.InvokeSummoned(first);
+        Assert.That(first.Attack, Is.EqualTo(1));
+        first.transform.SetParent(root.transform);
+        Minion enemy = Minion(GameManager.P.P2, 0, 314);
+        Invoke(enemy.gameObject.AddComponent<Bug>(), "OnSelfSummoned", enemy, new Minion.TargetedEventEventArgs());
+        manager.InvokeSummoned(enemy);
+        Assert.That(enemy.Attack, Is.EqualTo(1));
+        Minion second = Minion(GameManager.P.P1, 1, 314);
+        Invoke(second.gameObject.AddComponent<Bug>(), "OnSelfSummoned", second, new Minion.TargetedEventEventArgs());
+        int countDuringReaction = 0;
+        manager.OnSummoned += (_, _) => countDuringReaction = manager.GetSummonCount(GameManager.P.P1, 314);
+        manager.InvokeSummoned(second);
+        Assert.That(second.Attack, Is.EqualTo(2));
+        Assert.That(second.Health, Is.EqualTo(101));
+        Assert.That(second.MaxHealth, Is.EqualTo(101));
+        Assert.That(countDuringReaction, Is.EqualTo(2));
+    }
+
+    ManaCounter Mana(GameManager.P owner, int maximum, int current)
+    {
+        var counter = NewObject("Mana").AddComponent<ManaCounter>();
+        var images = (Image[])typeof(ManaCounter).GetField("ManaCrystalImage", PrivateInstance).GetValue(counter);
+        for (int i = 0; i < images.Length; i++) images[i] = NewObject("Crystal").AddComponent<Image>();
+        counter.MaxMana = maximum;
+        counter.Mana = current;
+        manager.ManaCounters ??= new Dictionary<GameManager.P, ManaCounter>();
+        manager.ManaCounters[owner] = counter;
+        return counter;
     }
 
     GameObject NewObject(string name)

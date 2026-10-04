@@ -135,6 +135,28 @@ public class ControlTransferTests
         Assert.That(minion.CanAttack, Is.True);
     }
 
+    [Test]
+    public void WalkingHouseChangesSidesOnlyAtItsControllersTurnStartWithoutSummoning()
+    {
+        Minion house = CreateMinion(GameManager.P.P1, 0);
+        house.gameObject.AddComponent<Chaloupka_na_kuří_nožce>();
+        int summons = 0;
+        manager.OnSummoned += (_, _) => summons++;
+        house.StartTurn(false);
+        Assert.That(house.Owner, Is.EqualTo(GameManager.P.P1));
+        house.StartTurn(true);
+        Assert.That(slots[GameManager.P.P2][6].GetMinion(), Is.SameAs(house));
+        Assert.That(house.HasTaunt, Is.True);
+        Assert.That(house.CanAttack, Is.False);
+        house.StartTurn(true); // A lazy board traversal can visit the new slot as well.
+        Assert.That(house.Owner, Is.EqualTo(GameManager.P.P2));
+        Set(manager, "resolvingLocalTurn", (bool?)false);
+        house.StartTurn(false);
+        Assert.That(slots[GameManager.P.P1][6].GetMinion(), Is.SameAs(house));
+        Assert.That(house.CanAttack, Is.False);
+        Assert.That(summons, Is.Zero);
+    }
+
     Minion CreateMinion(GameManager.P owner, int index)
     {
         GameObject cardObject = Child("Card", typeof(RectTransform));
