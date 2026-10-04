@@ -5,6 +5,7 @@ using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
+using CardData;
 
 namespace CardGame
 {
@@ -59,7 +60,7 @@ namespace CardGame
                 if (this != null && sprite != null) graphic.sprite = sprite;
             });
             expansion = c.expansion;
-            cardTag = c.cardTag;
+            cardTags = new HashSet<CardTag>(c.cardTags);
         }
     }
     public abstract class DamageableActor : TableActor

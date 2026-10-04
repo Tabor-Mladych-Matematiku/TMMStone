@@ -1,5 +1,6 @@
 using System.Linq;
 using CardGame;
+using CardData;
 
 public class Duch_Jiříkův : CardScriptBase
 {
@@ -8,7 +9,7 @@ public class Duch_Jiříkův : CardScriptBase
         GameManager.P owner = GetOwner(sender);
         Minion self = (Minion)sender;
         if (GameManager.Instance.GetAllMinionsOwnedBy(owner)
-            .Any(minion => minion != self && minion.HasTag("Duch")))
+            .Any(minion => minion != self && minion.HasTag(CardTag.Duch)))
             GameManager.Instance.AddCardToHandByID(owner, 216);
     }
 }

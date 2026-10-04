@@ -1,4 +1,5 @@
 using CardGame;
+using CardData;
 
 public class Přetaktování : TargetableCardScriptBase
 {
@@ -10,5 +11,5 @@ public class Přetaktování : TargetableCardScriptBase
     }
 
     protected override bool TargetValidate(TableActor target) =>
-        target is Minion minion && minion.HasTag("Stroj");
+        target is Minion minion && minion.HasTag(CardTag.Stroj);
 }

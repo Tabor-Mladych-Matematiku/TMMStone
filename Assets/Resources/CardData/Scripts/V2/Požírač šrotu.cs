@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CardGame;
+using CardData;
 using System;
 
 public class Požírač_šrotu : CardScriptBase
@@ -30,7 +31,7 @@ public class Požírač_šrotu : CardScriptBase
         if (TryGetComponent(out Minion selfminion)
             && minion != selfminion
             && minion.Owner == selfminion.Owner
-            && minion.HasTag("Stroj"))
+            && minion.HasTag(CardTag.Stroj))
         {
             selfminion.Buff(1, 1);
         }

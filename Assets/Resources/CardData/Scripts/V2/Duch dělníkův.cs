@@ -1,5 +1,6 @@
 using System.Linq;
 using CardGame;
+using CardData;
 
 public class Duch_dělníkův : CardScriptBase
 {
@@ -10,7 +11,7 @@ public class Duch_dělníkův : CardScriptBase
         GameManager.P owner = GetOwner(sender);
         Minion self = (Minion)sender;
         bool hasOtherGhost = GameManager.Instance.GetAllMinionsOwnedBy(owner)
-            .Any(minion => minion != self && minion.HasTag("Duch"));
+            .Any(minion => minion != self && minion.HasTag(CardTag.Duch));
         GameManager.Instance.SummonMinion(owner, 208);
         if (hasOtherGhost) GameManager.Instance.SummonMinion(owner, 208);
     }

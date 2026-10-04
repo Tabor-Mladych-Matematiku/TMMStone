@@ -1,4 +1,5 @@
 using CardGame;
+using CardData;
 
 public class Alfa_samec : TargetableCardScriptBase
 {
@@ -8,5 +9,5 @@ public class Alfa_samec : TargetableCardScriptBase
     }
 
     protected override bool TargetValidate(TableActor target) =>
-        target is Minion minion && minion.HasTag("Zvíře");
+        target is Minion minion && minion.HasTag(CardData.CardTag.Zvíře);
 }

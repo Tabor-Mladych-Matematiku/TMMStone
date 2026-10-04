@@ -24,12 +24,8 @@ namespace CardGame
         public event EventHandler<TurnEventArgs> OnStartTurn;
         public event EventHandler<TurnEventArgs> OnEndTurn;
         public string expansion;
-        public string cardTag;
-        public bool HasTag(string tag) => !string.IsNullOrWhiteSpace(tag)
-            && (cardTag ?? string.Empty)
-                .Split(',')
-                .Select(value => value.Trim())
-                .Any(value => string.Equals(value, tag, StringComparison.OrdinalIgnoreCase));
+        public HashSet<CardTag> cardTags = new();
+        public bool HasTag(CardTag tag) => cardTags.Contains(tag);
         public List<Func<Card, int>> manacostmod = new();
         public AudioSource audioSource;
         public GameManager.P backupOwner;//ugly as heck TODO proly make this better somehow
@@ -303,7 +299,7 @@ namespace CardGame
             ID = id;
             mana = data.cost;
             cardname = data.name;
-            cardTag = data.tag;
+            cardTags = new HashSet<CardTag>(data.tags);
             switch (data.type)
             {
                 case "Token":

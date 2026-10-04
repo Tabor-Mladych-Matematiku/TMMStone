@@ -36,15 +36,36 @@ public class AckCardTests
     }
 
     [Test]
+    public void CardTagsAreParsedIntoAUniqueEnumSet()
+    {
+        HashSet<CardTag> tags = CDJsonUtils.ParseTags("Stroj, Zvíře, Stroj");
+
+        Assert.That(tags, Is.EquivalentTo(new[] { CardTag.Stroj, CardTag.Zvíře }));
+        Assert.Throws<FormatException>(() => CDJsonUtils.ParseTags("Neznámý štítek"));
+    }
+
+    [Test]
+    public void LoadedCardsRetainOnlyTypedTags()
+    {
+        var database = CDJsonUtils.LoadCardDatabase();
+
+        Assert.That(database[155].tags, Is.EquivalentTo(new[] { CardTag.Stroj, CardTag.Zvíře }));
+        Assert.That(database[1].tags, Is.Empty);
+    }
+
+    [Test]
     public void ImplementedAckBatchAndTokenVariantsResolveToScripts()
     {
         // Review approval does not mean implementation: later review rounds add ACKs.
         var implementedIds = new HashSet<int> {
             15, 21, 22, 23, 24, 25, 27, 28, 29, 32, 33, 34, 36, 38, 45, 46,
-            47, 48, 49, 50, 51, 52, 54, 58, 59, 64, 72, 73, 74, 75, 76, 78,
+            47, 48, 49, 50, 51, 52, 54, 55, 56, 58, 59, 64, 72, 73, 74, 75,
+            76, 78,
             69, 79, 80, 81, 82, 84, 88, 89, 90, 91, 92, 93, 94, 95, 97,
-            101, 108, 110, 113, 115, 123, 153, 157, 163, 164, 167, 169, 178,
-            179, 180, 182, 183, 203, 204, 312
+            101, 103, 107, 108, 110, 113, 115, 123, 128, 129, 133, 134, 135,
+            137, 145, 146, 147, 148, 150, 153, 157, 163, 164, 167, 169, 172,
+            176, 177, 178, 179, 180, 182, 183, 187, 188, 193, 196, 199, 203,
+            204, 205, 208, 209, 211, 214, 215, 217, 219, 312
         };
         int checkedCards = 0;
         foreach (var pair in CDJsonUtils.LoadCardDatabase())
@@ -60,7 +81,7 @@ public class AckCardTests
             }
             checkedCards++;
         }
-        Assert.That(checkedCards, Is.EqualTo(67));
+        Assert.That(checkedCards, Is.EqualTo(98));
     }
 
     [Test]

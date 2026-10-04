@@ -18,7 +18,7 @@ namespace CardData
 
         public int cost;
 
-        public string tag;
+        public HashSet<CardTag> tags;
 
         public string Class;
 
@@ -100,7 +100,7 @@ namespace CardData
                     rarity = (string)value["rarity"],
                     type = (string)value["type"],
                     cost = (int)(System.Int64)value["cost"],
-                    tag = (string)value["tag"],
+                    tags = ParseTags((string)value["tag"]),
                     Class = (string)value["Class"],
                     expansion = (string)value["expansion"],
                     not_for_sale = (bool)value["not_for_sale"],
@@ -120,6 +120,22 @@ namespace CardData
                 CardDatabase.Add(id, data);
             }
             return CardDatabase;
+        }
+
+        public static HashSet<CardTag> ParseTags(string serializedTags)
+        {
+            HashSet<CardTag> tags = new();
+            if (string.IsNullOrWhiteSpace(serializedTags)) return tags;
+
+            foreach (string serializedTag in serializedTags.Split(','))
+            {
+                string trimmedTag = serializedTag.Trim();
+                if (!Enum.TryParse(trimmedTag, true, out CardTag tag))
+                    throw new FormatException($"Unknown card tag '{trimmedTag}'. Add it to {nameof(CardTag)} before loading card data.");
+                tags.Add(tag);
+            }
+
+            return tags;
         }
         static List<string> LoadNames(List<string> paths)=> (from path in paths let resource = Resources.Load(path) where resource!=null select SanitizeToClassName(resource.name)).ToList();
 
