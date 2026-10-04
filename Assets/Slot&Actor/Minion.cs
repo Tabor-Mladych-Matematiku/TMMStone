@@ -68,6 +68,7 @@ namespace CardGame
         internal override void Awake() { base.Awake(); baseColor = graphic.color; }
         public abstract void Damage(int ammount);
         public abstract void Heal(int ammount);
+        public bool Immune { get; set; }
         private bool f = false;
         Color frozenColor = new(0.1f, 0.1f, 1, 1);//This would/will be handled differently in the future
         Color baseColor;
@@ -165,7 +166,7 @@ namespace CardGame
         public override void Damage(int ammount)
         {
             if (ammount < 0) throw new ArgumentException("Ammount must be greater or equal to 0");
-            if (ammount == 0) return;
+            if (ammount == 0 || Immune) return;
 
             h = checked(h - ammount);
             HealthLabel.text = h.ToString();//This is not using Health property because OnDamaged can occur before death.
@@ -213,8 +214,9 @@ namespace CardGame
             transform.SetParent(null);
             OnDeath?.Invoke(this, new());
             slot.RemoveMinion(this);
+            GameManager.Instance.InvokeMinionDied(this);
         }
-        internal void RemoveWithoutDeath()
+        public void RemoveWithoutDeath()
         {
             if (isDying) return;
             CardSlot slot = GetComponentInParent<CardSlot>();
@@ -431,6 +433,8 @@ namespace CardGame
         {
             TargetedEventEventArgs attackEvent = new() { target = initialTarget };
             OnBeforeAttack?.Invoke(this, attackEvent);
+            GameManager.Instance.InvokeBeforeAttack(this, attackEvent);
+            if (!Alive()) return;
 
             if (attackEvent.target is not DamageableActor target) return;
 
@@ -449,6 +453,7 @@ namespace CardGame
                 OnCombatDamageDealt?.Invoke(this, new(target, outgoingDamage));
             audioSource.PlayOneShot(attackSound);
             OnAfterAttack?.Invoke(this, attackEvent);
+            GameManager.Instance.InvokeAfterAttack(this, target);
             //TODO visuals
         }
 
