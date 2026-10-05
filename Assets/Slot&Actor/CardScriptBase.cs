@@ -23,10 +23,11 @@ public abstract class TargetableCardScriptBase : CardScriptBase
     protected abstract bool TargetValidate(TableActor target);
 
 }
-public abstract class CardScriptBase : MonoBehaviour, ITauntProvider, IAttackCountProvider, IAttackDamageImmunityProvider
+public abstract class CardScriptBase : MonoBehaviour
 {
     //TODO: stop implemented methods from being virtual. Add separete nonvirtual ones that run virtual ones at the end
     public virtual bool Taunt => false;
+    public virtual bool Spellproof => false;
     public virtual int AttackCount => 1;
     public virtual bool ImmuneToAttackDamage => false;
     private int spelldamage = 0;
