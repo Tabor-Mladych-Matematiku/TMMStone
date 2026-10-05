@@ -205,10 +205,12 @@ namespace CardGame
             if (destination == null)
             {
                 minion.RemoveWithoutDeath();
+                BoardChanged?.Invoke();
                 return false;
             }
 
             minion.TransferControl(destination, allowImmediateAttack);
+            BoardChanged?.Invoke();
             return true;
         }
 
@@ -283,6 +285,7 @@ namespace CardGame
         public event EventHandler<Minion.TargetedEventEventArgs> AfterAttackResolved;
         public event EventHandler MinionDied;
         public event EventHandler MinionPlayedForReactions;
+        public event Action BoardChanged;
         public GameStats Stats { get; private set; } = new();
 
         public sealed class CancelableCardEventArgs : EventArgs
@@ -306,6 +309,7 @@ namespace CardGame
             // Self-summon effects see previous summons; global reactions include this one.
             Stats.RecordSummon(minion.Owner, minion.CardID);
             OnSummoned?.Invoke(minion, new());
+            BoardChanged?.Invoke();
         }
 
         public Dictionary<P, int> MaxHealths = new() {
@@ -853,6 +857,11 @@ namespace CardGame
         {
             decks[who].Add(Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID], ID));
         }
+        public void AddCardToDeckAtRandomByID(P who, int ID)
+        {
+            Card card = Instantiate(CardPrefab).GetComponent<Card>().Initialize(CardDatabase[ID], ID);
+            decks[who].AddRandom(card);
+        }
 
         public Minion SummonMinion(P who, int id)
         {
@@ -1127,7 +1136,11 @@ namespace CardGame
         public void InvokeAfterAttack(Minion attacker, DamageableActor target)
             => AfterAttackResolved?.Invoke(attacker, new Minion.TargetedEventEventArgs { target = target });
 
-        public void InvokeMinionDied(Minion minion) => MinionDied?.Invoke(minion, EventArgs.Empty);
+        public void InvokeMinionDied(Minion minion)
+        {
+            MinionDied?.Invoke(minion, EventArgs.Empty);
+            BoardChanged?.Invoke();
+        }
 
         public void InvokeMinionPlayed(Minion minion) => MinionPlayedForReactions?.Invoke(minion, EventArgs.Empty);
 
