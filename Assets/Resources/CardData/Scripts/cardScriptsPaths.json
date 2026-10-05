@@ -71,6 +71,9 @@
     "29": [
         "CardData/Scripts/Blank"
     ],
+    "30": [
+        "CardData/Scripts/V2/Fénix"
+    ],
     "31": [
         "CardData/Scripts/V2/Plán cesty na Bezděz"
     ],
@@ -272,14 +275,23 @@
     "124": [
         "CardData/Scripts/V2/Lenička, Matka přírody"
     ],
+    "125": [
+        "CardData/Scripts/V2/David, Neohrožený dobrodruh"
+    ],
     "126": [
         "CardData/Scripts/Blank"
+    ],
+    "127": [
+        "CardData/Scripts/V2/Leguán"
     ],
     "128": [
         "CardData/Scripts/V2/Dobití baterie"
     ],
     "129": [
         "CardData/Scripts/V2/Statická elektřina"
+    ],
+    "131": [
+        "CardData/Scripts/V2/Splašené stádo"
     ],
     "133": [
         "CardData/Scripts/V2/Lví královna"
@@ -337,6 +349,18 @@
     ],
     "157": [
         "CardData/Scripts/V2/Adam, Bastlíř"
+    ],
+    "158": [
+        "CardData/Scripts/V2/Čarobot 2000"
+    ],
+    "159": [
+        "CardData/Scripts/V2/Velmi otravný robot"
+    ],
+    "160": [
+        "CardData/Scripts/V2/Robohypnožába"
+    ],
+    "162": [
+        "CardData/Scripts/V2/Lokomotiva Matěj"
     ],
     "163": [
         "CardData/Scripts/V2/Maniodepresivní robot"

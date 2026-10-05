@@ -9,21 +9,6 @@ using CardData;
 
 namespace CardGame
 {
-    public interface ITauntProvider
-    {
-        bool Taunt { get; }
-    }
-
-    public interface IAttackCountProvider
-    {
-        int AttackCount { get; }
-    }
-
-    public interface IAttackDamageImmunityProvider
-    {
-        bool ImmuneToAttackDamage { get; }
-    }
-
     public abstract class TableActor : GameActor
     {
         [SerializeField] protected Image HighlightRim;
@@ -104,6 +89,7 @@ namespace CardGame
         public event EventHandler OnRemovedWithoutDeath;
         public event EventHandler OnHealed;
         public event EventHandler OnDamaged;
+        public bool Shielded { get; set; }
         public class TargetedEventEventArgs
         {
             public GameActor target;
@@ -168,6 +154,12 @@ namespace CardGame
             if (ammount < 0) throw new ArgumentException("Ammount must be greater or equal to 0");
             if (ammount == 0 || Immune) return;
 
+            if (Shielded)
+            {
+                Shielded = false;
+                return;
+            }
+
             h = checked(h - ammount);
             HealthLabel.text = h.ToString();//This is not using Health property because OnDamaged can occur before death.
             OnDamaged?.Invoke(this, EventArgs.Empty);
@@ -212,8 +204,8 @@ namespace CardGame
             isDying = true;
             backupOwner = slot.Owner;
             transform.SetParent(null);
-            OnDeath?.Invoke(this, new());
             slot.RemoveMinion(this);
+            OnDeath?.Invoke(this, new());
             GameManager.Instance.InvokeMinionDied(this);
         }
         public void RemoveWithoutDeath()
@@ -271,12 +263,11 @@ namespace CardGame
             get
             {
                 int? attackCount = null;
-                foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
+                foreach (CardScriptBase script in GetComponents<CardScriptBase>())
                 {
-                    if (behaviour is IAttackCountProvider provider)
-                        attackCount = attackCount.HasValue
-                            ? Math.Max(attackCount.Value, provider.AttackCount)
-                            : provider.AttackCount;
+                    attackCount = attackCount.HasValue
+                        ? Math.Max(attackCount.Value, script.AttackCount)
+                        : script.AttackCount;
                 }
 
                 return Math.Max(0, attackCount ?? 1);
@@ -287,7 +278,6 @@ namespace CardGame
             attacksRemaining = Math.Max(attacksRemaining, AttackCount);
             RefreshAttackOutline();
         }
-
 
         public override void Initialize(Card c)
         {
@@ -374,10 +364,8 @@ namespace CardGame
         {
             get
             {
-                foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
-                {
-                    if (behaviour is ITauntProvider provider && provider.Taunt) return true;
-                }
+                foreach (CardScriptBase script in GetComponents<CardScriptBase>())
+                    if (script.Taunt) return true;
 
                 return false;
             }
@@ -386,10 +374,8 @@ namespace CardGame
         {
             get
             {
-                foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
-                {
-                    if (behaviour is IAttackDamageImmunityProvider provider && provider.ImmuneToAttackDamage) return true;
-                }
+                foreach (CardScriptBase script in GetComponents<CardScriptBase>())
+                    if (script.ImmuneToAttackDamage) return true;
 
                 return false;
             }

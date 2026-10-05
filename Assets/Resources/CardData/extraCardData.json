@@ -311,7 +311,7 @@
     "Cost": 9,
     "Štítek": "Zvíře",
     "Effect": "Obránce",
-    "EffectVirtual": "Taunt (Obránce): while this minion is a legal attack target, enemy normal attacks must target a Taunt minion instead of a non-Taunt character. Expose ITauntProvider.Taunt.",
+    "EffectVirtual": "Taunt (Obránce): while this minion is a legal attack target, enemy normal attacks must target a Taunt minion instead of a non-Taunt character. Expose CardScriptBase.Taunt.",
     "ReviewNote":"ACK",
     "Flavor": "Jenom slon",
     "Notes": "",
