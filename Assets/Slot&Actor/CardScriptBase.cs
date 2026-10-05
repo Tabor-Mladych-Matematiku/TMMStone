@@ -70,6 +70,7 @@ public abstract class CardScriptBase : MonoBehaviour
         GameManager.Instance.AfterAttackResolved += _OnAfterAttackResolved;
         GameManager.Instance.MinionDied += _OnAnyMinionDied;
         GameManager.Instance.MinionPlayedForReactions += _OnAnyMinionPlayed;
+        GameManager.Instance.BoardChanged += OnBoardChanged;
         
         if (TryGetComponent(out Card card))
         {
@@ -180,6 +181,7 @@ public abstract class CardScriptBase : MonoBehaviour
         GameManager.Instance.AfterAttackResolved -= _OnAfterAttackResolved;
         GameManager.Instance.MinionDied -= _OnAnyMinionDied;
         GameManager.Instance.MinionPlayedForReactions -= _OnAnyMinionPlayed;
+        GameManager.Instance.BoardChanged -= OnBoardChanged;
     }
     //Card events
     protected virtual void OnDiscard(object sender, EventArgs e) { }
@@ -220,6 +222,8 @@ public abstract class CardScriptBase : MonoBehaviour
     /// </summary>
     /// <param name="minion"></param>
     protected virtual void OnMinionSummoned( Minion minion) { }
+    protected virtual void OnBoardChanged() { }
+    protected virtual void OnBeforeSpellPlayed(Card spell, GameManager.CancelableCardEventArgs e) { }
     protected virtual void OnExperimentBeforeSpellPlayed(Card spell, GameManager.CancelableCardEventArgs e) { }
     protected virtual void OnExperimentBeforeAttack(Minion attacker, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnExperimentAfterAttack(Minion attacker, Minion.TargetedEventEventArgs e) { }
@@ -230,6 +234,7 @@ public abstract class CardScriptBase : MonoBehaviour
 
     private void _OnBeforeSpellPlayed(object sender, GameManager.CancelableCardEventArgs e)
     {
+        OnBeforeSpellPlayed((Card)sender, e);
         if (IsActiveExperiment(out _)) OnExperimentBeforeSpellPlayed((Card)sender, e);
     }
 
