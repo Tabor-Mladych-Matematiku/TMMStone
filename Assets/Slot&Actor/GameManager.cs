@@ -881,11 +881,13 @@ namespace CardGame
         public void EndTurn() => EndTurn(OnTurn);
         private void EndTurn(bool localOnTurn)
         {
-            foreach (GameActor actor in AllActors)
+            P endingPlayer = localOnTurn ? P.P1 : P.P2;
+            foreach (GameActor actor in AllActors.ToArray())
             {
                 actor.EndTurn(localOnTurn);
                 if (gameEnding) return;
             }
+            Stats.ResetCardsPlayedThisTurn(endingPlayer);
         }
         public void AddToGrave(Card c, P who)
         {
@@ -1042,6 +1044,7 @@ namespace CardGame
                     Card card = handSlot.GetCard();
                     ManaCounters[who].Mana -= GetManaCost(card);
                     handSlot.PopCard();
+                    Stats.RecordCardPlayed(who);
                     CardSlot targetSlot = null;
                     GameActor target = null;
                     if (action.CharacterTarget.HasTarget)

@@ -350,7 +350,7 @@ namespace CardGame
                 {
                     Type cardScript = asm.GetType(script);
                     scriptTypes.Add(cardScript);
-                    Targetted = cardScript.IsSubclassOf(asm.GetType("TargetableCardScriptBase"));//This could be probably done through the CardScriptBase, but this'll do
+                    Targetted = typeof(TargetableCardScriptBase).IsAssignableFrom(cardScript);
                     //Debug.Log("Type: " + cardScript);
                     //if(Targetted) Debug.Log("Targetted");
                     gameObject.AddComponent(cardScript);
@@ -445,6 +445,9 @@ namespace CardGame
         public bool IsTargetValid(TableActor actor)
         {
             if (actor == null || actor == battlecryPreview) return false;
+            if (cardType == CardType.Spell)
+                foreach (CardScriptBase script in actor.GetComponents<CardScriptBase>())
+                    if (script.Spellproof) return false;
             return TargetValidator(actor);
         }
 

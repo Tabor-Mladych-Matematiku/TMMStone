@@ -67,7 +67,8 @@ public class AckCardTests
             176, 177, 178, 179, 180, 182, 183, 187, 188, 193, 196, 199, 203,
             204, 205, 208, 209, 211, 214, 215, 217, 219, 312,
             42, 65, 118, 119, 120, 122, 124, 138, 139, 156, 194, 216,
-            225, 226, 227, 228, 314
+            225, 226, 227, 228, 314,
+            30, 125, 127, 131, 158, 159, 160, 162
         };
         int checkedCards = 0;
         foreach (var pair in CDJsonUtils.LoadCardDatabase())
@@ -83,7 +84,7 @@ public class AckCardTests
             }
             checkedCards++;
         }
-        Assert.That(checkedCards, Is.EqualTo(117));
+        Assert.That(checkedCards, Is.EqualTo(125));
     }
 
     [Test]
@@ -388,6 +389,91 @@ public class AckCardTests
         Assert.That(second.Health, Is.EqualTo(101));
         Assert.That(second.MaxHealth, Is.EqualTo(101));
         Assert.That(countDuringReaction, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void ShieldPreventsAndConsumesExactlyOnePositiveDamageInstance()
+    {
+        Minion shielded = Minion(GameManager.P.P1, 0, 158);
+        var shieldScript = shielded.gameObject.AddComponent<Čarobot_2000>();
+        Invoke(shieldScript, "OnSelfSummoned", shielded, new Minion.TargetedEventEventArgs());
+        shielded.Shielded = true; // Re-granting an active Shield must not stack.
+        int damageEvents = 0;
+        shielded.OnDamaged += (_, _) => damageEvents++;
+
+        shielded.Damage(7);
+        Assert.That(shielded.Health, Is.EqualTo(100));
+        Assert.That(damageEvents, Is.Zero);
+
+        shielded.Damage(7);
+        Assert.That(shielded.Health, Is.EqualTo(93));
+        Assert.That(damageEvents, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void DeathReleasesSlotAndMovesCardToGraveBeforeDeathEffectsRun()
+    {
+        CardSlot slot = minions[GameManager.P.P1][0];
+        Set(slot, "minionDestroyPlayer", slot.gameObject.AddComponent<AudioSource>());
+        manager.graves = new Dictionary<GameManager.P, Grave>
+        {
+            [GameManager.P.P1] = NewObject("Grave").AddComponent<Grave>(),
+            [GameManager.P.P2] = NewObject("Enemy Grave").AddComponent<Grave>()
+        };
+        Card original = Card(30);
+        slot.PlaceCard(original);
+        original.gameObject.SetActive(false);
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Slot&Actor/Minion.prefab");
+        Minion dying = UnityEngine.Object.Instantiate(prefab, slot.transform).GetComponent<Minion>();
+        Set(dying, "original", original);
+        dying.MaxHealth = 1;
+        dying.Health = 1;
+        bool slotWasFree = false;
+        bool cardWasInGrave = false;
+        dying.OnDeath += (_, _) =>
+        {
+            slotWasFree = !slot.Occupied;
+            cardWasInGrave = manager.graves[GameManager.P.P1].Contains(original);
+        };
+
+        dying.Death();
+
+        Assert.That(slotWasFree, Is.True);
+        Assert.That(cardWasInGrave, Is.True);
+    }
+
+    [Test]
+    public void SpellproofBlocksOnlySpellTargeting()
+    {
+        Minion frog = Minion(GameManager.P.P2, 0, 160);
+        frog.gameObject.AddComponent<Robohypnožába>();
+        Card spell = Card(132);
+        spell.cardType = CardGame.Card.CardType.Spell;
+        Card battlecry = Card(125);
+        battlecry.cardType = CardGame.Card.CardType.Minion;
+
+        Assert.That(spell.IsTargetValid(frog), Is.False);
+        Assert.That(battlecry.IsTargetValid(frog), Is.True);
+    }
+
+    [Test]
+    public void StampedeCountsOnlyEarlierCardsFromItsOwnersCurrentTurn()
+    {
+        manager.Stats.RecordCardPlayed(GameManager.P.P1);
+        manager.Stats.RecordCardPlayed(GameManager.P.P1);
+        manager.Stats.RecordCardPlayed(GameManager.P.P1); // Splašené stádo itself
+        manager.Stats.RecordCardPlayed(GameManager.P.P2);
+        Minion stampede = Minion(GameManager.P.P1, 0, 131);
+
+        Invoke(stampede.gameObject.AddComponent<Splašené_stádo>(), "OnSelfSummoned",
+            stampede, new Minion.TargetedEventEventArgs());
+
+        Assert.That(stampede.Attack, Is.EqualTo(5));
+        Assert.That(stampede.Health, Is.EqualTo(104));
+        Assert.That(stampede.MaxHealth, Is.EqualTo(104));
+        manager.Stats.ResetCardsPlayedThisTurn(GameManager.P.P1);
+        Assert.That(manager.Stats.GetCardsPlayedThisTurn(GameManager.P.P1), Is.Zero);
+        Assert.That(manager.Stats.GetCardsPlayedThisTurn(GameManager.P.P2), Is.EqualTo(1));
     }
 
     ManaCounter Mana(GameManager.P owner, int maximum, int current)
