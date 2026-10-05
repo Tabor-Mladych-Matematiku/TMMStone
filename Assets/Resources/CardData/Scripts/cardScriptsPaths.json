@@ -101,6 +101,9 @@
     "42": [
         "CardData/Scripts/V2/Filip, Přinašeč míru"
     ],
+    "43": [
+        "CardData/Scripts/V2/Okamie"
+    ],
     "45": [
         "CardData/Scripts/V2/Bouřňák"
     ],
@@ -206,6 +209,9 @@
     "86": [
         "CardData/Scripts/V2/Pí blast"
     ],
+    "87": [
+        "CardData/Scripts/V2/Zpirátěný software"
+    ],
     "88": [
         "CardData/Scripts/V2/Šíření ransomware"
     ],
@@ -293,6 +299,9 @@
     "131": [
         "CardData/Scripts/V2/Splašené stádo"
     ],
+    "132": [
+        "CardData/Scripts/V2/Útěk experimentů"
+    ],
     "133": [
         "CardData/Scripts/V2/Lví královna"
     ],
@@ -301,6 +310,9 @@
     ],
     "135": [
         "CardData/Scripts/V2/Snížená gravitace"
+    ],
+    "136": [
+        "CardData/Scripts/V2/Učitel v laboratoři"
     ],
     "137": [
         "CardData/Scripts/V2/Anihilace pozitronů"
@@ -358,6 +370,9 @@
     ],
     "160": [
         "CardData/Scripts/V2/Robohypnožába"
+    ],
+    "161": [
+        "CardData/Scripts/V2/Ambiciózní vynálezce"
     ],
     "162": [
         "CardData/Scripts/V2/Lokomotiva Matěj"

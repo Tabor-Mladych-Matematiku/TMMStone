@@ -68,7 +68,7 @@ public class AckCardTests
             204, 205, 208, 209, 211, 214, 215, 217, 219, 312,
             42, 65, 118, 119, 120, 122, 124, 138, 139, 156, 194, 216,
             225, 226, 227, 228, 314,
-            30, 125, 127, 131, 158, 159, 160, 162
+            30, 43, 87, 125, 127, 131, 132, 136, 158, 159, 160, 161, 162
         };
         int checkedCards = 0;
         foreach (var pair in CDJsonUtils.LoadCardDatabase())
@@ -84,7 +84,7 @@ public class AckCardTests
             }
             checkedCards++;
         }
-        Assert.That(checkedCards, Is.EqualTo(125));
+        Assert.That(checkedCards, Is.EqualTo(130));
     }
 
     [Test]
@@ -288,7 +288,7 @@ public class AckCardTests
         Card spell = Card(65);
         spell.backupOwner = GameManager.P.P1;
         Invoke(spell.gameObject.AddComponent<Přímá_úměra>(), "OnSelfPlayed", spell,
-            new Card.CardPlayedEventArgs(CardGame.Card.CardType.Spell, target));
+            new CardGame.Card.CardPlayedEventArgs(CardGame.Card.CardType.Spell, target));
         Assert.That(mana.Mana, Is.Zero);
         Assert.That(mana.MaxMana, Is.EqualTo(5));
         Assert.That(target.Health, Is.EqualTo(100 - current - 2));
@@ -411,6 +411,21 @@ public class AckCardTests
     }
 
     [Test]
+    public void DynamicAttackModifierRemainsSeparateFromPermanentBuffs()
+    {
+        Minion minion = Minion(GameManager.P.P1, 0, 43);
+        var script = minion.gameObject.AddComponent<Okamie>();
+        script.DynamicAttackModifier = 5;
+        Assert.That(minion.Attack, Is.EqualTo(6));
+
+        minion.Buff(2, 0);
+        Assert.That(minion.Attack, Is.EqualTo(8));
+
+        script.DynamicAttackModifier = 0;
+        Assert.That(minion.Attack, Is.EqualTo(3));
+    }
+
+    [Test]
     public void DeathReleasesSlotAndMovesCardToGraveBeforeDeathEffectsRun()
     {
         CardSlot slot = minions[GameManager.P.P1][0];
@@ -474,6 +489,42 @@ public class AckCardTests
         manager.Stats.ResetCardsPlayedThisTurn(GameManager.P.P1);
         Assert.That(manager.Stats.GetCardsPlayedThisTurn(GameManager.P.P1), Is.Zero);
         Assert.That(manager.Stats.GetCardsPlayedThisTurn(GameManager.P.P2), Is.EqualTo(1));
+    }
+
+    [TestCase(1, 98)]
+    [TestCase(2, 96)]
+    public void EscapingExperimentsUsesMomentumDamage(int cardsPlayedThisTurn, int expectedHealth)
+    {
+        for (int i = 0; i < cardsPlayedThisTurn; i++) manager.Stats.RecordCardPlayed(GameManager.P.P1);
+        Card spell = Card(132);
+        spell.backupOwner = GameManager.P.P1;
+        Minion target = Minion(GameManager.P.P2, 0, 48);
+
+        Invoke(spell.gameObject.AddComponent<Útěk_experimentů>(), "OnSelfPlayed", spell,
+            new Card.CardPlayedEventArgs(CardGame.Card.CardType.Spell, target));
+
+        Assert.That(target.Health, Is.EqualTo(expectedHealth));
+    }
+
+    [Test]
+    public void LaboratoryTeacherDiscountIsConsumedEvenWhenExperimentIsCountered()
+    {
+        var effectSlots = Slots(GameManager.maxEffSlots);
+        Set(manager, "EffSlots", effectSlots);
+        Effect discount = NewObject("Teacher discount").AddComponent<Effect>();
+        discount.transform.SetParent(effectSlots[GameManager.P.P1][0].transform);
+        var script = discount.gameObject.AddComponent<Učitel_v_laboratoři>();
+        script.Awake();
+        Card experiment = Card(139);
+        experiment.backupOwner = GameManager.P.P1;
+        experiment.mana = 7;
+        Set(experiment, "<IsExperiment>k__BackingField", true);
+        manager.AddCardToHand(GameManager.P.P1, experiment);
+
+        Assert.That(manager.GetManaCost(experiment), Is.Zero);
+        Invoke(script, "OnBeforeSpellPlayed", experiment,
+            new GameManager.CancelableCardEventArgs(experiment) { Cancel = true });
+        Assert.That(manager.GetManaCost(experiment), Is.EqualTo(7));
     }
 
     ManaCounter Mana(GameManager.P owner, int maximum, int current)

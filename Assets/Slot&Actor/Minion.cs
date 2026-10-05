@@ -235,15 +235,29 @@ namespace CardGame
         }
 
         private int baseAttack;
+        private int DynamicAttackModifier
+        {
+            get
+            {
+                int total = 0;
+                foreach (CardScriptBase script in GetComponents<CardScriptBase>())
+                    total += script.DynamicAttackModifier;
+                return total;
+            }
+        }
         public int Attack
         {
-            get => a;
+            get => math.max(0, a + DynamicAttackModifier);
             set
             {
                 a = math.max(0, value);
-                AttackLabel.text = a.ToString();
-                RefreshAttackOutline();
+                RefreshAttack();
             }
+        }
+        public void RefreshAttack()
+        {
+            AttackLabel.text = Attack.ToString();
+            RefreshAttackOutline();
         }
         public void ResetAttack()
         {
@@ -251,7 +265,8 @@ namespace CardGame
         }
         public void Buff(int attack, int health)
         {
-            Attack += attack;
+            a = math.max(0, a + attack);
+            RefreshAttack();
             MaxHealth += health;
             Health += health;
         }

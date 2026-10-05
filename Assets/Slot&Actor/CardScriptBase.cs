@@ -30,6 +30,17 @@ public abstract class CardScriptBase : MonoBehaviour
     public virtual bool Spellproof => false;
     public virtual int AttackCount => 1;
     public virtual bool ImmuneToAttackDamage => false;
+    private int dynamicAttackModifier;
+    public int DynamicAttackModifier
+    {
+        get => dynamicAttackModifier;
+        set
+        {
+            if (dynamicAttackModifier == value) return;
+            dynamicAttackModifier = value;
+            if (TryGetComponent(out Minion minion)) minion.RefreshAttack();
+        }
+    }
     private int spelldamage = 0;
     /// <summary>
     /// Returns an additive modifier for this card's mana cost. This does not set
