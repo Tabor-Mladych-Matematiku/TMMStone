@@ -13,7 +13,7 @@ public class Jiříkův_bezedný_hrnek : CardScriptBase
 
 
     //Minion events
-    //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
+    
     //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnHealed(object sender, EventArgs e) { }

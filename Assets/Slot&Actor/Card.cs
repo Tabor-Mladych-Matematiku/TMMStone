@@ -101,7 +101,7 @@ namespace CardGame
             get => hidden; set
             {
                 hidden = value;
-                sr.sprite = (hidden) ? cardBack : face;
+                sr.sprite = hidden ? cardBack : face;
             }
         }
 

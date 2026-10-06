@@ -24,7 +24,7 @@ public class Elektrikář_z_ČVUTu : TargetableCardScriptBase
     //protected override bool TargetValidate(TableActor target)=>true;
 
     //Minion events
-    //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
+    
     //protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
     //protected override void OnHealed(object sender, EventArgs e) { }

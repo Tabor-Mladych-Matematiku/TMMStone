@@ -10,7 +10,6 @@ public class Bezradný_student : CardScriptBase
 
 
     //Minion events
-    //protected override void OnBattleCry(object sender, Minion.TargetedEventEventArgs e) { }
     protected override void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e)
     {
         if (RandomRange(0, 2) != 0) return;
