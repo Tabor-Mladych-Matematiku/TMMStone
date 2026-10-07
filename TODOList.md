@@ -48,9 +48,9 @@
 - [ ] Support a shared deck with separate per-player fatigue for EVIL Jiřík, Pán chaosu: point both Deck wrappers at the same persistent backing pile, make deck operations transparently affect it, and make replaying the merge a no-op. Drawn cards belong to the drawing player; an empty draw advances only that player's fatigue. Define ambiguous top-card exchanges when both wrappers already alias one pile.
 - [ ] Add regressions for paired-peer random ordering, cancelled mana reservations, control into a full board, bounce overflow without discard, lethal damage-received triggers, simultaneous graveyard checks, Shield/Lifesteal, and direct-effect draws versus later lethal death cascades.
 
-- [ ] Michalův matematický model now creates a clean spell copy by card ID at the bottom of its controller's deck while the original reaches the graveyard normally. Implement the remaining reviewed copy rules: Zpirátěný software inserts a copy at a random deck position without shuffling the other cards, and Filip creates copies in the opponent's hand. Excess generated hand copies are destroyed without discard events.
+- [x] Michalův matematický model now creates a clean spell copy by card ID at the bottom of its controller's deck while the original reaches the graveyard normally. Implement the remaining reviewed copy rules: Zpirátěný software inserts a copy at a random deck position without shuffling the other cards, and Filip creates copies in the opponent's hand. Excess generated hand copies are destroyed without discard events.
 - [ ] Support separate OnDraw and CastOnDraw flows. OnDraw resolves an effect when the card is drawn and then the card enters the hand normally; no current card is known to use it, but keep the semantic distinction. CastOnDraw plays the card for free instead of putting it into hand and emits no spell-play event. Trojský kůň is CastOnDraw: apply spell damage and defer reinsertion until its replacement-draw chain finishes. Zaokrouhlovací chyba and Úchyt are also CastOnDraw and avoid spell-play listeners.
-- [ ] Implement Bug summons using `cards.json` ID 314, with 1/1 printed stats and the summon-scaling effect imported from `Tokeny/Bug.jpg`; its current summon does not count toward its own scaling. Generate Implementace v Pythonu using token ID 102.
+- [x] Implement Bug summons using `cards.json` ID 314, with 1/1 printed stats and the summon-scaling effect imported from `Tokeny/Bug.jpg`; its current summon does not count toward its own scaling. Generate Implementace v Pythonu using token ID 102.
 - [ ] Resolve attack-interception effects against the recorded attacking instance. A player cannot have two active copies of the same Experiment, including Schrödingerova kočka; still define ordering against different simultaneous interceptors. Once legally declared, an Animal's attack is not cancelled by Lenička dying during a before-attack event. Track each Leguán's specific David summoner rather than matching a card name.
 - [ ] Implement Sv. Jana's bounce for other Org minions only; she remains on the board. Move the affected minions' attached cards rather than creating copies, then apply her next-Org zero-cost Effect.
 - [ ] Reset current/max health, attack, enchantments and statuses for Zanedbání odporu vzduchu. Allow Grantová komise to exceed maximum current mana. Prohození proměnných ignores spell-damage bonuses. Lock out external deck mutations during Vyhledávací automat's staged selection.
@@ -87,7 +87,7 @@
 - [ ] Make dragged cards follow the pointer smoothly instead of snapping directly to it.
 - [ ] Add card movement animations.
 - [ ] Replace direct minion dragging during attacks with a targeting arrow or similar interaction.
-- [ ] Clearly indicate playable cards and minions that can attack.
+- [x] Clearly indicate playable cards and minions that can attack.
 - [ ] Show the opponent's actions instead of applying them without visible playback.
 - [ ] Keep card stat text constrained horizontally.
 - [ ] Improve the main menu presentation.
