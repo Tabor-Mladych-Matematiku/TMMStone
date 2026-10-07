@@ -75,6 +75,8 @@ namespace CardGame
         private int a = 0;
         private bool isDying;
         private Image attackReadyOutline;
+        private Image shieldOverlay;
+        private bool shielded;
         [SerializeField] TextMeshProUGUI AttackLabel;
         [SerializeField] TextMeshProUGUI HealthLabel;
 
@@ -89,7 +91,15 @@ namespace CardGame
         public event EventHandler OnRemovedWithoutDeath;
         public event EventHandler OnHealed;
         public event EventHandler OnDamaged;
-        public bool Shielded { get; set; }
+        public bool Shielded
+        {
+            get => shielded;
+            set
+            {
+                shielded = value;
+                RefreshShieldOverlay();
+            }
+        }
         public class TargetedEventEventArgs
         {
             public GameActor target;
@@ -175,7 +185,36 @@ namespace CardGame
             defaultColor = HighlightRim.color;
             highlightColor = new(defaultColor.r, defaultColor.g, defaultColor.b, 0.8f);
             attkColor = new(defaultColor.g, defaultColor.r, defaultColor.b, 0.8f);//Interesting choice but ok
+            CreateShieldOverlay();
             CreateAttackReadyOutline();
+        }
+
+        private void CreateShieldOverlay()
+        {
+            GameObject overlayObject = new("ShieldOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            overlayObject.layer = gameObject.layer;
+            overlayObject.transform.SetParent(graphic.transform.parent, false);
+            overlayObject.transform.SetSiblingIndex(graphic.transform.GetSiblingIndex() + 1);
+
+            RectTransform overlayRect = overlayObject.GetComponent<RectTransform>();
+            RectTransform graphicRect = graphic.rectTransform;
+            overlayRect.anchorMin = graphicRect.anchorMin;
+            overlayRect.anchorMax = graphicRect.anchorMax;
+            overlayRect.pivot = graphicRect.pivot;
+            overlayRect.anchoredPosition = graphicRect.anchoredPosition;
+            overlayRect.sizeDelta = graphicRect.sizeDelta;
+            overlayRect.localRotation = graphicRect.localRotation;
+            overlayRect.localScale = graphicRect.localScale;
+
+            shieldOverlay = overlayObject.GetComponent<Image>();
+            shieldOverlay.color = new Color(1f, 0.85f, 0f, 0.35f);
+            shieldOverlay.raycastTarget = false;
+            RefreshShieldOverlay();
+        }
+
+        private void RefreshShieldOverlay()
+        {
+            if (shieldOverlay != null) shieldOverlay.enabled = shielded;
         }
 
         private void CreateAttackReadyOutline()
