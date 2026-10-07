@@ -10,6 +10,47 @@ To test multiplayer, run one instance with **Build & Run** and another in Play m
 
 The repository includes a known-valid deck based on the physical game and an experimental deck containing cards that may be incomplete. Available local deck JSON files can be selected in the lobby. If loading stalls, restart the affected instance.
 
+## Automatic WebGL deployment to itch.io
+
+Every push to `main` builds the enabled Unity scenes as WebGL and uploads the
+result to the `html5` channel on itch.io. The workflow can also be run manually
+from the repository's **Actions** tab. It uses the Unity version recorded in
+`ProjectSettings/ProjectVersion.txt`.
+
+### One-time itch.io setup
+
+1. Create the game page before the first deployment and set **Kind of project**
+   to **HTML**.
+2. Note the itch.io username and game URL slug. For
+   `https://example.itch.io/tmmstone`, these are `example` and `tmmstone`.
+3. Create an API key in itch.io's **Settings > API keys**. Treat it as a
+   password.
+4. After the first successful upload, open the game's edit page and ensure the
+   `html5` upload is marked **This file will be played in the browser**. Set the
+   viewport/fullscreen options there as desired, then publish the page.
+
+### One-time GitHub setup
+
+In **Settings > Secrets and variables > Actions**, add these repository
+variables:
+
+- `ITCH_USERNAME`: the itch.io username/subdomain
+- `ITCH_GAME`: the game page's URL slug
+
+Add these repository secrets:
+
+- `BUTLER_API_KEY`: the itch.io API key
+- `UNITY_EMAIL`: the Unity account email
+- `UNITY_PASSWORD`: the Unity account password
+
+For a Unity Personal license, also add `UNITY_LICENSE` containing the complete
+contents of the activated `.ulf` file (on Windows this is normally
+`C:\ProgramData\Unity\Unity_lic.ulf`). For Unity Pro, add `UNITY_SERIAL` instead.
+Do not add either credential to the repository itself.
+
+The pipeline definition is in `.github/workflows/deploy-itch.yml`. A successful
+run also retains the built WebGL player as a GitHub Actions artifact for 14 days.
+
 ## Game objective
 
 Each hero starts with 30 health. Reduce the opposing hero to 0 health while keeping your own hero above 0.
