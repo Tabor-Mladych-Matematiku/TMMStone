@@ -533,7 +533,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 95778a1c88e9648479460cfb0d06fa75
-    m_Address: card-plain/V2/Cyberdyne systems T-800
+    m_Address: card-plain/V2/Cyberdyne Systems T-800
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -834,6 +834,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8cad343c9e15f3946a0105cbb46cd845
     m_Address: card-plain/V2/Funfact
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc65206645219d64aac3f7232cf53a6b
+    m_Address: card-plain/V2/Bug
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a6d270b43978e84fa6c3f1b2d82398a
+    m_Address: "card-plain/V2/N\xE1hl\xE1 lobotomie"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

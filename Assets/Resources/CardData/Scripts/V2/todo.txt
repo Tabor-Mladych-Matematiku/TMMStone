@@ -1,0 +1,4 @@
+Dodělat skripty k prebuilt deckům + otestovat.
+
+
+Play with UI until tokens arrive

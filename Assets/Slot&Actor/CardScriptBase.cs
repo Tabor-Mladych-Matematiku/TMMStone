@@ -382,3 +382,110 @@ public abstract class CardScriptBase : MonoBehaviour
     }
 
 }
+
+public sealed class CardChoiceOption
+{
+    public CardChoiceOption(int value, string text) { Value = value; Text = text; }
+    public CardChoiceOption(int value, Card card) { Value = value; Card = card; }
+    public int Value { get; }
+    public string Text { get; }
+    public Card Card { get; }
+}
+
+public sealed class CardChoiceRequest
+{
+    public string Header;
+    public List<CardChoiceOption> Options = new();
+    public int RequiredSelections = 1;
+    public bool MarkSelections;
+    public bool AutoSelectAll;
+}
+
+public sealed class CardPlayContext
+{
+    private readonly Card card;
+    private readonly List<(TableActor actor, int index)> targets = new();
+    private readonly List<(TableActor actor, int index)> resolvedTargets = new();
+    private readonly List<int[]> choiceGroups = new();
+    private int targetCursor;
+    private int choiceCursor;
+    private readonly bool automaticallySelectChoices;
+
+    internal CardPlayContext(Card card, int cardIndex, int minionSlotIndex, bool automaticallySelectChoices = false)
+    {
+        this.card = card;
+        CardIndex = cardIndex;
+        MinionSlotIndex = minionSlotIndex;
+        this.automaticallySelectChoices = automaticallySelectChoices;
+    }
+
+    public Card Card => card;
+    public int CardIndex { get; }
+    public int MinionSlotIndex { get; }
+    public bool AutomaticallySelectingChoices => automaticallySelectChoices;
+    public bool WaitingForInput { get; internal set; }
+    public IReadOnlyList<int> TargetIndices => resolvedTargets.Select(target => target.index).ToArray();
+    public IReadOnlyList<int[]> ChoiceGroups => choiceGroups;
+
+    internal void ResetReadPosition()
+    {
+        targetCursor = 0;
+        choiceCursor = 0;
+        resolvedTargets.Clear();
+        WaitingForInput = false;
+    }
+
+    internal void AddInitialTarget(TableActor actor, int index)
+    {
+        if (actor != null && index >= 0) targets.Add((actor, index));
+    }
+
+    public bool TrySelectTarget(Func<TableActor, bool> validator, out TableActor target)
+    {
+        while (targetCursor < targets.Count)
+        {
+            (TableActor actor, _) = targets[targetCursor++];
+            if (card.IsTargetValid(actor, validator))
+            {
+                resolvedTargets.Add((actor, targets[targetCursor - 1].index));
+                target = actor;
+                return true;
+            }
+        }
+
+        target = null;
+        WaitingForInput = true;
+        card.RequestTarget(this, validator);
+        return false;
+    }
+
+    public bool TrySelectChoices(CardChoiceRequest request, out IReadOnlyList<int> choices)
+    {
+        if (choiceCursor < choiceGroups.Count)
+        {
+            choices = choiceGroups[choiceCursor++];
+            return true;
+        }
+
+        int required = Mathf.Min(request.RequiredSelections, request.Options.Count);
+        if (required == 0 || request.AutoSelectAll || automaticallySelectChoices)
+        {
+            IEnumerable<CardChoiceOption> options = automaticallySelectChoices
+                ? request.Options.OrderBy(_ => UnityEngine.Random.value)
+                : request.Options;
+            int[] automatic = options.Take(required).Select(option => option.Value).ToArray();
+            choiceGroups.Add(automatic);
+            choiceCursor++;
+            choices = automatic;
+            return true;
+        }
+
+        choices = Array.Empty<int>();
+        WaitingForInput = true;
+        card.RequestChoices(this, request);
+        return false;
+    }
+
+    internal void AddTarget(TableActor actor, int index) => targets.Add((actor, index));
+    internal void AddChoices(int[] choices) => choiceGroups.Add(choices ?? Array.Empty<int>());
+}

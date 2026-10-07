@@ -799,7 +799,13 @@ namespace CardGame
         {
             foreach (TableActor actor in AllTableActors.ToArray())//Snapshot because effects can move actors between slots while the turn starts.
             {
-                if (actor.transform.parent.GetComponentInChildren<Card>(true) == null && actor is not Effect) continue;//I don't like this. but it may hold for now. (Actor might be destroyed while in the loop and it shows by its card being removed when we get to him (he is still active for a bit))
+                // An earlier StartTurn callback can destroy another actor from this snapshot.
+                // Unity keeps the managed reference until the end of the frame, but it compares
+                // equal to null and must not be dereferenced. Non-effect actors can also become
+                // detached from their card before their turn in the snapshot is reached.
+                if (actor == null) continue;
+                if (actor is not Effect &&
+                    (actor.transform.parent == null || actor.transform.parent.GetComponentInChildren<Card>(true) == null)) continue;
                 actor.StartTurn(localOnTurn);//TODO: destruction of things should be proably queued and done after the effect has ended
                 if (gameEnding) return;
             }

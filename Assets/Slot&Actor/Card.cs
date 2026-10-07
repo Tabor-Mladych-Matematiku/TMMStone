@@ -437,29 +437,83 @@ namespace CardGame
             }
             if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Minion)//We have a targetSlot for placing things
             {
-
-                if (!Targetted) GameManager.Instance.OnUIPlayMinion(SlotIndex, GameManager.Instance.HighlightedSlotIndex);
-                else
+                BeginBeforePlayed(GameManager.Instance.HighlightedSlotIndex);
+                return;
+            }
+            else if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Field)
+            {
+                BeginBeforePlayed(-1);
+                return;
+            }
+            else if (cardType == CardType.Spell)
+            {
+                if (Targetted && GameManager.Instance.highlightedActor == null)
                 {
-                    BeginBattlecryTargeting();
+                    GameManager.Instance.cursor = null;
+                    GameManager.Instance.ClearHighlights();
+                    transform.localPosition = Vector3.zero;
                     return;
                 }
+                BeginBeforePlayed(-1);
+                return;
             }
-            else if (GameManager.Instance.highlightedSlot != null && cardType == CardType.Field) GameManager.Instance.OnUIPlayField(SlotIndex);//We have a slot to place field to
-            else if (cardType == CardType.Spell && !Targetted) GameManager.Instance.OnUICastSpell(SlotIndex);//Its not a targetted spell
-            else if (cardType == CardType.Spell && GameManager.Instance.highlightedActor != null) GameManager.Instance.OnUICastSpell(SlotIndex, GameManager.Instance.HighlightedActorIndex);//Its targeted and has a target
             else transform.localPosition = Vector3.zero;//Reset
             GameManager.Instance.cursor = null;//Clean cursor
             GameManager.Instance.ClearHighlights();
         }
 
-        public bool IsTargetValid(TableActor actor)
+        private void BeginBeforePlayed(int minionSlotIndex)
         {
-            if (actor == null || actor == battlecryPreview) return false;
+            playContext = new CardPlayContext(this, SlotIndex, minionSlotIndex);
+            if (GameManager.Instance.highlightedActor is TableActor initialTarget)
+                playContext.AddInitialTarget(initialTarget, GameManager.Instance.HighlightedActorIndex);
+            GameManager.Instance.ClearHighlights();
+            transform.localPosition = Vector3.zero;
+            ResumeBeforePlayed(playContext);
+        }
+
+        internal void ResumeBeforePlayed(CardPlayContext context)
+        {
+            if (playContext != context) return;
+            context.ResetReadPosition();
+            foreach (CardScriptBase script in GetComponents<CardScriptBase>())
+            {
+                if (script.OnBeforePlayed(context)) continue;
+                if (!context.WaitingForInput && playContext == context) CancelBeforePlayed();
+                return;
+            }
+
+            CompleteBeforePlayed(context);
+        }
+
+        private void CompleteBeforePlayed(CardPlayContext context)
+        {
+            int target = context.TargetIndices.Count > 0 ? context.TargetIndices[0] : -1;
+            int[] choices = context.ChoiceGroups.SelectMany(group => group).ToArray();
+            playContext = null;
+            IsChoosingPlayTarget = false;
+            pendingTargetValidator = null;
+            RemovePlayPreview();
+            GameManager.Instance.SetMinionTargeting(false);
+            GameManager.Instance.cursor = null;
+
+            if (cardType == CardType.Minion)
+                GameManager.Instance.OnUIPlayMinion(context.CardIndex, context.MinionSlotIndex, target, choices);
+            else if (cardType == CardType.Spell)
+                GameManager.Instance.OnUICastSpell(context.CardIndex, target, choices);
+            else
+                GameManager.Instance.OnUIPlayField(context.CardIndex, choices);
+        }
+
+        public bool IsTargetValid(TableActor actor) => IsTargetValid(actor, pendingTargetValidator ?? TargetValidator);
+
+        internal bool IsTargetValid(TableActor actor, Func<TableActor, bool> validator)
+        {
+            if (actor == null || actor == playPreview) return false;
             if (cardType == CardType.Spell)
                 foreach (CardScriptBase script in actor.GetComponents<CardScriptBase>())
                     if (script.Spellproof) return false;
-            return TargetValidator(actor);
+            return validator == null || validator(actor);
         }
 
         public void OnMouseDown()
@@ -471,16 +525,31 @@ namespace CardGame
             GetComponent<AudioSource>().Play();
         }
 
-        private void BeginBattlecryTargeting()
+        internal void RequestTarget(CardPlayContext context, Func<TableActor, bool> validator)
         {
-            battlecryCardIndex = SlotIndex;
-            battlecrySlotIndex = GameManager.Instance.HighlightedSlotIndex;
-            CardSlot targetSlot = GameManager.Instance.highlightedSlot.GetComponent<CardSlot>();
-            IsChoosingBattlecryTarget = true;
+            if (playContext != context) return;
+            pendingTargetValidator = validator;
+            IsChoosingPlayTarget = true;
             GameManager.Instance.SetMinionTargeting(true);
-            GameManager.Instance.highlightedSlot = null;
-            transform.localPosition = Vector3.zero;
-            battlecryPreview = CreateMinionVisual(targetSlot, playSound: false);
+            GameManager.Instance.cursor = this;
+            if (cardType == CardType.Minion && playPreview == null)
+            {
+                CardSlot targetSlot = GameManager.Instance.GetMinionSlot(Owner, context.MinionSlotIndex);
+                playPreview = CreateMinionVisual(targetSlot, playSound: false);
+            }
+        }
+
+        internal void RequestChoices(CardPlayContext context, CardChoiceRequest request)
+        {
+            if (playContext != context) return;
+            GameManager.Instance.cursor = null;
+            GameManager.Instance.SetMinionTargeting(true);
+            CardChoiceUI.Show(request, choices =>
+            {
+                if (playContext != context) return;
+                context.AddChoices(choices);
+                ResumeBeforePlayed(context);
+            }, CancelBeforePlayed);
         }
 
         public void ChoosePlayTarget(TableActor target)
@@ -492,13 +561,19 @@ namespace CardGame
             if (targetIndex < 0) return;
 
             IsChoosingPlayTarget = false;
+            RemovePlayPreview();
             GameManager.Instance.highlightedActor = null;
-            GameManager.Instance.OnUIPlayMinion(battlecryCardIndex, battlecrySlotIndex, targetIndex);
+            pendingTargetValidator = null;
+            CardPlayContext context = playContext;
+            context.AddTarget(target, targetIndex);
+            ResumeBeforePlayed(context);
         }
 
         internal void CancelBeforePlayed()
         {
             IsChoosingPlayTarget = false;
+            playContext = null;
+            pendingTargetValidator = null;
             GameManager.Instance.SetMinionTargeting(false);
             RemovePlayPreview();
             GameManager.Instance.cursor = null;
