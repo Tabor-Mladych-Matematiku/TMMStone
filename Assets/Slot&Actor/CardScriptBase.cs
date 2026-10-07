@@ -11,17 +11,14 @@ using System.Linq;
 /// </summary>
 public abstract class TargetableCardScriptBase : CardScriptBase
 {
-    sealed protected override void StartTurnBinder(Card card)
+    protected sealed override void StartTurnBinder(Card card)
     {
-        card.OnSelfPlayed += OnSelfPlayed;//OnSelfPlayed is called when the card is played from hand and triggers before OnPlayed
-        card.TargetValidator = (target) => TargetValidate(target);
+        card.OnSelfPlayed += OnSelfPlayed;
+        card.TargetValidator = TargetValidate;
     }
-    protected virtual void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
-    {
-
-    }
-    protected abstract bool TargetValidate(TableActor target);
-
+    public override bool OnBeforePlayed(CardPlayContext context) => context.TrySelectTarget(TargetValidate, out _);
+    protected virtual void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e) { }
+    protected abstract override bool TargetValidate(TableActor target);
 }
 public abstract class CardScriptBase : MonoBehaviour
 {
@@ -30,6 +27,8 @@ public abstract class CardScriptBase : MonoBehaviour
     public virtual bool Spellproof => false;
     public virtual int AttackCount => 1;
     public virtual bool ImmuneToAttackDamage => false;
+    public virtual bool OnBeforePlayed(CardPlayContext context) => true;
+    protected virtual bool TargetValidate(TableActor target) => true;
     private int dynamicAttackModifier;
     public int DynamicAttackModifier
     {
@@ -70,7 +69,7 @@ public abstract class CardScriptBase : MonoBehaviour
     protected int RandomRange(int startInc, int endExc) => UnityEngine.Random.Range(startInc, endExc);
     protected virtual void StartTurnBinder(Card card)
     {
-        card.OnSelfPlayed += (sender, args) => OnSelfPlayed(sender, new(args.cardType));//OnSelfPlayed is called when the card is played from hand and triggers before OnPlayed
+        card.OnSelfPlayed += (sender, args) => OnSelfPlayed(sender, new(args.cardType,args.Choices));//OnSelfPlayed is called when the card is played from hand and triggers before OnPlayed
     }
     public void Awake()
     {
@@ -129,7 +128,7 @@ public abstract class CardScriptBase : MonoBehaviour
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    protected virtual void OnSelfSummoned(object sender, Minion.TargetedEventEventArgs e) { }
+    protected virtual void OnSelfSummoned(object sender, Minion.SummonedEventArgs e) { }
     protected virtual void OnBeforeAttack(object sender, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnAfterAttack(object sender, Minion.TargetedEventEventArgs e) { }
     protected virtual void OnCombatDamageDealt(object sender, Minion.DamageDealtEventArgs e) { }
@@ -270,12 +269,14 @@ public abstract class CardScriptBase : MonoBehaviour
     }
     public class TargetlessEventArgs : EventArgs
     {
-        public TargetlessEventArgs(Card.CardType cardType)
+        public TargetlessEventArgs(Card.CardType cardType, IReadOnlyList<int> choices = null)
         {
             this.cardType = cardType;
+            Choices = choices ?? Array.Empty<int>();
         }
 
         public Card.CardType cardType { get; private set; }
+        public IReadOnlyList<int> Choices { get; private set; }
     }
     protected virtual void OnSelfPlayed(object sender, TargetlessEventArgs e) { }
     //Shorthands

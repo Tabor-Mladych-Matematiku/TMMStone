@@ -10,7 +10,7 @@ public class Týnka__Ocelová_dáma : CardScriptBase
 
 
     //Minion events
-    protected override void OnSelfSummoned(object sender, Minion.TargetedEventEventArgs e)
+    protected override void OnSelfSummoned(object sender, Minion.SummonedEventArgs e)
     {
         ((Minion)sender).Charge();
     }

@@ -1,10 +1,14 @@
 using CardGame;
 
-public class Prvostupňový_matemág : TargetableCardScriptBase
+public class Prvostupňový_matemág : CardScriptBase
 {
-    protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
+    TableActor target;
+    public override bool OnBeforePlayed(CardPlayContext context) =>
+        context.TrySelectTarget(TargetValidate, out target);
+
+    protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
-        if (e.Target is DamageableActor target) target.Damage(1);
+        if (target is DamageableActor damageableTarget) damageableTarget.Damage(1);
     }
 
     protected override bool TargetValidate(TableActor target) => target is DamageableActor;

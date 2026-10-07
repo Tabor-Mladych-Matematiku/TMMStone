@@ -34,8 +34,8 @@ namespace CardGame
         }
         public virtual void OnMouseDown()
         {
-            if (GameManager.Instance.cursor is Card card && card.IsChoosingBattlecryTarget)
-                card.ChooseBattlecryTarget(this);
+            if (GameManager.Instance.cursor is Card card && card.IsChoosingPlayTarget)
+                card.ChoosePlayTarget(this);
         }
         public virtual void Initialize(Card c)
         {
@@ -80,7 +80,7 @@ namespace CardGame
 
         [SerializeField] AudioClip attackSound;
 
-        public event EventHandler<TargetedEventEventArgs> OnSelfSummoned;
+        public event EventHandler<SummonedEventArgs> OnSelfSummoned;
         public event EventHandler<TargetedEventEventArgs> OnBeforeAttack;
         public event EventHandler<TargetedEventEventArgs> OnAfterAttack;
         public event EventHandler<DamageDealtEventArgs> OnCombatDamageDealt;
@@ -93,6 +93,10 @@ namespace CardGame
         public class TargetedEventEventArgs
         {
             public GameActor target;
+        }
+        public class SummonedEventArgs
+        {
+            public IReadOnlyList<int> Choices = Array.Empty<int>();
         }
         public class DamageDealtEventArgs : EventArgs
         {
@@ -308,9 +312,9 @@ namespace CardGame
 
         public override void OnMouseDown()
         {
-            if (GameManager.Instance.cursor is Card card && card.IsChoosingBattlecryTarget)
+            if (GameManager.Instance.cursor is Card card && card.IsChoosingPlayTarget)
             {
-                card.ChooseBattlecryTarget(this);
+                card.ChoosePlayTarget(this);
                 return;
             }
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<CardSlot>().Owner == GameManager.P.P2 || Attack == 0) return;//We must be on turn and we must be owner
@@ -463,9 +467,9 @@ namespace CardGame
             return Health > 0;
         }
 
-        internal void Summoned(GameActor target)
+        internal void Summoned(int[] choices = null)
         {
-            OnSelfSummoned?.Invoke(this, new() { target = target });
+            OnSelfSummoned?.Invoke(this, new() { Choices = choices ?? Array.Empty<int>() });
         }
     }
 }

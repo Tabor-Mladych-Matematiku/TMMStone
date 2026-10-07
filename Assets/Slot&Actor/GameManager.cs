@@ -113,14 +113,33 @@ namespace CardGame
             public int Slot { readonly get => slot; private set => slot = value; }
             private int target;
             public int Target { readonly get => target; private set => target = value; }//Serialized as an int for multiplayer.
-            public readonly CharacterTargetIndex CharacterTarget => CharacterTargetIndex.FromPlayerPerspective(target);
-            public static PlayerAction PlayCardAction(int card, int target, int slot = -1) => new()
+            private int choiceCount;
+            private int choice0;
+            private int choice1;
+            private int choice2;
+            public readonly int[] Choices => choiceCount switch
             {
-                Source = card,
-                Actiontype = ActionType.Play,
-                Slot = slot,
-                Target = target
+                1 => new[] { choice0 },
+                2 => new[] { choice0, choice1 },
+                3 => new[] { choice0, choice1, choice2 },
+                _ => Array.Empty<int>()
             };
+            public readonly CharacterTargetIndex CharacterTarget => CharacterTargetIndex.FromPlayerPerspective(target);
+            public static PlayerAction PlayCardAction(int card, int target, int slot = -1, int[] choices = null)
+            {
+                PlayerAction action = new()
+                {
+                    Source = card,
+                    Actiontype = ActionType.Play,
+                    Slot = slot,
+                    Target = target,
+                    choiceCount = Math.Min(choices?.Length ?? 0, 3)
+                };
+                if (action.choiceCount > 0) action.choice0 = choices[0];
+                if (action.choiceCount > 1) action.choice1 = choices[1];
+                if (action.choiceCount > 2) action.choice2 = choices[2];
+                return action;
+            }
             public static PlayerAction AttackAction(int minion, int target) => new()
             {
                 Source = minion,
@@ -134,6 +153,10 @@ namespace CardGame
                 serializer.SerializeValue(ref actionType);
                 serializer.SerializeValue(ref slot);
                 serializer.SerializeValue(ref target);
+                serializer.SerializeValue(ref choiceCount);
+                serializer.SerializeValue(ref choice0);
+                serializer.SerializeValue(ref choice1);
+                serializer.SerializeValue(ref choice2);
             }
         }
         public enum P
@@ -518,10 +541,10 @@ namespace CardGame
         private void Update()
         {
             if (cursor is Card targetingCard
-                && targetingCard.IsChoosingBattlecryTarget
+                && targetingCard.IsChoosingPlayTarget
                 && Input.GetMouseButtonDown(1))
             {
-                targetingCard.CancelBattlecryTargeting();
+                targetingCard.CancelBeforePlayed();
                 HideTargetingArrow();
                 return;
             }
@@ -540,7 +563,7 @@ namespace CardGame
                 return;
             }
 
-            if (cursor is Card card && card.IsChoosingBattlecryTarget)
+            if (cursor is Card card && card.IsChoosingPlayTarget)
             {
                 ShowTargetingArrow(card.TargetingArrowOrigin, mousePosition);
                 return;
@@ -874,6 +897,7 @@ namespace CardGame
             card.gameObject.SetActive(false);
             return card.SummonMinion(slot);
         }
+        internal CardSlot GetMinionSlot(P who, int index) => minionSlots[who][index];
         public void Discard(Card c, P who)
         {
             c.OnDiscard();
@@ -903,10 +927,10 @@ namespace CardGame
             graves[who].Add(c);
             //c.transform.localPosition -= new Vector3(0, 0, ((float)graves[who].Count) / 100);
         }
-        public void OnUIPlayMinion(int cardindex, int minionSlotIndex, int target = -1) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target, minionSlotIndex));
+        public void OnUIPlayMinion(int cardindex, int minionSlotIndex, int target = -1, int[] choices = null) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target, minionSlotIndex, choices));
         public void OnUIMinionAttack(int minionSlotIndex, int actorSlotTarget) => OnUITakeAction(PlayerAction.AttackAction(minionSlotIndex, actorSlotTarget));
-        public void OnUICastSpell(int cardindex, int target = -1) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target));
-        public void OnUIPlayField(int cardindex) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, -1));
+        public void OnUICastSpell(int cardindex, int target = -1, int[] choices = null) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, target, -1, choices));
+        public void OnUIPlayField(int cardindex, int[] choices = null) => OnUITakeAction(PlayerAction.PlayCardAction(cardindex, -1, -1, choices));
         public void OnUITakeAction(PlayerAction action)
         {
             TakeAction(P.P1, action);//Play it out
@@ -938,6 +962,7 @@ namespace CardGame
         {
             P owner = card.Owner;
             GameActor target = null;
+            int[] choices = card.GetRandomChoices();
 
             if (!IsCardPlayable(card, owner))
             {
@@ -979,9 +1004,9 @@ namespace CardGame
                     CardSlot minionSlot = minionSlots[owner][slotIndex];
                     minionSlot.PlaceCard(card);
                     card.gameObject.SetActive(false);
-                    Minion randomlyPlayedMinion = card.PlayMinion(minionSlot, target);
+                    Minion randomlyPlayedMinion = card.PlayMinion(minionSlot, target, choices);
                     InvokeMinionPlayed(randomlyPlayedMinion);
-                    OnPlayed?.Invoke(randomlyPlayedMinion, new(Card.CardType.Minion, target));
+                    OnPlayed?.Invoke(randomlyPlayedMinion, new(Card.CardType.Minion, target, choices));
                     break;
 
                 case Card.CardType.Spell:
@@ -991,10 +1016,10 @@ namespace CardGame
                         AddToGrave(card, owner);
                         break;
                     }
-                    card.CastSpell(target);
+                    card.CastSpell(target, choices);
                     AddToGrave(card, owner);
                     card.standardScale = Vector3.one;
-                    OnPlayed?.Invoke(card, new(Card.CardType.Spell, target));
+                    OnPlayed?.Invoke(card, new(Card.CardType.Spell, target, choices));
                     break;
 
                 case Card.CardType.Field:
@@ -1003,7 +1028,7 @@ namespace CardGame
                     FieldSlot.Initialize(owner, FieldSlot.index);
                     FieldSlot.PlaceCard(card);
                     card.gameObject.SetActive(false);
-                    OnPlayed?.Invoke(card.PlayField(), new(Card.CardType.Field, null));
+                    OnPlayed?.Invoke(card.PlayField(choices), new(Card.CardType.Field, null, choices));
                     break;
 
                 default:
@@ -1066,9 +1091,9 @@ namespace CardGame
                         CardSlot slot = minionSlots[who][action.Slot];
                         slot.PlaceCard(card);
                         card.gameObject.SetActive(false);
-                        Minion playedMinion = card.PlayMinion(slot, target);
+                        Minion playedMinion = card.PlayMinion(slot, target, action.Choices);
                         InvokeMinionPlayed(playedMinion);
-                        OnPlayed?.Invoke(playedMinion, new(CardType.Minion, target));
+                        OnPlayed?.Invoke(playedMinion, new(CardType.Minion, target, action.Choices));
                     }
                     else if (card.cardType == CardType.Field)
                     {
@@ -1076,7 +1101,7 @@ namespace CardGame
                         FieldSlot.Initialize(who, FieldSlot.index);
                         FieldSlot.PlaceCard(card);
                         card.gameObject.SetActive(false);
-                        OnPlayed?.Invoke(card.PlayField(), new(CardType.Field, target));
+                        OnPlayed?.Invoke(card.PlayField(action.Choices), new(CardType.Field, target, action.Choices));
                     }
                     else if (card.cardType == CardType.Spell)
                     {
@@ -1086,10 +1111,10 @@ namespace CardGame
                             card.standardScale = Vector3.one;
                             break;
                         }
-                        card.CastSpell(target);
+                        card.CastSpell(target, action.Choices);
                         AddToGrave(card, who);
                         card.standardScale = Vector3.one;//Maybe?
-                        OnPlayed?.Invoke(card, new(CardType.Spell, target));
+                        OnPlayed?.Invoke(card, new(CardType.Spell, target, action.Choices));
                     }
                     else throw new Exception("Unknown cardType");
                     break;

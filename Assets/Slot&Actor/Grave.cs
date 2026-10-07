@@ -12,16 +12,23 @@ namespace CardGame
 
         public int Count => pile.Cards.Count;
 
-        public bool IsReadOnly => throw new System.NotImplementedException();
+        public bool IsReadOnly => false;
 
         public void Add(Card item)
+        {
+            if (item == null) throw new System.ArgumentNullException(nameof(item));
+
+            PlaceInGrave(item);
+            pile.Cards.Add(item);
+            pile.NotifyChanged();
+        }
+
+        private void PlaceInGrave(Card item)
         {
             item.transform.SetParent(transform);
             item.transform.localPosition = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), 0);
             item.standardScale = transform.localScale;
             item.Hidden = false;
-            pile.Cards.Add(item);
-            pile.NotifyChanged();
         }
         /// <summary>
         /// Destroys all Cards in grave
@@ -38,7 +45,7 @@ namespace CardGame
 
         public void CopyTo(Card[] array, int arrayIndex)
         {
-            throw new System.NotImplementedException();
+            pile.Cards.CopyTo(array, arrayIndex);
         }
 
         public IEnumerator<Card> GetEnumerator() => pile.Cards.GetEnumerator();
@@ -47,7 +54,13 @@ namespace CardGame
 
         public void Insert(int index, Card item)
         {
-            throw new System.NotImplementedException();
+            if (item == null) throw new System.ArgumentNullException(nameof(item));
+            if ((uint)index > (uint)pile.Cards.Count)
+                throw new System.ArgumentOutOfRangeException(nameof(index));
+
+            PlaceInGrave(item);
+            pile.Cards.Insert(index, item);
+            pile.NotifyChanged();
         }
 
         public bool Remove(Card item)

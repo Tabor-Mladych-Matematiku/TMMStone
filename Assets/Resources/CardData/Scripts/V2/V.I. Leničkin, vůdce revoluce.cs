@@ -1,14 +1,18 @@
 using CardGame;
 
-public class V_I__Leničkin__vůdce_revoluce : TargetableCardScriptBase
+public class V_I__Leničkin__vůdce_revoluce : CardScriptBase
 {
-    protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
+    TableActor target;
+    public override bool OnBeforePlayed(CardPlayContext context) =>
+        context.TrySelectTarget(TargetValidate, out target);
+
+    protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
-        if (e.Target is not DamageableActor target) return;
+        if (target is not DamageableActor damageableTarget) return;
         int difference = System.Math.Abs(
             GameManager.Instance.decks[GameManager.P.P1].Count
             - GameManager.Instance.decks[GameManager.P.P2].Count);
-        target.Damage(difference);
+        damageableTarget.Damage(difference);
     }
 
     protected override bool TargetValidate(TableActor target) => target is DamageableActor;

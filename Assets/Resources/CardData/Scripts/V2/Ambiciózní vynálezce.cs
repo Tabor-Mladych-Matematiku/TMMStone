@@ -4,7 +4,7 @@ using CardGame;
 
 public class Ambiciózní_vynálezce : CardScriptBase
 {
-    protected override void OnSelfSummoned(object sender, Minion.TargetedEventEventArgs e) => UpdateBonus();
+    protected override void OnSelfSummoned(object sender, Minion.SummonedEventArgs e) => UpdateBonus();
     protected override void OnBoardChanged() => UpdateBonus();
 
     private void UpdateBonus()

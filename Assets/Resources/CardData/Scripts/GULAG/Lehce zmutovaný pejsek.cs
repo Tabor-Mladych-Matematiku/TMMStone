@@ -14,7 +14,7 @@ public class Lehce_zmutovaný_pejsek : CardScriptBase
         }
     }
 
-    protected override void OnSelfSummoned(object sender, Minion.TargetedEventEventArgs e) {
+    protected override void OnSelfSummoned(object sender, Minion.SummonedEventArgs e) {
         ((Minion)sender).Charge();
     }
 }

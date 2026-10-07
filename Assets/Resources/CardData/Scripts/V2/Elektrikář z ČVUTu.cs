@@ -4,16 +4,20 @@ using UnityEngine;
 using CardGame;
 using System;
 
-public class Elektrikář_z_ČVUTu : TargetableCardScriptBase
+public class Elektrikář_z_ČVUTu : CardScriptBase
 {
-    protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
+    TableActor target;
+    public override bool OnBeforePlayed(CardPlayContext context) =>
+        context.TrySelectTarget(TargetValidate, out target);
+
+    protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
-        Minion target = (Minion)e.Target;
-        int oldHealth = target.Health;
-        int oldAttack = target.Attack;
-        target.Attack = oldHealth;
-        target.MaxHealth = oldAttack;
-        target.Health = oldAttack;
+        Minion targetMinion = (Minion)target;
+        int oldHealth = targetMinion.Health;
+        int oldAttack = targetMinion.Attack;
+        targetMinion.Attack = oldHealth;
+        targetMinion.MaxHealth = oldAttack;
+        targetMinion.Health = oldAttack;
     }
 
     protected override bool TargetValidate(TableActor target)=>target is Minion;

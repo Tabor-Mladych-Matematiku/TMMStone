@@ -1,11 +1,15 @@
 using CardGame;
 using CardData;
 
-public class Alfa_samec : TargetableCardScriptBase
+public class Alfa_samec : CardScriptBase
 {
-    protected override void OnSelfPlayed(object sender, Card.CardPlayedEventArgs e)
+    TableActor target;
+    public override bool OnBeforePlayed(CardPlayContext context) =>
+        context.TrySelectTarget(TargetValidate, out target);
+
+    protected override void OnSelfPlayed(object sender, TargetlessEventArgs e)
     {
-        if (e.Target is Minion minion) minion.Buff(2, 3);
+        if (target is Minion minion) minion.Buff(2, 3);
     }
 
     protected override bool TargetValidate(TableActor target) =>

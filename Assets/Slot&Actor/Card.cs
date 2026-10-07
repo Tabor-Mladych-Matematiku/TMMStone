@@ -77,12 +77,12 @@ namespace CardGame
         public int[] stats;
         readonly List<Type> scriptTypes = new();
         int SlotIndex { get => GetComponentInParent<CardSlot>().index; }
-        int battlecrySlotIndex;
-        int battlecryCardIndex;
-        Minion battlecryPreview;
-        public bool IsChoosingBattlecryTarget { get; private set; }
-        public Vector3 TargetingArrowOrigin => battlecryPreview != null
-            ? battlecryPreview.transform.position
+        Minion playPreview;
+        CardPlayContext playContext;
+        Func<TableActor, bool> pendingTargetValidator;
+        public bool IsChoosingPlayTarget { get; private set; }
+        public Vector3 TargetingArrowOrigin => playPreview != null
+            ? playPreview.transform.position
             : transform.position;
 
         [SerializeField] AssetReferenceGameObject MinionAddressable;
@@ -109,9 +109,11 @@ namespace CardGame
         public event EventHandler<CardPlayedEventArgs> OnSelfPlayed;
         public class CardPlayedEventArgs
         {
-            public CardPlayedEventArgs(CardType type, GameActor target) { Target = target; cardType = type; }
+            public CardPlayedEventArgs(CardType type, GameActor target, int[] choices = null)
+            { Target = target; cardType = type; Choices = choices ?? Array.Empty<int>(); }
             public GameActor Target { get; private set; }
             public CardType cardType { get; private set; }
+            public IReadOnlyList<int> Choices { get; private set; }
         }
         /// <summary>
         /// Scripts reasign this to modify what is valid target
@@ -350,11 +352,11 @@ namespace CardGame
                 {
                     Type cardScript = asm.GetType(script);
                     scriptTypes.Add(cardScript);
-                    Targetted = typeof(TargetableCardScriptBase).IsAssignableFrom(cardScript);
-                    //Debug.Log("Type: " + cardScript);
-                    //if(Targetted) Debug.Log("Targetted");
-                    gameObject.AddComponent(cardScript);
-
+                    CardScriptBase component = (CardScriptBase)gameObject.AddComponent(cardScript);
+                    if (component is TargetableCardScriptBase)
+                    {
+                        Targetted = true;
+                    }
                     //((CardScriptBase)cmp).Initialize(script); Figure out how to pass args (Eh. Wont work. CardScriptBase is in a different assembly which we cannot reference since it references us.)
                 }
             }
@@ -411,11 +413,20 @@ namespace CardGame
         /// </summary>
         public void PlayRandomly() => GameManager.Instance.PlayRandomly(this);
 
+        internal int[] GetRandomChoices()
+        {
+            CardPlayContext context = new(this, -1, -1, automaticallySelectChoices: true);
+            context.ResetReadPosition();
+            foreach (CardScriptBase script in GetComponents<CardScriptBase>())
+                script.OnBeforePlayed(context);
+            return context.ChoiceGroups.SelectMany(group => group).ToArray();
+        }
+
         private void OnMouseUp()
         {
 
             if (GameManager.Instance.cursor != this) return;// I am not holding this card.
-            if (IsChoosingBattlecryTarget) return;
+            if (IsChoosingPlayTarget) return;
             sr.color = Color.white;
             if (SafeZone.InSafeZone)
             {
@@ -453,7 +464,7 @@ namespace CardGame
 
         public void OnMouseDown()
         {
-            if (GameManager.Instance.cursor is Card targetingCard && targetingCard.IsChoosingBattlecryTarget) return;
+            if (GameManager.Instance.cursor is Card targetingCard && targetingCard.IsChoosingPlayTarget) return;
             if (!GameManager.Instance.OnTurn || transform.parent.GetComponent<HandSlot>() == null) return;//Without visuals of failure
             if (!GameManager.Instance.IsCardPlayable(this,GameManager.P.P1)) return;//Possibly with visual indication
             GameManager.Instance.cursor = this;
@@ -472,39 +483,36 @@ namespace CardGame
             battlecryPreview = CreateMinionVisual(targetSlot, playSound: false);
         }
 
-        public void ChooseBattlecryTarget(TableActor target)
+        public void ChoosePlayTarget(TableActor target)
         {
-            if (!IsChoosingBattlecryTarget || !IsTargetValid(target)) return;
+            if (!IsChoosingPlayTarget || !IsTargetValid(target)) return;
 
             GameManager.Instance.highlightedActor = target;
             int targetIndex = GameManager.Instance.HighlightedActorIndex;
             if (targetIndex < 0) return;
 
-            IsChoosingBattlecryTarget = false;
-            GameManager.Instance.SetMinionTargeting(false);
-            RemoveBattlecryPreview();
-            GameManager.Instance.cursor = null;
+            IsChoosingPlayTarget = false;
             GameManager.Instance.highlightedActor = null;
             GameManager.Instance.OnUIPlayMinion(battlecryCardIndex, battlecrySlotIndex, targetIndex);
         }
 
-        internal void CancelBattlecryTargeting()
+        internal void CancelBeforePlayed()
         {
-            IsChoosingBattlecryTarget = false;
+            IsChoosingPlayTarget = false;
             GameManager.Instance.SetMinionTargeting(false);
-            RemoveBattlecryPreview();
+            RemovePlayPreview();
             GameManager.Instance.cursor = null;
             GameManager.Instance.ClearHighlights();
             transform.localPosition = Vector3.zero;
         }
 
-        private void RemoveBattlecryPreview()
+        private void RemovePlayPreview()
         {
-            if (battlecryPreview == null) return;
+            if (playPreview == null) return;
 
-            battlecryPreview.transform.SetParent(null);
-            Destroy(battlecryPreview.gameObject);
-            battlecryPreview = null;
+            playPreview.transform.SetParent(null);
+            Destroy(playPreview.gameObject);
+            playPreview = null;
         }
         public void OnMouseEnter()
         {
@@ -539,15 +547,15 @@ namespace CardGame
             GameManager.Instance.CardHighlighter.gameObject.SetActive(false);
         }
 
-        internal Minion PlayMinion(CardSlot slot, GameActor target)
+        internal Minion PlayMinion(CardSlot slot, GameActor target, int[] choices = null)
         {
-            OnSelfPlayed?.Invoke(this, new(CardType.Minion, target));
+            OnSelfPlayed?.Invoke(this, new(CardType.Minion, target, choices));
             Minion m = CreateMinionVisual(slot, playSound: true);
             foreach (Type script in scriptTypes)
             {
                 m.gameObject.AddComponent(script);
             }
-            m.Summoned(target);//Selfsummon
+            m.Summoned(choices);//Selfsummon
             GameManager.Instance.InvokeSummoned(m);//TODO: probably do the InvokeSummoned on one place
             return m;
         }
@@ -559,7 +567,7 @@ namespace CardGame
             {
                 minion.gameObject.AddComponent(script);
             }
-            minion.Summoned(null);
+            minion.Summoned();
             GameManager.Instance.InvokeSummoned(minion);
             return minion;
         }
@@ -579,7 +587,7 @@ namespace CardGame
         /// 
         /// </summary>
         /// <param name="target">null if no target given</param>
-        internal void CastSpell(GameActor target)
+        internal void CastSpell(GameActor target, int[] choices = null)
         {
             if (IsExperiment)
             {
@@ -588,7 +596,7 @@ namespace CardGame
                 Effect effect = PlaceEffect(slot);
                 effect.isExperiment = true;
             }
-            else OnSelfPlayed?.Invoke(this, new(CardType.Spell, target));
+            else OnSelfPlayed?.Invoke(this, new(CardType.Spell, target, choices));
             audioSource.PlayOneShot(cardPlaced);
         }
         public Effect PlaceEffect(CardSlot slot)
@@ -604,9 +612,9 @@ namespace CardGame
             return e;
         }
 
-        internal Field PlayField()
+        internal Field PlayField(int[] choices = null)
         {
-            OnSelfPlayed?.Invoke(this, new(CardType.Field, null));
+            OnSelfPlayed?.Invoke(this, new(CardType.Field, null, choices));
             GameObject g = Instantiate(TableActorPrefab, GameManager.Instance.FieldSlot.transform);
             g.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.AngleAxis(-90, new(0, 0, 1)));
             Field f = g.GetComponent<Field>();
