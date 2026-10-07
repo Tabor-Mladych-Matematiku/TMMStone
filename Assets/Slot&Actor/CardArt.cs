@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceLocations;
 
 namespace CardGame
 {
@@ -45,6 +47,35 @@ namespace CardGame
                     Debug.LogError($"Could not load Addressable card art: {address}");
                 completed(operation.Status == AsyncOperationStatus.Succeeded ? operation.Result : null);
             };
+        }
+
+        /// <summary>
+        /// Loads and retains the requested sprites in the same cache used by <see cref="Load"/>.
+        /// Later consumers therefore receive an already completed handle instead of briefly
+        /// displaying their prefab's placeholder artwork.
+        /// </summary>
+        public static IEnumerator Preload(IEnumerable<string> addresses)
+        {
+            HashSet<string> uniqueAddresses = new(addresses);
+            int pending = 0;
+
+            foreach (string address in uniqueAddresses)
+            {
+                pending++;
+                AsyncOperationHandle<IList<IResourceLocation>> locations =
+                    Addressables.LoadResourceLocationsAsync(address, typeof(Sprite));
+                locations.Completed += operation =>
+                {
+                    bool exists = operation.Status == AsyncOperationStatus.Succeeded
+                        && operation.Result.Count > 0;
+                    Addressables.Release(operation);
+
+                    if (exists) Load(address, _ => pending--);
+                    else pending--;
+                };
+            }
+
+            yield return new WaitUntil(() => pending == 0);
         }
 
         public static void ReleaseAll()

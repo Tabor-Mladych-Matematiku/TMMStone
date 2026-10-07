@@ -497,9 +497,26 @@ namespace CardGame
 
             CardPrefab = cardPrefabHandle.Result;
             yield return Card.PreloadSharedAssets(CardPrefab.GetComponent<Card>());
+            yield return CardArt.Preload(GetCardArtAddresses());
             prefabsReady = true;
 
             //Debug.Log(CardDatabase);
+        }
+
+        private IEnumerable<string> GetCardArtAddresses()
+        {
+            yield return "card-face/card-back";
+
+            foreach (CardData.CardData card in CardDatabase.Values)
+            {
+                string expansion = CDJsonUtils.expansionMapping.TryGetValue(card.expansion, out string mappedExpansion)
+                    ? mappedExpansion
+                    : "Tokeny";
+
+                yield return CardArt.FaceAddress(expansion, card.name);
+                if (card.type is "Token" or "Jednotka" or "Pole")
+                    yield return CardArt.PlainAddress(expansion, card.name);
+            }
         }
 
         private void GameManager_PlayerDeath(P who)
@@ -1375,7 +1392,11 @@ namespace CardGame
             if (cardPrefabHandle.IsValid()) Addressables.Release(cardPrefabHandle);
             ReleaseSharedAssets();
 
-            if (Instance == this) Instance = null;
+            if (Instance == this)
+            {
+                CardArt.ReleaseAll();
+                Instance = null;
+            }
             base.OnDestroy();
         }
     }
